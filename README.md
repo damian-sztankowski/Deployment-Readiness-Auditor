@@ -8,11 +8,15 @@ It leverages Google's **Gemini models** to provide instant, pillar-based scoring
 
 | Landing Page | Assessment Input |
 |:---:|:---:|
-| ![Landing Page](docs/screenshots/landing.png) | ![Input Section](docs/screenshots/input.png) |
+| ![Landing Page](docs/landing.png) | ![Input Section](docs/input.png) |
+
+| Assessment Generation |
+|:---:|
+| ![Landing Page](docs/input2.png) |
 
 | Audit Dashboard | PDF Report |
 |:---:|:---:|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![PDF Report](docs/screenshots/report.png) |
+| ![Dashboard](docs/dashboard.png) | ![PDF Report](docs/report.png) |
 
 ## 🚀 Features
 
@@ -57,7 +61,8 @@ It leverages Google's **Gemini models** to provide instant, pillar-based scoring
 
 3.  **Configure Environment**
     Ensure you have your API key available. The application expects `process.env.API_KEY` to be populated (via Vite define or environment variables).
-    ``` touch .env.local
+    ```
+    touch .env.local
     GEMINI_API_KEY=YOUR_KEY_HERE
     ```
 
