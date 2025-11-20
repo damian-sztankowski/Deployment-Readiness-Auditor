@@ -6,11 +6,13 @@ It leverages Google's **Gemini models** to provide instant, pillar-based scoring
 
 ## 📸 Screenshots
 
-> *Note: To see these images locally, place screenshots in `docs/screenshots/` named as referenced below.*
-
 | Landing Page | Assessment Input |
 |:---:|:---:|
 | ![Landing Page](docs/screenshots/landing.png) | ![Input Section](docs/screenshots/input.png) |
+
+| Assessment Generation |
+|:---:|
+| ![Landing Page](docs/screenshots/input2.png) |
 
 | Audit Dashboard | PDF Report |
 |:---:|:---:|
@@ -59,13 +61,17 @@ It leverages Google's **Gemini models** to provide instant, pillar-based scoring
 
 3.  **Configure Environment**
     Ensure you have your API key available. The application expects `process.env.API_KEY` to be populated (via Vite define or environment variables).
+    ```
+    touch .env.local
+    GEMINI_API_KEY=YOUR_KEY_HERE
+    ```
 
-4.  **Run the development server**
+5.  **Run the development server**
     ```bash
     npm run dev
     ```
 
-5.  **Open your browser**
+6.  **Open your browser**
     Navigate to `http://localhost:5173`
 
 ## ☁️ Deployment (Google Cloud Run)
@@ -75,18 +81,23 @@ This application is optimized for deployment on Google Cloud Run as a static sit
 ### 1. Create Dockerfile
 Ensure you have a `Dockerfile` in the root:
 ```dockerfile
-FROM node:18-alpine as build
+FROM node:18-alpine
+
 WORKDIR /app
-COPY package*.json ./
+
+COPY package.json .
+
 RUN npm install
+
+RUN npm i -g serve
+
 COPY . .
-# Note: Ensure API_KEY is handled via build args or injected at runtime config
+
 RUN npm run build
 
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 8080
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 3000
+
+CMD [ "serve", "-s", "dist" ]
 ```
 
 ### 2. Build & Push
@@ -108,6 +119,7 @@ gcloud run deploy dra-app \
   --platform managed \
   --region $REGION \
   --allow-unauthenticated
+  --port 3000
 ```
 
 ## 🛡️ Security Note
