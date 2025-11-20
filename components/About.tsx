@@ -1,9 +1,40 @@
-import React from 'react';
-import { Shield, Zap, Cloud, ArrowRight, AlertTriangle, TrendingUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Zap, Cloud, ArrowRight, AlertTriangle, TrendingUp, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 
 interface AboutProps {
   onStartAssessment: () => void;
 }
+
+const FAQItem = ({ question, answer }: { question: string; answer: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border-b border-slate-200 dark:border-slate-800 last:border-0">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full py-5 flex items-start md:items-center justify-between text-left focus:outline-none group"
+      >
+        <span className="text-base font-semibold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pr-4">
+          {question}
+        </span>
+        <div className={`mt-1 md:mt-0 p-1 rounded-full transition-all duration-200 ${isOpen ? 'bg-indigo-50 dark:bg-indigo-900/30 rotate-180' : 'bg-transparent'}`}>
+             <ChevronDown className={`w-5 h-5 transition-colors ${isOpen ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-500'}`} />
+        </div>
+      </button>
+      <div
+        className={`grid transition-all duration-300 ease-in-out ${
+          isOpen ? 'grid-rows-[1fr] opacity-100 pb-5' : 'grid-rows-[0fr] opacity-0'
+        }`}
+      >
+        <div className="overflow-hidden">
+            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+            {answer}
+            </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
   return (
@@ -214,6 +245,42 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                  </div>
              ))}
           </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="max-w-3xl mx-auto w-full">
+        <div className="text-center mb-10">
+          <div className="flex items-center justify-center gap-2 mb-4">
+             <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-full text-indigo-600 dark:text-indigo-400">
+                <HelpCircle className="w-5 h-5" />
+             </div>
+          </div>
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Frequently Asked Questions</h3>
+          <p className="text-slate-600 dark:text-slate-400">Common questions about privacy, compatibility, and scoring.</p>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-sm">
+             <FAQItem
+                question="How does the AI analysis work?"
+                answer="It uses Google's Gemini Pro model to parse your infrastructure code, comparing resources against the 5 pillars of the Google Cloud Architecture Framework to identify risks."
+             />
+             <FAQItem
+                question="Is my infrastructure code secure?"
+                answer="Yes. All analysis happens in real-time. We do not store, log, or train models on your submitted Terraform code or JSON assets. Your code is processed ephemerally."
+             />
+             <FAQItem
+                question="What file formats do you support?"
+                answer="Currently, we support Terraform configuration files (.tf) and Google Cloud Asset Inventory JSON exports. Binary plan files are not supported."
+             />
+             <FAQItem
+                question="Can I use this for formal compliance audits?"
+                answer="DRA is a pre-deployment readiness tool. While it helps align with standards like CIS or ISO by detecting common misconfigurations, it does not replace a formal certified audit or penetration test."
+             />
+             <FAQItem
+                question="Is this free to use?"
+                answer="The application interface is free. However, it requires a Google AI Studio API Key to function, which may have its own usage limits or pricing depending on your Google Cloud plan."
+             />
+        </div>
       </section>
       
       <div className="text-center pt-8">
