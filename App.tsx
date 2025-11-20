@@ -116,7 +116,7 @@ const App: React.FC = () => {
                       </h2>
                       <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
                           Instant analysis against the <span className="font-semibold text-indigo-600 dark:text-indigo-400">Google Cloud Architecture Framework</span>. 
-                          Detect security risks, cost inefficiencies, and reliability gaps.
+                          Detect security risks and reliability gaps.
                       </p>
                   </div>
                   )}

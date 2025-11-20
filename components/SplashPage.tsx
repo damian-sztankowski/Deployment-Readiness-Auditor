@@ -61,7 +61,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart }) => {
                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
                     Your AI-powered architect. Instantly analyze infrastructure against the 
                     <span className="text-indigo-900 dark:text-indigo-300 font-bold mx-1">Google Cloud Architecture Framework</span> 
-                    to detect risks, optimize costs, and ensure compliance.
+                    to detect risks and ensure compliance.
                 </p>
             </div>
 
