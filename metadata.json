@@ -1,0 +1,5 @@
+{
+  "name": "Deployment Readiness Auditor",
+  "description": "AI-powered infrastructure risk analysis tool for pre-deployment checks on Security, IAM, Cost, and Compliance.",
+  "requestFramePermissions": []
+}

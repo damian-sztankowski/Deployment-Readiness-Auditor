@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deployment Readiness Auditor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                750: '#2d3748',
+                850: '#1a202c',
+                950: '#020617', 
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <script>
+      // Immediate theme application to prevent FOUC
+      try {
+        const localTheme = localStorage.getItem('dra-theme');
+        const sysTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Default to dark if no setting found, or if explicitly set to dark
+        if (localTheme === 'dark' || (!localTheme && true)) { // Defaulting to true (Dark) based on user preference
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+        /* background-color handled by App.tsx classes */
+      }
+      
+      /* Fallback for dark mode text if Tailwind class detection lags */
+      .dark body {
+        color: #f1f5f9;
+      }
+
+      /* Custom scrollbar for code blocks */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9; 
+      }
+      .dark ::-webkit-scrollbar-track {
+        background: #0f172a; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 4px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #334155; 
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #475569; 
+      }
+
+      /* Smooth Animation */
+      .animate-enter {
+        animation: enter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+      
+      @keyframes enter {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Gradient Text Animation */
+      .bg-300\% {
+        background-size: 300% auto;
+      }
+      .animate-gradient {
+        animation: gradient 8s linear infinite;
+      }
+      @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      /* Shine Effect */
+      @keyframes shine {
+        0% { transform: translateX(-150%) skewX(-12deg); }
+        100% { transform: translateX(150%) skewX(-12deg); }
+      }
+      .animate-shine {
+        animation: shine 3s infinite;
+      }
+
+      /* Blob Animation */
+      @keyframes blob {
+        0% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(30px, -50px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+        100% { transform: translate(0px, 0px) scale(1); }
+      }
+      .animate-blob {
+        animation: blob 7s infinite;
+      }
+      .animation-delay-2000 {
+        animation-delay: 2s;
+      }
+      .animation-delay-4000 {
+        animation-delay: 4s;
+      }
+
+      /* --- Playful & Automated Animations --- */
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+      }
+      .animate-float {
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes wiggle {
+        0%, 100% { transform: rotate(-5deg); }
+        50% { transform: rotate(5deg); }
+      }
+      .animate-wiggle {
+        animation: wiggle 2s ease-in-out infinite;
+      }
+      
+      @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .animate-spin-slow {
+        animation: spin-slow 12s linear infinite;
+      }
+
+      @keyframes rubberBand {
+        0% { transform: scale(1); }
+        30% { transform: scale(1.25, 0.75); }
+        40% { transform: scale(0.75, 1.25); }
+        50% { transform: scale(1.15, 0.85); }
+        65% { transform: scale(0.95, 1.05); }
+        75% { transform: scale(1.05, 0.95); }
+        100% { transform: scale(1); }
+      }
+      .hover-rubberBand:hover {
+        animation: rubberBand 1s;
+      }
+      .animate-rubberBand {
+        animation: rubberBand 3s infinite;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
+    "html2canvas": "https://esm.sh/html2canvas@1.4.1",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
+    "jspdf-autotable": "https://esm.sh/jspdf-autotable@3.8.2"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
