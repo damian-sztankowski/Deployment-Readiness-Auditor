@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Zap, Cloud, ArrowRight, AlertTriangle, TrendingUp, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { Shield, Zap, Cloud, ArrowRight, AlertTriangle, TrendingUp, ChevronDown, HelpCircle, Brain, FolderSearch } from 'lucide-react';
 
 interface AboutProps {
   onStartAssessment: () => void;
@@ -182,7 +182,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
              <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">We bridge the gap between complex cloud frameworks and your daily Terraform workflow.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow group">
                 <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
                     <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -195,11 +195,21 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
 
             <div className="p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow group">
                 <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
-                    <Cloud className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                    <Brain className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Terraform Native</h4>
+                <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Beyond Static Analysis</h4>
                 <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Built for Terraform and Google Cloud Asset Inventory. Paste your `main.tf` and get instant remediation steps.
+                    Unlike standard regex or OPA-based scanners, DRA uses Gemini to understand <strong>architectural intent</strong> and context.
+                </p>
+            </div>
+
+            <div className="p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow group">
+                <div className="w-12 h-12 bg-violet-50 dark:bg-violet-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:bg-violet-100 dark:group-hover:bg-violet-900/50 transition-colors">
+                    <FolderSearch className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+                </div>
+                <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Project-Wide Scanning</h4>
+                <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Upload an entire Terraform folder. DRA intelligently combines files to analyze your project as a cohesive architecture.
                 </p>
             </div>
         </div>
@@ -212,7 +222,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
           <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-16 text-center relative z-10">How it Works</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-             {/* Connecting Line - Now Centered Vertically and visible on top of cards */}
+             {/* Connecting Line - Centered Vertically and visible on top of cards */}
              <div className="hidden md:block absolute top-1/2 left-[16%] right-[16%] h-1 bg-gradient-to-r from-indigo-200 via-indigo-400 to-indigo-200 dark:from-indigo-900 dark:via-indigo-600 dark:to-indigo-900 -translate-y-1/2 z-10"></div>
 
              {[
@@ -283,9 +293,12 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         </div>
       </section>
       
-      <div className="text-center pt-8">
+      <div className="text-center pt-8 space-y-2">
           <p className="text-slate-400 text-sm">
               We do not store your data. Code is processed ephemerally.
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-600">
+             Disclaimer: This tool is an open-source project powered by Google Gemini. It is not an official Google Cloud product.
           </p>
       </div>
 

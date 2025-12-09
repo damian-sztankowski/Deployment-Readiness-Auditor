@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Play, Upload, RefreshCw, Terminal, ChevronDown, ChevronUp, Edit2, FileText } from 'lucide-react';
+import { Play, Upload, RefreshCw, Terminal, ChevronUp, Edit2, FileText, FolderUp, FileCode } from 'lucide-react';
 
 interface InputSectionProps {
   onAnalyze: (code: string) => void;
@@ -16,6 +16,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
 }) => {
   const [inputCode, setInputCode] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+  const [isReadingFiles, setIsReadingFiles] = useState(false);
 
   const handleAnalyze = () => {
     if (inputCode.trim()) {
@@ -72,14 +74,20 @@ resource "google_compute_instance" "legacy_server" {
     }
   };
 
+  const readFileContent = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = (e) => reject(e);
+      reader.readAsText(file);
+    });
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      
+    readFileContent(file).then(content => {
       if (content.includes('\0')) {
         const warningMsg = `# ⚠️ WARNING: This looks like a binary Terraform plan file.
 # The Auditor cannot parse binary plans directly.
@@ -94,15 +102,54 @@ resource "google_compute_instance" "legacy_server" {
       } else {
         setInputCode(content);
       }
+    });
 
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      if (minimized && onToggleMinimize) {
-        onToggleMinimize();
-      }
-    };
-    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (minimized && onToggleMinimize) onToggleMinimize();
+  };
+
+  const handleFolderUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsReadingFiles(true);
+    let combinedCode = "# --- PROJECT ANALYSIS ---\n\n";
+    let fileCount = 0;
+
+    const validExtensions = ['.tf', '.tfvars', '.json', '.yaml', '.yml'];
+
+    // Sort files to keep main.tf or versions.tf near top if possible, mostly alphabetical
+    const sortedFiles = (Array.from(files) as File[]).sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const file of sortedFiles) {
+        // Simple extension check
+        const ext = file.name.substring(file.name.lastIndexOf('.'));
+        // Exclude .git folder stuff or lock files if they slipped in
+        if (validExtensions.includes(ext) && !file.webkitRelativePath.includes('/.git/')) {
+            try {
+                const content = await readFileContent(file);
+                // Skip binary check for now assuming extension filter works, but safeguard:
+                if (!content.includes('\0')) {
+                     // Use relative path if available (from folder upload), else name
+                    const path = file.webkitRelativePath || file.name;
+                    combinedCode += `### FILE: ${path} ###\n${content}\n\n`;
+                    fileCount++;
+                }
+            } catch (err) {
+                console.warn(`Failed to read file ${file.name}`, err);
+            }
+        }
+    }
+
+    if (fileCount === 0) {
+        setInputCode("# No valid Infrastructure-as-Code files (.tf, .json, .yaml) found in the selected folder.");
+    } else {
+        setInputCode(combinedCode.trim());
+    }
+    
+    setIsReadingFiles(false);
+    if (folderInputRef.current) folderInputRef.current.value = '';
+    if (minimized && onToggleMinimize) onToggleMinimize();
   };
 
   // Minimized View
@@ -147,7 +194,7 @@ resource "google_compute_instance" "legacy_server" {
             <h3>Infrastructure Configuration</h3>
           </div>
           <div className="flex gap-2">
-              <label className="group flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium px-3 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all cursor-pointer border border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800">
+              <label className="group flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium px-3 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all cursor-pointer border border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800" title="Upload single .tf or .json file">
                   <Upload className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
                   Upload File
                   <input 
@@ -155,6 +202,22 @@ resource "google_compute_instance" "legacy_server" {
                       type="file" 
                       className="hidden" 
                       onChange={handleFileUpload}
+                      accept=".tf,.json,.yaml,.yml"
+                  />
+              </label>
+
+              <label className="group flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium px-3 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all cursor-pointer border border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800" title="Upload a folder of Terraform files">
+                  <FolderUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
+                  Upload Folder
+                  <input 
+                      ref={folderInputRef}
+                      type="file" 
+                      className="hidden" 
+                      onChange={handleFolderUpload}
+                      // @ts-ignore - directory attribute is standard in webkit but not in React types yet
+                      webkitdirectory="" 
+                      directory="" 
+                      multiple
                   />
               </label>
               
@@ -181,7 +244,7 @@ resource "google_compute_instance" "legacy_server" {
           <textarea
             value={inputCode}
             onChange={(e) => setInputCode(e.target.value)}
-            placeholder="Paste Terraform (main.tf) or Google Cloud Asset Inventory JSON..."
+            placeholder={isReadingFiles ? "Reading files from folder..." : "Paste Terraform code, or Upload a File/Folder to analyze complete projects..."}
             className="w-full h-[500px] p-6 font-mono text-sm text-slate-900 dark:text-slate-100 bg-slate-50/30 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-900 outline-none resize-none transition-all leading-6 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             spellCheck={false}
           />
@@ -190,16 +253,16 @@ resource "google_compute_instance" "legacy_server" {
           <div className="absolute bottom-6 right-6 z-10">
             <button
               onClick={handleAnalyze}
-              disabled={isAnalyzing || !inputCode.trim()}
+              disabled={isAnalyzing || !inputCode.trim() || isReadingFiles}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold shadow-lg shadow-indigo-500/30 transform transition-all duration-200 
-                ${isAnalyzing || !inputCode.trim()
+                ${isAnalyzing || !inputCode.trim() || isReadingFiles
                   ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none' 
                   : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:translate-y-[-2px] hover:shadow-indigo-500/40 active:scale-95'}`}
             >
-              {isAnalyzing ? (
+              {isAnalyzing || isReadingFiles ? (
                 <>
                   <RefreshCw className="w-5 h-5 animate-spin" />
-                  Analyzing...
+                  {isReadingFiles ? "Reading Files..." : "Analyzing..."}
                 </>
               ) : (
                 <>

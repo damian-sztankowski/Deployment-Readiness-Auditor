@@ -32,6 +32,17 @@ It leverages Google's **Gemini models** to provide instant, pillar-based scoring
 -   **Secure & Private**: Code is processed ephemerally; no persistent storage of your infrastructure code.
 -   **Dark Mode Support**: Beautiful, responsive UI built with Tailwind CSS.
 
+## 🆚 Comparison with Static Analyzers
+
+While tools like the **AWS Well-Architected IaC Analyzer** rely on rigid static rules (OPA/Rego), DRA uses Generative AI (Gemini).
+
+| Feature | Static Analyzers (AWS, Checkov) | DRA (Gemini AI) |
+| :--- | :--- | :--- |
+| **Detection** | Regex / Policy Rules | Semantic Context Understanding |
+| **Logic Flaws** | Misses architectural context | Can infer intent (e.g., "Is this safe for prod?") |
+| **Remediation** | Generic error messages | Context-aware code fixes |
+| **Scope** | Syntax & Policy | Full Architectural Review |
+
 ## 🛠️ Tech Stack
 
 -   **Frontend**: React 19, TypeScript, Vite
