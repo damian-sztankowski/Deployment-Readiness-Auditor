@@ -357,7 +357,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
 
       {/* Middle Row: Charts & Visualization */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
-         <div className="lg:col-span-1 w-full sticky top-24 relative z-10">
+         <div className="lg:col-span-1 w-full sticky top-24 relative z-10 flex flex-col gap-6">
             <RiskCharts categories={result.categories} />
          </div>
          <div className="lg:col-span-2 w-full relative z-10">

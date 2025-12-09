@@ -19,6 +19,7 @@ export interface Finding {
   title: string;
   description: string;
   remediation: string;
+  compliance?: string[]; // e.g., ["CIS 1.2", "NIST 800-53 SC-7"]
 }
 
 export interface AuditResult {

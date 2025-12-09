@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck } from 'lucide-react';
 import { Finding, Severity } from '../types';
 
 interface FindingsListProps {
@@ -67,8 +67,22 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
                 </div>
              </div>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
-            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">{finding.category}</span>
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-xs text-slate-600 dark:text-slate-300 font-medium">
+                {finding.category}
+            </span>
+            
+            {/* Compliance Badges */}
+            {finding.compliance && finding.compliance.length > 0 && (
+                <div className="flex flex-wrap gap-2 border-l border-slate-200 dark:border-slate-700 pl-2 ml-1">
+                    {finding.compliance.map((std, idx) => (
+                        <span key={idx} className="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/30 text-[10px] text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800 font-mono">
+                            <ShieldCheck className="w-3 h-3" />
+                            {std}
+                        </span>
+                    ))}
+                </div>
+            )}
           </div>
         </div>
       </div>

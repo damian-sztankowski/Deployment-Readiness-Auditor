@@ -16,7 +16,8 @@
     "recharts": "^3.4.1",
     "html2canvas": "1.4.1",
     "jspdf": "2.5.1",
-    "jspdf-autotable": "3.8.2"
+    "jspdf-autotable": "3.8.2",
+    "mermaid": "^11.12.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

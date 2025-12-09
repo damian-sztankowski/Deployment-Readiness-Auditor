@@ -11,29 +11,26 @@ Your Goal: Analyze the provided Infrastructure-as-Code (Terraform) or Google Clo
 
 MULTI-FILE PROJECTS:
 The input may contain multiple files concatenated with headers like "### FILE: path/to/file.tf ###".
-Treat these files as a SINGLE cohesive project. Analyze relationships between resources across files (e.g., variables defined in variables.tf used in main.tf).
-Evaluate project structure and modularity as part of "Operational Excellence".
+Treat these files as a SINGLE cohesive project. Analyze relationships between resources across files.
 
-The 5 Pillars:
-1. Operational Excellence (Automation, IaC best practices, project structure, naming conventions)
-2. Security (IAM, Networking, Encryption, Public Exposure)
-3. Reliability (High Availability, Redundancy, Backup/Recovery)
-4. Performance Efficiency (Machine types, Scaling, CDN)
-5. Cost Optimization (Qualitative analysis only: identify expensive resources, over-provisioning, unused IPs. DO NOT estimate prices.)
+TASKS:
+1. SCORING: Evaluate against Operational Excellence, Security, Reliability, Performance, and Cost Optimization (Qualitative).
+2. FINDINGS: Identify risks based on the Rubric below.
+3. COMPLIANCE: Map each finding to SPECIFIC, GRANULAR standards. Do not use generic headers.
+   - CIS Google Cloud Foundation Benchmark v3.0: Use exact ID (e.g., 'CIS 3.0 5.2.1', 'CIS 2.0 4.1').
+   - NIST 800-53 Rev 5: Use specific control + enhancement (e.g., 'NIST SC-7(5)', 'NIST AC-6(1)', 'NIST SI-4(12)').
+   - PCI-DSS v4.0: Use specific requirement ID (e.g., 'PCI 1.3.2', 'PCI 8.2.1').
 
 SCORING RUBRIC (Start at 100):
-- CRITICAL finding: -15 points (e.g., Public access 0.0.0.0/0, Data loss risk, Service Account Keys in code, Admin IAM roles).
-- HIGH finding: -10 points (e.g., Legacy hardware n1/f1, Default VPC usage, HTTP traffic, Hardcoded secrets).
-- MEDIUM finding: -5 points.
-- LOW/INFO: -0 points.
+- CRITICAL (-15): Public access 0.0.0.0/0, Data loss risk, Keys in code, Admin IAM.
+- HIGH (-10): Legacy hardware, Default VPC, HTTP traffic, Hardcoded secrets.
+- MEDIUM (-5): Minor optimization.
+- LOW/INFO (-0): Best practice notes.
 
-STRICT PRICING RULE: 
-- DO NOT provide specific dollar amounts or cost estimates. 
-- Focus on qualitative advice (e.g., "Use committed use discounts", "Switch to Spot instances").
+STRICT PRICING RULE: DO NOT provide dollar amounts.
 
 Output Requirements:
 - Return ONLY valid JSON.
-- 'categories' must contain exactly 5 items.
 `;
 
 export const analyzeInfrastructure = async (inputCode: string): Promise<AuditResult> => {
@@ -79,7 +76,12 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
                   category: { type: Type.STRING, description: "Related Pillar Name" },
                   title: { type: Type.STRING },
                   description: { type: Type.STRING },
-                  remediation: { type: Type.STRING }
+                  remediation: { type: Type.STRING },
+                  compliance: { 
+                    type: Type.ARRAY, 
+                    items: { type: Type.STRING },
+                    description: "List of related compliance controls e.g. CIS 1.1, NIST SC-7" 
+                  }
                 },
                 required: ["severity", "category", "title", "description", "remediation", "id"]
               }
