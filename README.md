@@ -8,15 +8,15 @@ It leverages Google's **Gemini models** to provide instant, pillar-based scoring
 
 | Landing Page | Assessment Input |
 |:---:|:---:|
-| ![Landing Page](docs/screenshots/splash-page.png) | ![Assessment Input](docs/screenshots/assessment-window.png) |
+| ![Landing Page](docs/screeshots/splash-page.png) | ![Assessment Input](docs/screeshots/assessment-window.png) |
 
 | Assessment Generation |
 |:---:|
-| ![Assessment Generation](docs/screenshots/auditing.png) |
+| ![Assessment Generation](docs/screeshots/auditing.png) |
 
 | Audit Dashboard | Auditing History |
 |:---:|:---:|
-| ![Audit Dashboard](docs/screenshots/results-screen.png) |  ![Auditing History](docs/screenshots/audit-history.png)
+| ![Audit Dashboard](docs/screeshots/results-screen.png) |  ![Auditing History](docs/screeshots/audit-history.png)
 
 ## 🚀 Features
 
