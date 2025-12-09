@@ -20,6 +20,9 @@ TASKS:
    - CIS Google Cloud Foundation Benchmark v3.0: Use exact ID (e.g., 'CIS 3.0 5.2.1', 'CIS 2.0 4.1').
    - NIST 800-53 Rev 5: Use specific control + enhancement (e.g., 'NIST SC-7(5)', 'NIST AC-6(1)', 'NIST SI-4(12)').
    - PCI-DSS v4.0: Use specific requirement ID (e.g., 'PCI 1.3.2', 'PCI 8.2.1').
+4. CODE FIXES: For CRITICAL and HIGH severity issues, provide a specific Terraform HCL snippet (or JSON patch) that fixes the problem.
+   - The fix should be copy-paste ready if possible.
+   - Focus on the specific resource block corrections.
 
 SCORING RUBRIC (Start at 100):
 - CRITICAL (-15): Public access 0.0.0.0/0, Data loss risk, Keys in code, Admin IAM.
@@ -77,6 +80,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
                   title: { type: Type.STRING },
                   description: { type: Type.STRING },
                   remediation: { type: Type.STRING },
+                  fix: { type: Type.STRING, description: "Terraform HCL code snippet to fix the issue. Required for Critical/High issues." },
                   compliance: { 
                     type: Type.ARRAY, 
                     items: { type: Type.STRING },

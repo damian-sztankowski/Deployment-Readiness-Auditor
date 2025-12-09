@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check } from 'lucide-react';
 import { Finding, Severity } from '../types';
 
 interface FindingsListProps {
@@ -39,6 +39,8 @@ const SeverityBadge = ({ severity }: { severity: Severity }) => {
 
 const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showFix, setShowFix] = useState(false);
+  const [copied, setCopied] = useState(false);
   
   const borderColors = {
     [Severity.CRITICAL]: 'border-l-red-500',
@@ -46,6 +48,15 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
     [Severity.MEDIUM]: 'border-l-amber-500',
     [Severity.LOW]: 'border-l-blue-500',
     [Severity.INFO]: 'border-l-slate-300 dark:border-l-slate-600',
+  };
+
+  const handleCopyFix = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (finding.fix) {
+        navigator.clipboard.writeText(finding.fix);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -95,13 +106,55 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
                 </div>
                 <div className="bg-slate-50/80 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-700 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/20"></div>
-                    <h5 className="text-xs font-bold text-indigo-900 dark:text-indigo-300 mb-2 uppercase flex items-center gap-1.5">
-                        <Target className="w-3 h-3" />
-                        Recommended Action
-                    </h5>
+                    <div className="flex justify-between items-center mb-2">
+                        <h5 className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase flex items-center gap-1.5">
+                            <Target className="w-3 h-3" />
+                            Recommended Action
+                        </h5>
+                        
+                        {/* Fix It Button */}
+                        {finding.fix && (
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setShowFix(!showFix); }}
+                                className={`
+                                    flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all
+                                    ${showFix 
+                                        ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-700' 
+                                        : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-300 shadow-sm'}
+                                `}
+                            >
+                                <Wand2 className="w-3 h-3" />
+                                {showFix ? 'Hide Fix' : 'Show Code Fix'}
+                            </button>
+                        )}
+                    </div>
+                    
                     <p className="text-sm md:text-base text-slate-800 dark:text-slate-200 font-mono break-all whitespace-pre-wrap bg-white dark:bg-slate-900 p-3 rounded border border-slate-200 dark:border-slate-700 shadow-sm">
                         {finding.remediation}
                     </p>
+
+                    {/* Code Fix Block */}
+                    {finding.fix && (
+                        <div className={`mt-3 overflow-hidden transition-all duration-300 ease-in-out ${showFix ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                            <div className="relative group/code">
+                                <div className="absolute -top-3 left-4 bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded-t-md font-mono border-t border-l border-r border-slate-700">
+                                    Suggested Fix
+                                </div>
+                                <div className="bg-slate-900 rounded-lg border border-slate-700 shadow-inner p-4 pt-5 overflow-x-auto relative">
+                                    <button 
+                                        onClick={handleCopyFix}
+                                        className="absolute top-2 right-2 p-1.5 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700 rounded-md transition-colors"
+                                        title="Copy code"
+                                    >
+                                        {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                                    </button>
+                                    <pre className="text-xs md:text-sm font-mono text-emerald-300 leading-relaxed whitespace-pre-wrap">
+                                        {finding.fix}
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
