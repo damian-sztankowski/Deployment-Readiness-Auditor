@@ -1,14 +1,15 @@
 import React from 'react';
-import { Hexagon, Zap, LayoutGrid, Info, Moon, Sun } from 'lucide-react';
+import { Hexagon, Zap, LayoutGrid, Info, Moon, Sun, History } from 'lucide-react';
 
 interface HeaderProps {
   currentView: 'about' | 'assessment';
   onNavigate: (view: 'about' | 'assessment') => void;
   isDarkMode: boolean;
   toggleTheme: () => void;
+  onToggleHistory: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkMode, toggleTheme }) => {
+export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkMode, toggleTheme, onToggleHistory }) => {
   return (
     <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-indigo-100 dark:border-slate-800 sticky top-0 z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -48,8 +49,8 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
         </div>
 
         {/* Navigation & Settings */}
-        <div className="flex items-center gap-4">
-            <nav className="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+        <div className="flex items-center gap-2 md:gap-4">
+            <nav className="hidden md:flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50">
             <button 
                 onClick={() => onNavigate('about')}
                 className={`
@@ -79,18 +80,28 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
             </button>
             </nav>
 
-            <button 
-                onClick={toggleTheme}
-                className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-                {isDarkMode ? (
-                    <Sun className="w-5 h-5" />
-                ) : (
-                    <Moon className="w-5 h-5" />
-                )}
-            </button>
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
+                <button 
+                    onClick={onToggleHistory}
+                    className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 relative"
+                    title="Audit History"
+                >
+                    <History className="w-5 h-5" />
+                </button>
+
+                <button 
+                    onClick={toggleTheme}
+                    className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                    title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                >
+                    {isDarkMode ? (
+                        <Sun className="w-5 h-5" />
+                    ) : (
+                        <Moon className="w-5 h-5" />
+                    )}
+                </button>
+            </div>
         </div>
       </div>
     </header>

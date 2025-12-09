@@ -24,7 +24,6 @@ export interface Finding {
 }
 
 export interface AuditResult {
-  overallScore: number;
   summary: string;
   categories: CategoryScore[];
   findings: Finding[];
@@ -34,4 +33,11 @@ export interface AnalysisState {
   isLoading: boolean;
   error: string | null;
   result: AuditResult | null;
+}
+
+export interface HistoryItem {
+  id: string;
+  timestamp: number;
+  summary: string;
+  result: AuditResult;
 }

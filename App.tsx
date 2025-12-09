@@ -5,23 +5,33 @@ import { Dashboard } from './components/Dashboard';
 import { LoadingAnimation } from './components/LoadingAnimation';
 import { SplashPage } from './components/SplashPage';
 import { About } from './components/About';
+import { HistorySidebar } from './components/HistorySidebar';
 import { analyzeInfrastructure } from './services/geminiService';
-import { AnalysisState } from './types';
+import { AnalysisState, AuditResult, HistoryItem } from './types';
 import { Github, Linkedin } from 'lucide-react';
 
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [currentView, setCurrentView] = useState<'about' | 'assessment'>('assessment');
   const [isInputMinimized, setIsInputMinimized] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   
-  // Initialize Theme from localStorage or default to True (Dark Mode)
+  // History State
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('dra-history');
+        return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  // Initialize Theme
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dra-theme');
       if (saved) {
         return saved === 'dark';
       }
-      // Default to Dark Mode as per preference
       return true;
     }
     return true;
@@ -33,7 +43,7 @@ const App: React.FC = () => {
     result: null,
   });
 
-  // Handle Dark Mode Toggle & Persistence
+  // Theme Persistence
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -44,11 +54,43 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
+  // History Persistence
+  useEffect(() => {
+    localStorage.setItem('dra-history', JSON.stringify(history));
+  }, [history]);
+
+  const addToHistory = (result: AuditResult) => {
+    const newItem: HistoryItem = {
+        id: Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        // Score is removed, we rely on findings now
+        summary: result.summary,
+        result: result
+    };
+    setHistory(prev => [newItem, ...prev].slice(0, 20)); 
+  };
+
+  const deleteHistoryItem = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setHistory(prev => prev.filter(item => item.id !== id));
+  };
+
+  const restoreHistoryItem = (item: HistoryItem) => {
+    setAnalysis({
+        isLoading: false,
+        error: null,
+        result: item.result
+    });
+    setIsInputMinimized(true);
+    setCurrentView('assessment');
+  };
+
   const handleAnalyze = async (code: string) => {
     setAnalysis({ isLoading: true, error: null, result: null });
     try {
       const result = await analyzeInfrastructure(code);
       setAnalysis({ isLoading: false, error: null, result });
+      addToHistory(result);
       setIsInputMinimized(true);
     } catch (error: any) {
       setAnalysis({ 
@@ -83,7 +125,7 @@ const App: React.FC = () => {
             <div className="absolute bottom-[10%] left-[40%] w-96 h-96 bg-fuchsia-200/20 dark:bg-fuchsia-500/20 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl animate-blob animation-delay-4000 opacity-70 dark:opacity-40" />
         </div>
 
-        {/* Radial Overlay (Vignette) to fade edges - Matches slate-950 */}
+        {/* Radial Overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_50%,transparent,white)] dark:bg-[radial-gradient(circle_800px_at_50%_50%,transparent,#020617)]"></div>
       </div>
 
@@ -98,6 +140,15 @@ const App: React.FC = () => {
               onNavigate={handleNavigate} 
               isDarkMode={isDarkMode}
               toggleTheme={() => setIsDarkMode(!isDarkMode)}
+              onToggleHistory={() => setShowHistory(true)}
+            />
+            
+            <HistorySidebar 
+                isOpen={showHistory} 
+                onClose={() => setShowHistory(false)} 
+                history={history}
+                onSelect={restoreHistoryItem}
+                onDelete={deleteHistoryItem}
             />
             
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -107,7 +158,7 @@ const App: React.FC = () => {
                   <About onStartAssessment={() => setCurrentView('assessment')} />
               )}
 
-              {/* Assessment View - Kept in DOM but hidden when not active to preserve state */}
+              {/* Assessment View */}
               <div className={currentView === 'assessment' ? 'block animate-enter' : 'hidden'}>
                   {!analysis.result && !analysis.isLoading && (
                   <div className="max-w-3xl mx-auto mb-10 text-center">

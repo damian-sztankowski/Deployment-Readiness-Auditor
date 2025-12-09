@@ -95,7 +95,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart }) => {
             </div>
 
              <p className="mt-2 text-sm text-slate-400 font-medium animate-enter" style={{ animationDelay: '0.3s' }}>
-                    Compatible with Terraform and Google Cloud Asset Inventory JSON
+                    Compatible with Terraform
             </p>
 
             {/* Feature Pills */}
