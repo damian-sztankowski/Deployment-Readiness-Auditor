@@ -6,6 +6,7 @@ import { LoadingAnimation } from './components/LoadingAnimation';
 import { SplashPage } from './components/SplashPage';
 import { About } from './components/About';
 import { HistorySidebar } from './components/HistorySidebar';
+import { OnboardingTour } from './components/OnboardingTour';
 import { analyzeInfrastructure } from './services/geminiService';
 import { AnalysisState, AuditResult, HistoryItem } from './types';
 import { Github, Linkedin } from 'lucide-react';
@@ -113,6 +114,8 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-500 selection:bg-indigo-100 selection:text-indigo-800 dark:selection:bg-indigo-900 dark:selection:text-indigo-200 flex flex-col relative font-sans text-slate-900 dark:text-slate-100">
       
+      <OnboardingTour startTour={!showSplash} />
+
       {/* --- GLOBAL BACKGROUND --- */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         {/* Grid Pattern */}

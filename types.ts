@@ -23,6 +23,7 @@ export interface Finding {
   compliance?: string[]; // e.g., ["CIS 1.2", "NIST 800-53 SC-7"]
   lineNumber?: number;
   fileName?: string;
+  costSavings?: string; // e.g., "Save ~20% ($50/mo)"
 }
 
 export interface AuditResult {

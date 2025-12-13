@@ -68,6 +68,14 @@ resource "google_compute_instance" "legacy_server" {
       # Ephemeral public IP assigned
     }
   }
+}
+
+resource "google_compute_disk" "unattached_disk" {
+  name  = "unused-disk-backup"
+  type  = "pd-ssd"
+  zone  = "us-central1-a"
+  size  = 500
+  # RISK: Cost (Unattached disk costing money)
 }`;
     setInputCode(example);
     if (minimized && onToggleMinimize) {
@@ -180,7 +188,7 @@ resource "google_compute_instance" "legacy_server" {
 
   // Expanded View with Animated Glow
   return (
-    <div className="relative group z-0 rounded-2xl">
+    <div id="input-section-container" className="relative group z-0 rounded-2xl">
        {/* The Animated Gradient Glow Layer */}
        <div className="absolute -inset-[3px] rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 opacity-60 blur-lg transition-all duration-500 group-hover:opacity-90 animate-gradient bg-300%"></div>
        
@@ -195,7 +203,7 @@ resource "google_compute_instance" "legacy_server" {
             </div>
             <h3>Infrastructure Configuration</h3>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2" id="action-buttons-group">
               <label className="group flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium px-3 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all cursor-pointer border border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800" title="Upload single .tf or .json file">
                   <Upload className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
                   Upload File
@@ -224,6 +232,7 @@ resource "google_compute_instance" "legacy_server" {
               </label>
               
               <button 
+                  id="load-example-btn"
                   onClick={loadExample}
                   className="text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium px-3 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors border border-transparent"
               >
@@ -244,6 +253,7 @@ resource "google_compute_instance" "legacy_server" {
         
         <div className="relative group">
           <textarea
+            id="code-editor-area"
             value={inputCode}
             onChange={(e) => setInputCode(e.target.value)}
             placeholder={isReadingFiles ? "Reading files from folder..." : "Paste Terraform code, or Upload a File/Folder to analyze complete projects..."}
@@ -252,7 +262,7 @@ resource "google_compute_instance" "legacy_server" {
           />
           
           {/* Floating Action Button */}
-          <div className="absolute bottom-6 right-6 z-10">
+          <div className="absolute bottom-6 right-6 z-10" id="analyze-fab-container">
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing || !inputCode.trim() || isReadingFiles}

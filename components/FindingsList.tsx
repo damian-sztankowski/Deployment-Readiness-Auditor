@@ -1,10 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check, FileCode, Hash } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check, FileCode, Hash, Banknote } from 'lucide-react';
 import { Finding, Severity } from '../types';
 
 interface FindingsListProps {
   findings: Finding[];
 }
+
+const severityTooltips: Record<Severity, string> = {
+  [Severity.CRITICAL]: "Critical Risk: Immediate security breach (e.g., public access), data loss risk, or compliance failure. Requires urgent remediation.",
+  [Severity.HIGH]: "High Risk: Major deviation from architecture best practices, significant security gaps, or use of end-of-life resources.",
+  [Severity.MEDIUM]: "Medium Risk: Operational friction, cost inefficiencies (FinOps), or potential performance bottlenecks.",
+  [Severity.LOW]: "Low Risk: Minor configuration issues, naming convention violations, or housekeeping items.",
+  [Severity.INFO]: "Informational: Neutral observation or context about the infrastructure."
+};
 
 const SeverityIcon = ({ severity }: { severity: Severity }) => {
   switch (severity) {
@@ -30,10 +38,18 @@ const SeverityBadge = ({ severity }: { severity: Severity }) => {
     [Severity.INFO]: 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700',
   };
 
+  const tooltipText = severityTooltips[severity];
+
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[severity]}`}>
-      {severity}
-    </span>
+    <div className="relative group/tooltip inline-flex">
+        <span className={`cursor-help px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[severity]}`}>
+          {severity}
+        </span>
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2.5 bg-slate-800 text-white text-xs font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none text-center leading-relaxed border border-slate-700">
+            {tooltipText}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+        </div>
+    </div>
   );
 };
 
@@ -73,23 +89,32 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
              <div className="flex flex-col gap-1.5 min-w-0">
                 <h4 className="text-slate-900 dark:text-white font-semibold text-sm md:text-base leading-tight break-words">{finding.title}</h4>
                 
-                {/* Location Badge */}
-                {(finding.fileName || finding.lineNumber) && (
-                    <div className="flex flex-wrap items-center gap-2">
-                        {finding.fileName && (
-                             <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 max-w-full truncate" title={`File: ${finding.fileName}`}>
-                                <FileCode className="w-3 h-3 text-slate-400" />
-                                {finding.fileName}
-                             </span>
-                        )}
-                        {finding.lineNumber && (
-                             <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                                <Hash className="w-3 h-3 text-slate-400" />
-                                Ln {finding.lineNumber}
-                             </span>
-                        )}
-                    </div>
-                )}
+                {/* Location & FinOps Badges */}
+                <div className="flex flex-wrap items-center gap-2">
+                    {(finding.fileName || finding.lineNumber) && (
+                        <>
+                            {finding.fileName && (
+                                <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 max-w-full truncate" title={`File: ${finding.fileName}`}>
+                                    <FileCode className="w-3 h-3 text-slate-400" />
+                                    {finding.fileName}
+                                </span>
+                            )}
+                            {finding.lineNumber && (
+                                <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                                    <Hash className="w-3 h-3 text-slate-400" />
+                                    Ln {finding.lineNumber}
+                                </span>
+                            )}
+                        </>
+                    )}
+                    {/* COST SAVINGS BADGE */}
+                    {finding.costSavings && (
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 animate-pulse">
+                            <Banknote className="w-3 h-3" />
+                            {finding.costSavings}
+                        </span>
+                    )}
+                </div>
              </div>
              
              <div className="flex items-center gap-3 flex-shrink-0">

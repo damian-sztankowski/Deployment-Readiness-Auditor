@@ -82,6 +82,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
 
             <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
                 <button 
+                    id="header-history-btn"
                     onClick={onToggleHistory}
                     className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 relative"
                     title="Audit History"
@@ -90,6 +91,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
                 </button>
 
                 <button 
+                    id="header-theme-btn"
                     onClick={toggleTheme}
                     className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}

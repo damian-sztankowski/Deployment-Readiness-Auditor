@@ -3,6 +3,7 @@ import { AuditResult, Severity } from '../types';
 import { ScoreCard } from './ScoreCard';
 import { RiskCharts } from './RiskCharts';
 import { FindingsList } from './FindingsList';
+import { CostImpact } from './CostImpact';
 import { FileBarChart2, Download, Calendar, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -190,12 +191,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
       const tableData = result.findings.map(f => {
         let location = "";
         if (f.fileName) location += `File: ${f.fileName}\n`;
-        if (f.lineNumber) location += `Line: ${f.lineNumber}`;
+        if (f.lineNumber) location += `Line: ${f.lineNumber}\n`;
         
+        let savings = "";
+        if (f.costSavings) savings = `\nFINOPS: ${f.costSavings}`;
+
         return [
           f.severity.toUpperCase(),
           f.category,
-          `${f.title}\n\n${location ? `LOCATION: ${location}\n\n` : ''}${f.description}\n\nRecommendation: ${f.remediation}`
+          `${f.title}\n\n${location ? `LOCATION: ${location}\n` : ''}${f.description}${savings}\n\nRecommendation: ${f.remediation}`
         ];
       });
 
@@ -301,6 +305,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
             <RiskCharts categories={result.categories} />
         </div>
       </div>
+
+      {/* Insert Cost Impact Component Here */}
+      <CostImpact findings={result.findings} />
 
       <div className="w-full relative z-10 mt-8">
          <FindingsList findings={result.findings} />
