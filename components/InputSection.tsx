@@ -26,7 +26,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
   };
 
   const loadExample = () => {
-    const example = `resource "google_storage_bucket" "corporate_data" {
+    const example = `### FILE: main.tf ###
+resource "google_storage_bucket" "corporate_data" {
   name          = "corp-data-prod"
   location      = "US"
   force_destroy = true # RISK: Data Loss Risk
@@ -100,7 +101,8 @@ resource "google_compute_instance" "legacy_server" {
 `;
         setInputCode(warningMsg + "Binary content hidden.");
       } else {
-        setInputCode(content);
+        // Prepend file header so the auditor knows the filename
+        setInputCode(`### FILE: ${file.name} ###\n${content}`);
       }
     });
 

@@ -10,15 +10,18 @@ You are the **Deployment Readiness Auditor (DRA)**, an expert Google Cloud Archi
 ## 🎯 Primary Goal
 Analyze the provided configuration against the **5 Pillars of the Google Cloud Architecture Framework** (Security, Cost Optimization, Operational Excellence, Reliability, Performance Efficiency).
 
-## 📄 Input Handling (Multi-File Projects)
-The input may contain multiple files concatenated with headers like "### FILE: path/to/file.tf ###".
-* Treat these files as a **SINGLE cohesive project**.
-* **Context Awareness:** You must analyze cross-file references.
+## 📄 Input Handling
+The input has been **pre-processed with line numbers**.
+*   Lines starting with "### FILE: filename ###" denote a new file.
+*   Line numbers ("N | Code") provided are **relative to the start of that specific file**.
+*   You **MUST** identify the specific \`fileName\` (from the header) and the local \`lineNumber\` where a risk or misconfiguration occurs.
+*   Treat the input as a **SINGLE cohesive project** and analyze cross-file references.
 
 ## ⚙️ Execution Protocol
 1.  **IDENTIFY:** Scan for risks, anti-patterns, and misconfigurations.
-2.  **CLASSIFY:** Assign a Severity (Critical, High, Medium, Low) based on the Rubric below.
-3.  **PILLAR ASSESSMENT:** Evaluate the health of each of the 5 pillars (0-100 scale) based on the findings.
+2.  **LOCATE:** Pinpoint the exact file and line number.
+3.  **CLASSIFY:** Assign a Severity (Critical, High, Medium, Low) based on the Rubric below.
+4.  **PILLAR ASSESSMENT:** Evaluate the health of each of the 5 pillars (0-100 scale).
 
 ## ⚖️ Severity Rubric
 * **CRITICAL:** Immediate security breach (public access), data loss risk (no backups), or hardcoded secrets.
@@ -31,6 +34,19 @@ The input may contain multiple files concatenated with headers like "### FILE: p
 **OUTPUT FORMAT:** Return **ONLY** raw JSON matching the schema.
 `;
 
+const addLineNumbers = (code: string): string => {
+  const lines = code.split('\n');
+  let currentLine = 1;
+  return lines.map((line) => {
+    // If it's a file header, reset the line count and don't number the header itself
+    if (line.trim().startsWith('### FILE:')) {
+      currentLine = 1;
+      return line;
+    }
+    return `${currentLine++} | ${line}`;
+  }).join('\n');
+};
+
 export const analyzeInfrastructure = async (inputCode: string): Promise<AuditResult> => {
   if (!inputCode.trim()) {
     throw new Error("Input cannot be empty.");
@@ -39,9 +55,12 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
   try {
     const model = "gemini-2.5-pro";
     
+    // Pre-process code to assist the model with line numbering
+    const numberedCode = addLineNumbers(inputCode);
+
     const response = await ai.models.generateContent({
       model,
-      contents: `Analyze this Google Cloud infrastructure configuration.\n\nCode:\n${inputCode}`,
+      contents: `Analyze this Google Cloud infrastructure configuration.\n\nCode with Line Numbers:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0, // Zero temp for maximum consistency
@@ -75,13 +94,15 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
                   description: { type: Type.STRING },
                   remediation: { type: Type.STRING },
                   fix: { type: Type.STRING, description: "Terraform HCL code snippet to fix the issue. Required for CRITICAL/HIGH." },
+                  fileName: { type: Type.STRING, description: "The filename where the issue was found (e.g. main.tf)." },
+                  lineNumber: { type: Type.INTEGER, description: "The specific line number in the provided code where the issue starts." },
                   compliance: { 
                     type: Type.ARRAY, 
                     items: { type: Type.STRING },
                     description: "List of related compliance controls e.g. 'CIS 1.2', 'NIST SC-7'" 
                   }
                 },
-                required: ["severity", "category", "title", "description", "remediation", "id"]
+                required: ["severity", "category", "title", "description", "remediation", "id", "lineNumber"]
               }
             }
           },

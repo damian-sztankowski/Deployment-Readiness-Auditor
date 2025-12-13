@@ -187,11 +187,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
       doc.text("Key Findings", margin, currentY);
       currentY += 5;
 
-      const tableData = result.findings.map(f => [
-        f.severity.toUpperCase(),
-        f.category,
-        `${f.title}\n\n${f.description}\n\nRecommendation: ${f.remediation}`
-      ]);
+      const tableData = result.findings.map(f => {
+        let location = "";
+        if (f.fileName) location += `File: ${f.fileName}\n`;
+        if (f.lineNumber) location += `Line: ${f.lineNumber}`;
+        
+        return [
+          f.severity.toUpperCase(),
+          f.category,
+          `${f.title}\n\n${location ? `LOCATION: ${location}\n\n` : ''}${f.description}\n\nRecommendation: ${f.remediation}`
+        ];
+      });
 
       (autoTable as any)(doc, {
         startY: currentY,

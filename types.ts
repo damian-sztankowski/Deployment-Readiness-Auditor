@@ -21,6 +21,8 @@ export interface Finding {
   remediation: string;
   fix?: string; // Terraform/Code snippet to resolve the issue
   compliance?: string[]; // e.g., ["CIS 1.2", "NIST 800-53 SC-7"]
+  lineNumber?: number;
+  fileName?: string;
 }
 
 export interface AuditResult {

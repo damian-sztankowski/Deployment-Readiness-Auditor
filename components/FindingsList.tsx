@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check, FileCode, Hash } from 'lucide-react';
 import { Finding, Severity } from '../types';
 
 interface FindingsListProps {
@@ -70,7 +70,28 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start gap-4 mb-1">
-             <h4 className="text-slate-900 dark:text-white font-semibold text-sm md:text-base leading-tight">{finding.title}</h4>
+             <div className="flex flex-col gap-1.5 min-w-0">
+                <h4 className="text-slate-900 dark:text-white font-semibold text-sm md:text-base leading-tight break-words">{finding.title}</h4>
+                
+                {/* Location Badge */}
+                {(finding.fileName || finding.lineNumber) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                        {finding.fileName && (
+                             <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 max-w-full truncate" title={`File: ${finding.fileName}`}>
+                                <FileCode className="w-3 h-3 text-slate-400" />
+                                {finding.fileName}
+                             </span>
+                        )}
+                        {finding.lineNumber && (
+                             <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                                <Hash className="w-3 h-3 text-slate-400" />
+                                Ln {finding.lineNumber}
+                             </span>
+                        )}
+                    </div>
+                )}
+             </div>
+             
              <div className="flex items-center gap-3 flex-shrink-0">
                 <SeverityBadge severity={finding.severity} />
                 <div className={`transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-180' : ''}`}>
