@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Sztankowski"
+    given-names: "Damian"
+    affiliation: "Google Developer Expert (GDE)"
+title: "Deployment Readiness Auditor"
+version: 1.0.0
+date-released: 2025-12-13
+url: "https://github.com/damian-sztankowski/Deployment-Readiness-Auditor"
