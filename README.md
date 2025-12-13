@@ -141,4 +141,14 @@ This application runs entirely in the browser. However, it calls the Gemini API 
 
 ## 📄 License
 
-MIT
+## ⚖️ License & Attribution
+
+This project is released under the **MIT License**.
+
+You are free to use, modify, and distribute this software for personal or commercial purposes.
+**However, you must retain the original author attribution in the software and documentation.**
+
+> **Created by Damian Sztankowski**
+> Google Developer Expert (GDE) in Cloud.
+>
+> If you find this tool useful, please ⭐ the repo and tag me on [LinkedIn](https://www.linkedin.com/in/damian-sztankowski/)!
