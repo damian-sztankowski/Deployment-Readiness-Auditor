@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { TrendingDown, ArrowRight, PiggyBank, Sparkles, X, Target, Wand2, FileCode, Copy, Check } from 'lucide-react';
+import { TrendingDown, ArrowRight, PiggyBank, Sparkles, X, Target, Wand2, FileCode, Copy, Check, Calculator } from 'lucide-react';
 import { Finding } from '../types';
 
 interface CostImpactProps {
@@ -18,7 +18,6 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
       const category = f.category.toLowerCase();
       const savings = f.costSavings.toLowerCase();
       
-      // Must be cost-related category and have actual savings info (not N/A)
       return (
         (category.includes('cost') || category.includes('finops')) &&
         !savings.includes('n/a') &&
@@ -27,6 +26,18 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
       );
     });
   }, [findings]);
+
+  // Calculate total monthly savings
+  const totalMonthlySavings = useMemo(() => {
+    return costFindings.reduce((total, finding) => {
+      // Improved regex to find numbers following a dollar sign
+      const match = finding.costSavings?.match(/\$(\d+(\.\d+)?)/);
+      if (match && match[1]) {
+        return total + parseFloat(match[1]);
+      }
+      return total;
+    }, 0);
+  }, [costFindings]);
 
   if (costFindings.length === 0) return null;
 
@@ -42,15 +53,11 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
   return (
     <>
       <div className="w-full mb-8 animate-enter">
-        {/* Main Container with refined gradient and border */}
         <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50/80 via-teal-50/50 to-emerald-50/80 dark:from-emerald-950/30 dark:via-teal-900/10 dark:to-emerald-950/30 rounded-2xl border border-emerald-100 dark:border-emerald-800/60 p-6 md:p-8 shadow-sm backdrop-blur-sm">
           
-          {/* Abstract Background Shapes */}
           <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none mix-blend-multiply dark:mix-blend-screen"></div>
-          <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl pointer-events-none mix-blend-multiply dark:mix-blend-screen"></div>
-
-          {/* Header Section */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 relative z-10">
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
             <div className="flex items-center gap-4">
                <div className="relative group">
                   <div className="absolute inset-0 bg-emerald-400 blur-md opacity-20 group-hover:opacity-40 transition-opacity rounded-xl"></div>
@@ -66,13 +73,25 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
                       FinOps Opportunities
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                      Recover wasted budget with these <span className="font-bold text-emerald-600 dark:text-emerald-400">{costFindings.length} optimizations</span>.
+                      Identified <span className="font-bold text-emerald-600 dark:text-emerald-400">{costFindings.length} optimizations</span> to reclaim your GCP budget.
                   </p>
                </div>
             </div>
+
+            {/* TOTAL SAVINGS DISPLAY */}
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur px-6 py-4 rounded-2xl border border-emerald-200 dark:border-emerald-800 shadow-sm flex items-center gap-4 group">
+                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                   <Calculator className="w-5 h-5" />
+                </div>
+                <div>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Total Potential Savings</p>
+                   <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
+                      ${totalMonthlySavings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-bold opacity-60 ml-1">/mo</span>
+                   </p>
+                </div>
+            </div>
           </div>
 
-          {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 relative z-10">
               {costFindings.map((finding) => (
                   <button 
@@ -80,15 +99,12 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
                     onClick={() => setSelectedFinding(finding)}
                     className="text-left flex flex-col bg-white dark:bg-slate-900/60 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-800/50 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-lg hover:shadow-emerald-900/5 transition-all duration-300 group cursor-pointer relative overflow-hidden h-full"
                   >
-                      {/* Top Stripe */}
                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-                      {/* Content */}
                       <div className="flex items-start justify-between mb-4 w-full">
                           <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-600 dark:text-emerald-400 shrink-0">
                                <TrendingDown className="w-5 h-5" />
                           </div>
-                          {/* Savings Badge - Large */}
                            <div className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-500/20 shadow-sm truncate max-w-[60%] text-center ml-2" title={finding.costSavings}>
                               {finding.costSavings}
                            </div>
@@ -123,19 +139,15 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
         </div>
       </div>
 
-      {/* Detail Modal */}
       {selectedFinding && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
-           {/* Backdrop */}
            <div 
               className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity duration-300"
               onClick={() => setSelectedFinding(null)}
            />
 
-           {/* Modal Content - using animate-enter from global CSS instead of tailwindcss-animate */}
            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden animate-enter max-h-[90vh]">
               
-              {/* Modal Header */}
               <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-emerald-50/50 dark:bg-emerald-900/10 flex justify-between items-start gap-4">
                  <div>
                     <div className="flex items-center gap-2 mb-2">
@@ -162,10 +174,7 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
                  </button>
               </div>
 
-              {/* Modal Body */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                 
-                 {/* Description */}
                  <div>
                     <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">FinOps Analysis</h4>
                     <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -173,7 +182,6 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
                     </p>
                  </div>
 
-                 {/* Remediation */}
                  <div>
                     <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
                        <Target className="w-4 h-4 text-indigo-500" />
@@ -184,7 +192,6 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
                     </p>
                  </div>
 
-                 {/* Code Fix */}
                  {selectedFinding.fix && (
                     <div className="space-y-2">
                        <div className="flex items-center justify-between">
@@ -209,7 +216,6 @@ export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
                  )}
               </div>
 
-              {/* Modal Footer */}
               <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex justify-end">
                  <button 
                     onClick={() => setSelectedFinding(null)}
