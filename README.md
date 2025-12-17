@@ -74,12 +74,6 @@ DRA goes beyond static analysis (regex-based tools) by understanding the *intent
     npx serve .
     ```
 
-## 🛡️ Security Note
-This application runs entirely in the browser. However, it calls the Gemini API directly.
-
-**Local Dev:** Safe to use direct keys.
-**Production:** For strict security, consider implementing a lightweight backend proxy (e.g., Cloud Functions or Next.js API routes) to hold the API key and forward requests, preventing key exposure in the client-side bundle.
-
 ## ☁️ Deployment (Google Cloud Run)
 This application is optimized for deployment on Google Cloud Run as a static site served via Nginx.
 
