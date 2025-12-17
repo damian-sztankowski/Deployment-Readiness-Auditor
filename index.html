@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/driver.js/dist/driver.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+      // Tailwind Configuration for the CDN version
       tailwind.config = {
         darkMode: 'class',
         theme: {
@@ -17,13 +18,36 @@
                 850: '#1a202c',
                 950: '#020617', 
               }
+            },
+            animation: {
+              'spin-slow': 'spin-slow 12s linear infinite',
+              'gradient': 'gradient 8s linear infinite',
+              'logo-pulse': 'logo-pulse 4s ease-in-out infinite',
+              'float': 'float 3s ease-in-out infinite',
+              'float-slow': 'float-slow 6s ease-in-out infinite',
+              'wiggle': 'wiggle 2s ease-in-out infinite',
+              'blob': 'blob 7s infinite',
+              'radar': 'radar-pulse 4s ease-in-out infinite',
+              'morph': 'morph 8s ease-in-out infinite',
+            },
+            backgroundSize: {
+              '300%': '300% auto',
+            },
+            screens: {
+              '3xl': '1920px',
+              '4xl': '2560px',
             }
           }
         }
       }
-    </script>
-    <script>
-      // Immediate theme application to prevent FOUC
+
+      // Shim for process.env used by @google/genai
+      window.process = {
+        env: {
+          API_KEY: "" 
+        }
+      };
+
       try {
         const localTheme = localStorage.getItem('dra-theme');
         if (localTheme === 'dark' || (!localTheme && true)) {
@@ -42,19 +66,22 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         -webkit-text-size-adjust: 100%;
-      }
-
-      html {
         height: 100%;
       }
 
       body {
-        min-height: 100%;
+        height: 100%;
         margin: 0;
         padding: 0;
         overflow-x: hidden;
         font-family: 'Inter', sans-serif;
-        color: #0f172a;
+        background-color: #020617; /* Default to dark bg */
+      }
+
+      #root {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
       }
 
       .dark body {
@@ -66,122 +93,74 @@
         width: 6px;
         height: 6px;
       }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
+      ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb {
         background: #cbd5e1; 
         border-radius: 10px;
       }
-      .dark ::-webkit-scrollbar-thumb {
-        background: #334155; 
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8; 
-      }
-      .dark ::-webkit-scrollbar-thumb:hover {
-        background: #475569; 
-      }
+      .dark ::-webkit-scrollbar-thumb { background: #334155; }
+      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-      .animate-enter {
-        animation: enter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-      }
-      
       @keyframes enter {
         0% { opacity: 0; transform: translateY(20px); }
         100% { opacity: 1; transform: translateY(0); }
       }
-
-      .bg-300% { background-size: 300% auto; }
-      .animate-gradient { animation: gradient 8s linear infinite; }
       @keyframes gradient {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
       }
-
-      @keyframes shine {
-        0% { transform: translateX(-150%) skewX(-12deg); }
-        100% { transform: translateX(150%) skewX(-12deg); }
-      }
-      .animate-shine { animation: shine 3s infinite; }
-
       @keyframes blob {
         0% { transform: translate(0px, 0px) scale(1); }
         33% { transform: translate(30px, -50px) scale(1.1); }
         66% { transform: translate(-20px, 20px) scale(0.9); }
         100% { transform: translate(0px, 0px) scale(1); }
       }
-      .animate-blob { animation: blob 7s infinite; }
-
-      @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-6px); }
+      @keyframes morph {
+        0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: rotate(0deg) scale(1); }
+        33% { border-radius: 40% 60% 50% 50% / 40% 40% 60% 60%; transform: rotate(120deg) scale(1.05); }
+        66% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; transform: rotate(240deg) scale(0.95); }
+        100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: rotate(360deg) scale(1); }
       }
-      .animate-float { animation: float 3s ease-in-out infinite; }
-
-      @keyframes wiggle {
-        0%, 100% { transform: rotate(-5deg); }
-        50% { transform: rotate(5deg); }
+      @keyframes float-slow {
+        0%, 100% { transform: translateY(0) rotate(0); }
+        50% { transform: translateY(-15px) rotate(5deg); }
       }
-      .animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
-      
       @keyframes spin-slow {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
       }
-      .animate-spin-slow { animation: spin-slow 12s linear infinite; }
-
       @keyframes logo-pulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.8; }
+        0%, 100% { opacity: 0.2; transform: scale(1); filter: blur(20px); }
+        50% { opacity: 0.5; transform: scale(1.2); filter: blur(30px); }
       }
-      .animate-logo-pulse { animation: logo-pulse 4s ease-in-out infinite; }
-
-      @keyframes orbit {
-        from { transform: rotate(0deg) translateX(4px) rotate(0deg); }
-        to { transform: rotate(360deg) translateX(4px) rotate(-360deg); }
-      }
-      .animate-orbit { animation: orbit 6s linear infinite; }
-
-      @keyframes radar-pulse {
-        0%, 100% { filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.2)); transform: scale(1); }
-        50% { filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.5)); transform: scale(1.02); }
-      }
-      .animate-radar {
-        animation: radar-pulse 4s ease-in-out infinite;
-      }
-
-      .recharts-radar-polygon {
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .driver-popover.driverjs-theme {
-        background-color: #1e293b;
-        color: #f1f5f9;
-        border: 1px solid #475569;
+      @keyframes wiggle {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
-    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
-    "html2canvas": "https://esm.sh/html2canvas@1.4.1",
-    "jspdf": "https://esm.sh/jspdf@2.5.1",
-    "jspdf-autotable": "https://esm.sh/jspdf-autotable@3.8.2",
-    "mermaid": "https://aistudiocdn.com/mermaid@^11.12.2",
-    "driver.js": "https://esm.sh/driver.js@1.3.1"
-  }
-}
-</script>
-</head>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom": "https://esm.sh/react-dom@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+        "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+        "recharts": "https://esm.sh/recharts@^3.6.0",
+        "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
+        "jspdf": "https://esm.sh/jspdf@^3.0.4",
+        "jspdf-autotable": "https://esm.sh/jspdf-autotable@^5.0.2",
+        "mermaid": "https://esm.sh/mermaid@^11.12.2",
+        "driver.js": "https://esm.sh/driver.js@^1.4.0"
+      }
+    }
+    </script>
+  </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.js"></script>
   </body>
 </html>

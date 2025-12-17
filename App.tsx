@@ -17,7 +17,6 @@ const App: React.FC = () => {
   const [isInputMinimized, setIsInputMinimized] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   
-  // History State
   const [history, setHistory] = useState<HistoryItem[]>(() => {
     if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('dra-history');
@@ -26,14 +25,10 @@ const App: React.FC = () => {
     return [];
   });
 
-  // Initialize Theme
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dra-theme');
-      if (saved) {
-        return saved === 'dark';
-      }
-      return true;
+      return saved ? saved === 'dark' : true;
     }
     return true;
   });
@@ -44,7 +39,6 @@ const App: React.FC = () => {
     result: null,
   });
 
-  // Theme Persistence
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -55,7 +49,6 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  // History Persistence
   useEffect(() => {
     localStorage.setItem('dra-history', JSON.stringify(history));
   }, [history]);
@@ -76,63 +69,50 @@ const App: React.FC = () => {
   };
 
   const restoreHistoryItem = (item: HistoryItem) => {
-    setAnalysis({
-        isLoading: false,
-        error: null,
-        result: item.result
-    });
+    setAnalysis({ isLoading: false, error: null, result: item.result });
     setIsInputMinimized(true);
     setCurrentView('assessment');
   };
 
   const handleAnalyze = async (code: string) => {
+    // Minimize immediately when starting assessment as requested
+    setIsInputMinimized(true);
     setAnalysis({ isLoading: true, error: null, result: null });
+    
     try {
       const result = await analyzeInfrastructure(code);
       setAnalysis({ isLoading: false, error: null, result });
       addToHistory(result);
-      setIsInputMinimized(true);
     } catch (error: any) {
       setAnalysis({ 
         isLoading: false, 
         error: error.message || "An unexpected error occurred during analysis.", 
         result: null 
       });
+      // Expand back if there's an error so user can fix their code
       setIsInputMinimized(false);
     }
   };
 
-  const handleStart = () => {
-    setShowSplash(false);
-  };
-
-  const handleNavigate = (view: 'about' | 'assessment') => {
-      setCurrentView(view);
-  };
+  const handleStart = () => setShowSplash(false);
+  const handleNavigate = (view: 'about' | 'assessment') => setCurrentView(view);
 
   return (
-    <div className="min-h-[100dvh] w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-500 selection:bg-indigo-100 selection:text-indigo-800 dark:selection:bg-indigo-900 dark:selection:text-indigo-200 flex flex-col relative font-sans text-slate-900 dark:text-slate-100">
+    <div className="flex-1 flex flex-col w-full bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative font-sans text-slate-900 dark:text-slate-100">
       
       <OnboardingTour startTour={!showSplash} />
 
-      {/* --- GLOBAL BACKGROUND --- */}
+      {/* --- BACKGROUND LAYER --- */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        
-        {/* Animated Blobs */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:48px_48px]"></div>
         <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-[10%] left-[10%] w-96 h-96 bg-indigo-200/20 dark:bg-indigo-500/20 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl animate-blob opacity-70 dark:opacity-40" />
-            <div className="absolute top-[10%] right-[10%] w-96 h-96 bg-violet-200/20 dark:bg-violet-500/20 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl animate-blob animation-delay-2000 opacity-70 dark:opacity-40" />
-            <div className="absolute bottom-[10%] left-[40%] w-96 h-96 bg-fuchsia-200/20 dark:bg-fuchsia-500/20 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl animate-blob animation-delay-4000 opacity-70 dark:opacity-40" />
+            <div className="absolute top-[-10%] left-[-5%] w-[80vw] h-[80vw] bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[160px] animate-blob" />
+            <div className="absolute bottom-[-10%] right-[-5%] w-[70vw] h-[70vw] bg-violet-500/5 dark:bg-violet-500/10 rounded-full blur-[140px] animate-blob animation-delay-4000" />
         </div>
-
-        {/* Radial Overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_50%,transparent,white)] dark:bg-[radial-gradient(circle_800px_at_50%_50%,transparent,#020617)]"></div>
       </div>
 
-      {/* --- CONTENT --- */}
-      <div className="relative z-10 flex flex-col flex-grow">
+      {/* --- CONTENT LAYER --- */}
+      <div className="relative z-10 flex flex-col flex-grow w-full">
         {showSplash ? (
           <SplashPage onStart={handleStart} />
         ) : (
@@ -153,61 +133,60 @@ const App: React.FC = () => {
                 onDelete={deleteHistoryItem}
             />
             
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Wider Container for Content */}
+            <main className="flex-1 w-full max-w-[2200px] mx-auto px-6 sm:px-10 lg:px-16 2xl:px-24 py-12 md:py-20">
               
-              {/* About View */}
               {currentView === 'about' && (
                   <About onStartAssessment={() => setCurrentView('assessment')} />
               )}
 
-              {/* Assessment View */}
               <div className={currentView === 'assessment' ? 'block animate-enter' : 'hidden'}>
                   {!analysis.result && !analysis.isLoading && (
-                  <div className="max-w-3xl mx-auto mb-10 text-center">
-                      <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight">
-                          Architect with Confidence.
+                  <div className="max-w-5xl mx-auto mb-16 text-center">
+                      <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 dark:text-white mb-8 tracking-tighter leading-none">
+                          Architect with <span className="bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">Confidence.</span>
                       </h2>
-                      <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
-                          Instant analysis against the <span className="font-semibold text-indigo-600 dark:text-indigo-400">Google Cloud Architecture Framework</span>. 
-                          Detect security risks and reliability gaps.
+                      <p className="text-slate-500 dark:text-slate-400 text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto font-medium">
+                          Evaluate infrastructure in real-time against the <span className="text-indigo-600 dark:text-indigo-400 font-bold">Google Cloud Architecture Framework</span> and international compliance benchmarks.
                       </p>
                   </div>
                   )}
 
-                  <div className="mb-8 transition-all duration-500 ease-in-out">
+                  <div className="mb-16 transition-all duration-700 ease-in-out">
                       <InputSection 
-                      onAnalyze={handleAnalyze} 
-                      isAnalyzing={analysis.isLoading} 
-                      minimized={isInputMinimized}
-                      onToggleMinimize={() => setIsInputMinimized(!isInputMinimized)}
+                        onAnalyze={handleAnalyze} 
+                        isAnalyzing={analysis.isLoading} 
+                        minimized={isInputMinimized}
+                        onToggleMinimize={() => setIsInputMinimized(!isInputMinimized)}
                       />
                   </div>
 
                   {analysis.isLoading && (
-                  <div className="mb-4">
+                  <div className="mb-12">
                       <LoadingAnimation />
                   </div>
                   )}
 
                   {analysis.error && (
-                  <div className="mb-8 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-center gap-3 text-red-700 dark:text-red-300 animate-in fade-in">
-                      <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="mb-12 max-w-5xl mx-auto bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-3xl p-8 flex items-center gap-6 text-red-700 dark:text-red-300">
+                      <div className="p-4 bg-red-100 dark:bg-red-900/40 rounded-2xl shadow-sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                       </div>
-                      <span className="font-medium">{analysis.error}</span>
+                      <span className="font-bold text-xl">{analysis.error}</span>
                   </div>
                   )}
 
                   {analysis.result && (
-                  <div className="mb-16 mt-8">
+                  <div className="mb-24 mt-16">
                       <Dashboard result={analysis.result} />
                   </div>
                   )}
               </div>
             </main>
             
+            {/* Footer always spans full width */}
             <Footer />
           </>
         )}

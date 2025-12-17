@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import { AuditResult, Severity } from '../types';
 import { ScoreCard } from './ScoreCard';
@@ -20,7 +21,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
 
   /**
    * Safe vector drawing for the logo in the PDF using standard jsPDF methods.
-   * Matches the professional faceted shield concept.
    */
   const drawLogo = (doc: jsPDF, x: number, y: number, size: number) => {
     const r = size / 2;
@@ -79,7 +79,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
       });
 
       const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 20;
       const contentWidth = pageWidth - (margin * 2);
 
@@ -89,9 +88,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
         text: [51, 65, 85] as [number, number, number],
         muted: [100, 116, 139] as [number, number, number],
         lightBg: [248, 250, 252] as [number, number, number],
-        critical: [220, 38, 38] as [number, number, number],
-        high: [249, 115, 22] as [number, number, number],
-        medium: [234, 179, 8] as [number, number, number],
       };
 
       const captureComponent = async (elementId: string): Promise<string | null> => {
@@ -190,19 +186,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
   };
 
   return (
-    <div ref={dashboardRef} className="space-y-8 animate-enter bg-slate-50 dark:bg-slate-950/20 p-4 md:p-8 rounded-2xl transition-all duration-300 border border-slate-100 dark:border-slate-800">
+    <div ref={dashboardRef} className="space-y-8 lg:space-y-12 animate-enter bg-slate-50 dark:bg-slate-950/20 p-6 md:p-12 rounded-[2.5rem] transition-all duration-300 border border-slate-100 dark:border-slate-800 shadow-2xl shadow-indigo-500/5">
       
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 dark:border-slate-800 pb-8">
         <div>
-            <div className="flex items-center gap-2 mb-1">
-                <ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tighter">Audit Summary Report</h2>
+            <div className="flex items-center gap-3 mb-2">
+                <ShieldCheck className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">Audit Summary Report</h2>
             </div>
-            <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-                <span className="flex items-center gap-1.5 font-medium">
-                    <Calendar className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-6 text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium">
+                <span className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-indigo-500" />
                     {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </span>
+                <span className="hidden sm:inline-block w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full"></span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest text-[10px]">Architecture Integrity Verified</span>
             </div>
         </div>
         <div className="no-print">
@@ -210,28 +208,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
                 onClick={handleExportPDF}
                 disabled={isExporting}
                 className={`
-                    relative flex items-center gap-2 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all duration-200 shadow-xl shadow-indigo-500/20
+                    relative flex items-center gap-3 px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-base font-black transition-all duration-200 shadow-xl shadow-indigo-500/30
                     ${isExporting ? 'opacity-50 cursor-wait' : 'hover:scale-[1.02] active:scale-95'}
                 `}
             >
-                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
                 {isExporting ? loadingText : "Download Full Audit"}
             </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
-        <div className="w-full">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+        <div className="xl:col-span-5 h-full">
              <ScoreCard findings={result.findings} summary={result.summary} />
         </div>
-        <div className="w-full">
+        <div className="xl:col-span-7 h-full">
             <RiskCharts categories={result.categories} />
         </div>
       </div>
 
-      <CostImpact findings={result.findings} />
+      <div className="w-full">
+        <CostImpact findings={result.findings} />
+      </div>
 
-      <div className="w-full mt-8">
+      <div className="w-full mt-4">
          <FindingsList findings={result.findings} />
       </div>
     </div>
