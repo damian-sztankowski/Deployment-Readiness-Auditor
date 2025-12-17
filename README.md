@@ -1,61 +1,58 @@
 # Deployment Readiness Auditor (DRA)
 
-The **Deployment Readiness Auditor (DRA)** is an AI-powered web application designed to analyze Google Cloud infrastructure configurations (Terraform or JSON) against the **Google Cloud Architecture Framework**.
+The **Deployment Readiness Auditor (DRA)** is a Google Cloud-native, AI-powered audit engine designed to analyze infrastructure-as-code (Terraform HCL or JSON) against the **Google Cloud Architecture Framework**.
 
-It leverages Google's **Gemini models** to provide instant, pillar-based scoring, risk detection, and remediation recommendations, helping cloud architects and engineers deploy with confidence.
+Leveraging **Gemini 3 Pro**, DRA provides semantic analysis of your cloud resources, identifying security vulnerabilities, cost-saving opportunities, and reliability gaps before you run `terraform apply`.
 
-## 📸 Screenshots
+## 📸 Core Interface
 
-| Landing Page | Assessment Input |
+| Executive Dashboard | Semantic Risk Analysis |
 |:---:|:---:|
-| ![Landing Page](docs/screenshots/landing.png) | ![Input Section](docs/screenshots/input.png) |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Findings](docs/screenshots/findings.png) |
 
-| Assessment Generation |
-|:---:|
-| ![Landing Page](docs/screenshots/input2.png) |
-
-| Audit Dashboard | PDF Report |
+| AI Architecture Mapping | FinOps Optimization |
 |:---:|:---:|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![PDF Report](docs/screenshots/report.png) |
+| ![Map](docs/screenshots/map.png) | ![Cost](docs/screenshots/cost.png) |
 
-## 🚀 Features
+## 🚀 Key Features
 
--   **AI-Driven Audits**: Uses `gemini-2.5-pro` to parse and analyze Infrastructure-as-Code.
--   **5-Pillar Analysis**: Scores infrastructure against:
-    -   Operational Excellence
-    -   Security
-    -   Reliability
-    -   Performance Efficiency
-    -   Cost Optimization (Qualitative)
--   **Visual Dashboard**: Interactive radar charts, severity-based findings, and overall readiness scores.
--   **PDF Export**: Generate professional audit reports instantly.
--   **Secure & Private**: Code is processed ephemerally; no persistent storage of your infrastructure code.
--   **Dark Mode Support**: Beautiful, responsive UI built with Tailwind CSS.
+- **GCP-Native Intelligence**: Strictly optimized for Google Cloud Platform services.
+- **Terraform Semantic Parsing**: Understands HCL relationships, not just syntax. Supports single files and **entire project folders**.
+- **5-Pillar Audit**: comprehensive scoring based on:
+    - **Operational Excellence**: Logging, monitoring, and deployment standards.
+    - **Security**: IAM least-privilege, network hardening, and encryption.
+    - **Reliability**: High Availability (HA) and Disaster Recovery (DR) posture.
+    - **Performance Efficiency**: Right-sizing and modern resource selection.
+    - **Cost Optimization**: Quantitative FinOps analysis with estimated monthly savings.
+- **AI Architecture Map**: Generates interactive Mermaid.js diagrams of your proposed infrastructure.
+- **Compliance Alignment**: Maps risks to standard frameworks like **CIS GCP Benchmark**, **NIST 800-53**, and **HIPAA**.
+- **Professional Reporting**: Export high-fidelity PDF reports for stakeholders.
+- **Privacy First**: Analysis is ephemeral. Your code is processed in-memory and never persisted.
 
-## 🆚 Comparison with Static Analyzers
+## 🆚 Why AI-Powered Auditing?
 
-While tools like the **AWS Well-Architected IaC Analyzer** rely on rigid static rules (OPA/Rego), DRA uses Generative AI (Gemini).
+DRA goes beyond static analysis (regex-based tools) by understanding the *intent* and *context* of your architecture.
 
-| Feature | Static Analyzers (AWS, Checkov) | DRA (Gemini AI) |
+| Feature | Static Analyzers (Checkov, TFLint) | DRA (AI-Assisted) |
 | :--- | :--- | :--- |
-| **Detection** | Regex / Policy Rules | Semantic Context Understanding |
-| **Logic Flaws** | Misses architectural context | Can infer intent (e.g., "Is this safe for prod?") |
-| **Remediation** | Generic error messages | Context-aware code fixes |
-| **Scope** | Syntax & Policy | Full Architectural Review |
+| **Logic Analysis** | Misses cross-resource logic errors | Identifies architectural design flaws |
+| **Context** | Generic rules | Environment-aware (Prod vs Dev intent) |
+| **Remediation** | Static documentation links | Generates context-aware Terraform code fixes |
+| **FinOps** | Hard to calculate complex savings | Semantic estimation based on latest GCP pricing |
 
 ## 🛠️ Tech Stack
 
--   **Frontend**: React 19, TypeScript, Vite
--   **Styling**: Tailwind CSS
--   **AI Integration**: Google GenAI SDK (`@google/genai`)
--   **Visualization**: Recharts
--   **Utils**: `jspdf`, `html2canvas` for reporting
+- **Frontend**: React 19 (ES6 Modules)
+- **Styling**: Tailwind CSS
+- **AI Engine**: Google GenAI SDK (`@google/genai`) using `gemini-3-pro-preview`
+- **Visualization**: Recharts & Mermaid.js
+- **Reporting**: `jspdf` & `html2canvas`
 
 ## 📋 Prerequisites
 
-1.  **Node.js** (v18+ recommended)
-2.  **Google Cloud API Key**: You need an API key with access to the Gemini API.
-    -   Get one here: [Google AI Studio](https://aistudio.google.com/)
+1.  **Google Cloud API Key**: Required for the Gemini API.
+    -   Generate a key at [Google AI Studio](https://aistudio.google.com/).
+    -   Ensure the key has access to `gemini-3-pro-preview`.
 
 ## 💻 Local Development
 
@@ -65,90 +62,29 @@ While tools like the **AWS Well-Architected IaC Analyzer** rely on rigid static 
     cd deployment-readiness-auditor
     ```
 
-2.  **Install dependencies**
+2.  **Environment Setup**
+    The application reads the API key from `process.env.API_KEY`.
     ```bash
-    npm install
+    export API_KEY=your_gemini_api_key_here
     ```
 
-3.  **Configure Environment**
-    Ensure you have your API key available. The application expects `process.env.API_KEY` to be populated (via Vite define or environment variables).
-    ```
-    touch .env.local
-    GEMINI_API_KEY=YOUR_KEY_HERE
-    ```
-
-5.  **Run the development server**
+3.  **Launch**
+    Since the project uses ES6 modules directly in the browser via import maps, you can serve it with any static file server:
     ```bash
-    npm run dev
+    npx serve .
     ```
 
-6.  **Open your browser**
-    Navigate to `http://localhost:5173`
+## 🛡️ Security & Privacy
 
-## ☁️ Deployment (Google Cloud Run)
-
-This application is optimized for deployment on Google Cloud Run as a static site served via Nginx.
-
-### 1. Create Dockerfile
-Ensure you have a `Dockerfile` in the root:
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package.json .
-
-RUN npm install
-
-RUN npm i -g serve
-
-COPY . .
-
-RUN npm run build
-
-EXPOSE 3000
-
-CMD [ "serve", "-s", "dist" ]
-```
-
-### 2. Build & Push
-```bash
-export PROJECT_ID="your-gcp-project-id"
-export REPO="dra-repo"
-export REGION="us-central1"
-
-gcloud artifacts repositories create $REPO --repository-format=docker --location=$REGION
-
-docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app .
-docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app
-```
-
-### 3. Deploy
-```bash
-gcloud run deploy dra-app \
-  --image $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app \
-  --platform managed \
-  --region $REGION \
-  --allow-unauthenticated
-  --port 3000
-```
-
-## 🛡️ Security Note
-
-This application runs entirely in the browser. However, it calls the Gemini API directly.
--   **Local Dev**: Safe to use direct keys.
--   **Production**: For strict security, consider implementing a lightweight backend proxy (e.g., Cloud Functions or Next.js API routes) to hold the API key and forward requests, preventing key exposure in the client-side bundle.
+- **Data Locality**: The app runs in your browser. Code snippets are sent directly to the Gemini API.
+- **No Persistence**: This tool does not have a database. Your audit history is stored in your browser's `localStorage` only.
+- **Encrypted Transit**: All API calls are made over HTTPS.
 
 ## 📄 License
 
-## ⚖️ License & Attribution
-
 This project is released under the **MIT License**.
 
-You are free to use, modify, and distribute this software for personal or commercial purposes.
-**However, you must retain the original author attribution in the software and documentation.**
+> **Note**: Deployment Readiness Auditor is an independent tool and is not an official Google Cloud product. Built for the community by Damian Sztankowski.
 
-> **Created by Damian Sztankowski**
-> Google Developer Expert (GDE) in Cloud.
->
-> If you find this tool useful, please ⭐ the repo and tag me on [LinkedIn](https://www.linkedin.com/in/damian-sztankowski/)!
+---
+If you find this tool helpful, please consider giving it a ⭐ on GitHub and sharing your feedback!
