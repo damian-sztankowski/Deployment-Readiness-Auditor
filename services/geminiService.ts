@@ -4,6 +4,8 @@ import { AuditResult } from "../types";
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+export const GEMINI_MODEL = "gemini-3-pro-preview";
+
 const SYSTEM_INSTRUCTION = `
 You are the **Deployment Readiness Auditor (DRA)**, an expert Google Cloud Architect and **FinOps Certified Practitioner**. Your mandate is to conduct a **Zero-Trust-aligned, 5-Pillar Architecture Framework compliance audit** on the provided Infrastructure-as-Code.
 
@@ -72,7 +74,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
   }
 
   try {
-    const model = "gemini-2.5-pro";
+    const model = GEMINI_MODEL;
     
     // Pre-process code to assist the model with line numbering
     const numberedCode = addLineNumbers(inputCode);

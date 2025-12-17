@@ -1,8 +1,19 @@
 import React from 'react';
 import { Github, Linkedin, ExternalLink, Cpu, Globe, ShieldCheck } from 'lucide-react';
 import { Logo } from './Logo';
+import { GEMINI_MODEL } from '../services/geminiService';
 
 export const Footer: React.FC = () => {
+  // Format model name for better UI display
+  const formattedModelName = GEMINI_MODEL
+    .replace('gemini-', 'Gemini ')
+    .replace('-preview', ' Preview')
+    .replace('flash', 'Flash')
+    .replace('pro', 'Pro')
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
   return (
     <footer className="relative mt-auto overflow-hidden">
       {/* Top Energy Line - Animated Gradient */}
@@ -31,7 +42,7 @@ export const Footer: React.FC = () => {
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 w-fit">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
                 <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  Engine: Gemini 2.5 Pro (Active)
+                  Engine: {formattedModelName} (Active)
                 </span>
               </div>
               
