@@ -7,9 +7,9 @@ import { SplashPage } from './components/SplashPage';
 import { About } from './components/About';
 import { HistorySidebar } from './components/HistorySidebar';
 import { OnboardingTour } from './components/OnboardingTour';
+import { Footer } from './components/Footer';
 import { analyzeInfrastructure } from './services/geminiService';
 import { AnalysisState, AuditResult, HistoryItem } from './types';
-import { Github, Linkedin } from 'lucide-react';
 
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -64,7 +64,6 @@ const App: React.FC = () => {
     const newItem: HistoryItem = {
         id: Math.random().toString(36).substr(2, 9),
         timestamp: Date.now(),
-        // Score is removed, we rely on findings now
         summary: result.summary,
         result: result
     };
@@ -209,42 +208,7 @@ const App: React.FC = () => {
               </div>
             </main>
             
-            <footer className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-t border-slate-200 dark:border-slate-800 mt-auto relative overflow-hidden">
-              <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col items-center justify-center gap-6 relative z-10">
-                
-                {/* Centered Glowing Text with Shine */}
-                <div className="relative group cursor-default">
-                    <p className="text-2xl md:text-3xl font-extrabold text-center tracking-tight relative z-10">
-                    <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent bg-300% animate-gradient drop-shadow-sm">
-                        Deployment Readiness Auditor
-                    </span>
-                    </p>
-                    
-                    {/* Shine effect overlay */}
-                    <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-indigo-300/20 to-transparent -skew-x-12 translate-x-[-200%] animate-shine"></div>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-6">
-                   <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors transform hover:scale-110 duration-200">
-                      <Github className="w-5 h-5" />
-                   </a>
-                   <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-700 dark:hover:text-blue-400 transition-colors transform hover:scale-110 duration-200">
-                      <Linkedin className="w-5 h-5" />
-                   </a>
-                </div>
-                
-                <a 
-                    href="https://docs.cloud.google.com/architecture/framework" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-xs text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
-                >
-                    Google Cloud Architecture Framework Official Site
-                </a>
-              </div>
-            </footer>
+            <Footer />
           </>
         )}
       </div>
