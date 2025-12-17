@@ -1,10 +1,56 @@
 import React, { useState, useMemo } from 'react';
-import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check, FileCode, Hash, Banknote, Shield } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check, FileCode, Hash, Banknote, Shield, ExternalLink, X, BookOpen, Globe, Layout } from 'lucide-react';
 import { Finding, Severity } from '../types';
 
 interface FindingsListProps {
   findings: Finding[];
 }
+
+interface StandardDetail {
+  name: string;
+  description: string;
+}
+
+// Knowledge base for common compliance standards
+const COMPLIANCE_REGISTRY: Record<string, StandardDetail> = {
+  'CIS': {
+    name: 'CIS Google Cloud Platform Foundation Benchmark',
+    description: 'A set of best-practice cybersecurity standards for Google Cloud Platform, developed by the Center for Internet Security (CIS). These controls provide prescriptive guidance for establishing a secure baseline configuration for GCP services including IAM, Logging, Networking, and Virtual Machines.'
+  },
+  'NIST': {
+    name: 'NIST Special Publication 800-53',
+    description: 'A regulatory standard that provides a catalog of security and privacy controls for federal information systems and organizations to protect organizational operations and assets. It covers a broad range of areas including access control, incident response, and system integrity.'
+  },
+  'HIPAA': {
+    name: 'Health Insurance Portability and Accountability Act',
+    description: 'Standard for protecting sensitive patient data. Any company that deals with protected health information (PHI) must ensure that all the required physical, network, and process security measures are in place to ensure confidentiality and integrity of health records.'
+  },
+  'SOC2': {
+    name: 'Service Organization Control 2',
+    description: 'A voluntary compliance standard for service organizations, developed by the AICPA, which specifies how organizations should manage customer data based on five "trust service principles": security, availability, processing integrity, confidentiality, and privacy.'
+  },
+  'PCI': {
+    name: 'PCI Data Security Standard (PCI DSS)',
+    description: 'The Payment Card Industry Data Security Standard is an information security standard for organizations that handle branded credit cards from the major card schemes. It focuses on secure network architecture and data protection.'
+  },
+  'ISO': {
+    name: 'ISO/IEC 27001',
+    description: 'An international standard on how to manage information security. It details requirements for establishing, implementing, maintaining and continually improving an information security management system (ISMS).'
+  }
+};
+
+const getStandardDetails = (id: string): StandardDetail => {
+  const upperId = id.toUpperCase();
+  // Match prefix
+  const key = Object.keys(COMPLIANCE_REGISTRY).find(k => upperId.startsWith(k));
+  if (key) return COMPLIANCE_REGISTRY[key];
+  
+  // Fallback for unknown standards
+  return {
+    name: id,
+    description: `Specific security control and compliance requirement belonging to the ${id} framework. This control ensures adherence to best-practices within this regulatory domain for cloud infrastructure.`
+  };
+};
 
 const severityTooltips: Record<Severity, string> = {
   [Severity.CRITICAL]: "Critical Risk: Immediate security breach (e.g., public access), data loss risk, or compliance failure. Requires urgent remediation.",
@@ -53,7 +99,70 @@ const SeverityBadge = ({ severity }: { severity: Severity }) => {
   );
 };
 
-const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
+const ComplianceModal = ({ standardId, finding, onClose }: { standardId: string | null, finding: Finding | null, onClose: () => void }) => {
+  if (!standardId || !finding) return null;
+  const details = getStandardDetails(standardId);
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 animate-enter overflow-hidden">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start">
+          <div className="flex items-center gap-3">
+             <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl">
+                <ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+             </div>
+             <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{standardId}</h3>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Compliance Standard</span>
+             </div>
+          </div>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto pb-8">
+           {/* Section: Pillar Information */}
+           <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+              <Layout className="w-5 h-5 text-indigo-500" />
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Related Architecture Pillar</p>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{finding.category}</p>
+              </div>
+           </div>
+
+           <div className="space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                <BookOpen className="w-3.5 h-3.5" />
+                Standard Overview
+              </h4>
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
+                {details.name}
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                {details.description}
+              </p>
+           </div>
+
+           {/* Relevance Section */}
+           <div className="space-y-3 bg-indigo-50/30 dark:bg-indigo-900/10 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
+              <h4 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+                <Target className="w-3.5 h-3.5" />
+                Relevance to Finding
+              </h4>
+              <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                Adherence to <span className="font-bold text-indigo-700 dark:text-indigo-300">{standardId}</span> directly addresses the risk identified in <span className="italic">"{finding.title}"</span>. 
+                By following this control, you ensure your infrastructure meets regulatory expectations for <span className="font-medium">{finding.category.toLowerCase()}</span> integrity.
+              </div>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, finding: Finding) => void }> = ({ finding, onShowCompliance }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showFix, setShowFix] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -89,7 +198,6 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
              <div className="flex flex-col gap-1.5 min-w-0">
                 <h4 className="text-slate-900 dark:text-white font-semibold text-sm md:text-base leading-tight break-words">{finding.title}</h4>
                 
-                {/* Location & FinOps Badges */}
                 <div className="flex flex-wrap items-center gap-2">
                     {(finding.fileName || finding.lineNumber) && (
                         <>
@@ -107,7 +215,6 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
                             )}
                         </>
                     )}
-                    {/* COST SAVINGS BADGE */}
                     {finding.costSavings && (
                         <span className="flex items-center gap-1.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 animate-pulse">
                             <Banknote className="w-3 h-3" />
@@ -129,14 +236,17 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
                 {finding.category}
             </span>
             
-            {/* Quick Compliance Reference in Header */}
             {finding.compliance && finding.compliance.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-2 ml-1">
                     {finding.compliance.slice(0, 2).map((std, idx) => (
-                        <span key={idx} className="inline-flex items-center gap-1 bg-indigo-50/50 dark:bg-indigo-900/20 text-[9px] text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded font-mono border border-indigo-100/50 dark:border-indigo-800/50">
+                        <button 
+                            key={idx} 
+                            onClick={(e) => { e.stopPropagation(); onShowCompliance(std, finding); }}
+                            className="inline-flex items-center gap-1 bg-indigo-50/50 dark:bg-indigo-900/20 text-[9px] text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded font-mono border border-indigo-100/50 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
+                        >
                             <Shield className="w-2.5 h-2.5" />
                             {std}
-                        </span>
+                        </button>
                     ))}
                     {finding.compliance.length > 2 && (
                         <span className="text-[9px] text-slate-400 font-medium">+{finding.compliance.length - 2} more</span>
@@ -154,7 +264,6 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
                     {finding.description}
                 </div>
 
-                {/* DEDICATED COMPLIANCE SECTION */}
                 {finding.compliance && finding.compliance.length > 0 && (
                     <div className="mb-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                         <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 flex items-center gap-2">
@@ -163,18 +272,22 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
                         </h5>
                         <div className="flex flex-wrap gap-2">
                             {finding.compliance.map((std, idx) => (
-                                <div key={idx} className="group/std flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:border-indigo-300 dark:hover:border-indigo-600">
+                                <button 
+                                    key={idx} 
+                                    onClick={() => onShowCompliance(std, finding)}
+                                    className="group/std flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:border-indigo-300 dark:hover:border-indigo-600 active:scale-95"
+                                >
                                     <div className="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-[8px] font-black">
                                         ✓
                                     </div>
                                     <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-200 group-hover/std:text-indigo-600 dark:group-hover/std:text-indigo-400 transition-colors">
                                         {std}
                                     </span>
-                                </div>
+                                </button>
                             ))}
                         </div>
                         <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-3 italic">
-                            * Standardized mapping based on CIS/NIST security control frameworks.
+                            * Click standard badges for control definitions.
                         </p>
                     </div>
                 )}
@@ -187,7 +300,6 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
                             Recommended Action
                         </h5>
                         
-                        {/* Fix It Button */}
                         {finding.fix && (
                             <button 
                                 onClick={(e) => { e.stopPropagation(); setShowFix(!showFix); }}
@@ -208,7 +320,6 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
                         {finding.remediation}
                     </p>
 
-                    {/* Code Fix Block */}
                     {finding.fix && (
                         <div className={`mt-3 overflow-hidden transition-all duration-300 ease-in-out ${showFix ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                             <div className="relative group/code">
@@ -240,6 +351,7 @@ const FindingItem: React.FC<{ finding: Finding }> = ({ finding }) => {
 
 export const FindingsList: React.FC<FindingsListProps> = ({ findings }) => {
   const [filter, setFilter] = useState<'ALL' | Severity>('ALL');
+  const [activeStandard, setActiveStandard] = useState<{ id: string, finding: Finding } | null>(null);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { ALL: findings.length };
@@ -262,7 +374,6 @@ export const FindingsList: React.FC<FindingsListProps> = ({ findings }) => {
     )
   }
 
-  // Sort by severity priority
   const severityOrder = {
     [Severity.CRITICAL]: 0,
     [Severity.HIGH]: 1,
@@ -283,15 +394,24 @@ export const FindingsList: React.FC<FindingsListProps> = ({ findings }) => {
       { id: Severity.LOW, label: 'Low', count: counts[Severity.LOW], color: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
   ];
 
+  const handleShowCompliance = (id: string, finding: Finding) => {
+    setActiveStandard({ id, finding });
+  };
+
   return (
     <div className="h-full flex flex-col">
+      <ComplianceModal 
+        standardId={activeStandard?.id || null} 
+        finding={activeStandard?.finding || null}
+        onClose={() => setActiveStandard(null)} 
+      />
+      
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
             Key Findings
         </h3>
       </div>
 
-      {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
         {tabs.map(tab => (
             <button
@@ -317,7 +437,7 @@ export const FindingsList: React.FC<FindingsListProps> = ({ findings }) => {
       <div className="space-y-3">
         {filteredFindings.length > 0 ? (
             filteredFindings.map((finding) => (
-            <FindingItem key={finding.id} finding={finding} />
+            <FindingItem key={finding.id} finding={finding} onShowCompliance={handleShowCompliance} />
             ))
         ) : (
             <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
