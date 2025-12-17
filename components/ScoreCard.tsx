@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Finding, Severity } from '../types';
-import { AlertTriangle, ShieldAlert, CheckCircle, AlertOctagon } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, CheckCircle, AlertOctagon, Info, HelpCircle } from 'lucide-react';
 
 interface ScoreCardProps {
   findings: Finding[];
@@ -57,10 +57,10 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ findings, summary }) => {
        {/* Decorative Top Border based on status */}
        <div className={`absolute top-0 left-0 w-full h-1 bg-${statusColor}-500 z-20`}></div>
 
-       <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center h-full">
+       <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center flex-1">
           
           {/* LEFT: Chart Section */}
-          <div className="relative w-48 h-48 flex-shrink-0">
+          <div id="score-pie-chart" className="relative w-48 h-48 flex-shrink-0">
             {/* Animated Glow Behind Chart */}
             <div 
                 className="absolute inset-0 rounded-full blur-xl opacity-40 animate-pulse"
@@ -86,7 +86,6 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ findings, summary }) => {
                     <Cell key={`cell-${index}`} fill={entry.color} className="drop-shadow-sm" />
                   ))}
                 </Pie>
-                {/* Tooltip removed to prevent gray box overlay */}
               </PieChart>
             </ResponsiveContainer>
 
@@ -118,19 +117,23 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ findings, summary }) => {
                   </div>
               </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-3 gap-2 md:gap-4 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+              {/* Stats Grid - Updated to 4 columns */}
+              <div className="grid grid-cols-4 gap-2 bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                   <div className="flex flex-col items-center p-2 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20">
-                      <span className="text-xl md:text-2xl font-bold text-red-600 dark:text-red-400">{counts.critical}</span>
-                      <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Critical</span>
+                      <span className="text-xl font-bold text-red-600 dark:text-red-400">{counts.critical}</span>
+                      <span className="text-[9px] font-bold text-red-400 uppercase tracking-wider">Crit</span>
                   </div>
                   <div className="flex flex-col items-center p-2 rounded-lg bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/20">
-                      <span className="text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-400">{counts.high}</span>
-                      <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">High</span>
+                      <span className="text-xl font-bold text-orange-600 dark:text-orange-400">{counts.high}</span>
+                      <span className="text-[9px] font-bold text-orange-400 uppercase tracking-wider">High</span>
                   </div>
                   <div className="flex flex-col items-center p-2 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20">
-                      <span className="text-xl md:text-2xl font-bold text-amber-600 dark:text-amber-400">{counts.medium}</span>
-                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Medium</span>
+                      <span className="text-xl font-bold text-amber-600 dark:text-amber-400">{counts.medium}</span>
+                      <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">Med</span>
+                  </div>
+                  <div className="flex flex-col items-center p-2 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20">
+                      <span className="text-xl font-bold text-blue-600 dark:text-blue-400">{counts.low}</span>
+                      <span className="text-[9px] font-bold text-blue-400 uppercase tracking-wider">Low</span>
                   </div>
               </div>
 
@@ -139,6 +142,37 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ findings, summary }) => {
                   <span className="font-semibold text-slate-900 dark:text-white mr-1">Analysis:</span>
                   {summary}
               </div>
+          </div>
+       </div>
+
+       {/* AUDIT AGENDA / MAP FOOTER */}
+       <div className="bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 p-4">
+          <div className="flex items-center gap-2 mb-3 px-2">
+             <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+             <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400">Readiness Criteria Map</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+             <div className="flex items-start gap-2.5 px-2">
+                <div className="w-2 h-2 rounded-full bg-red-500 mt-1.5 shrink-0" />
+                <div className="flex flex-col">
+                   <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">DO NOT DEPLOY</span>
+                   <span className="text-[10px] text-slate-500 dark:text-slate-400">Contains 1+ Critical risks.</span>
+                </div>
+             </div>
+             <div className="flex items-start gap-2.5 px-2">
+                <div className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                <div className="flex flex-col">
+                   <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">NEEDS REVIEW</span>
+                   <span className="text-[10px] text-slate-500 dark:text-slate-400">Contains 1+ High risks.</span>
+                </div>
+             </div>
+             <div className="flex items-start gap-2.5 px-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                <div className="flex flex-col">
+                   <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">DEPLOYABLE</span>
+                   <span className="text-[10px] text-slate-500 dark:text-slate-400">Only Med/Low risks.</span>
+                </div>
+             </div>
           </div>
        </div>
     </div>

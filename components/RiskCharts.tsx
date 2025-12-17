@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip, TooltipProps } from 'recharts';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { ExternalLink } from 'lucide-react';
 import { CategoryScore } from '../types';
 
@@ -35,6 +35,18 @@ export const RiskCharts: React.FC<RiskChartsProps> = ({ categories }) => {
     fullMark: 100,
   }));
 
+  const getStatusColor = (score: number) => {
+    if (score >= 90) return 'text-emerald-600 dark:text-emerald-400';
+    if (score >= 70) return 'text-amber-600 dark:text-amber-400';
+    return 'text-red-600 dark:text-red-400';
+  };
+
+  const getBgColor = (score: number) => {
+    if (score >= 90) return 'bg-emerald-500';
+    if (score >= 70) return 'bg-amber-500';
+    return 'bg-red-500';
+  };
+
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col relative overflow-hidden h-full transition-colors">
       <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 dark:bg-indigo-900/10 rounded-bl-full -mr-10 -mt-10 z-0" />
@@ -52,14 +64,14 @@ export const RiskCharts: React.FC<RiskChartsProps> = ({ categories }) => {
         </a>
       </div>
       
-      {/* Fixed height container to prevent growing with flexbox stretching */}
-      <div id="risk-radar-chart" className="h-[300px] w-full relative z-10">
+      {/* Responsive height container */}
+      <div id="risk-radar-chart" className="min-h-[250px] h-[30vh] max-h-[400px] w-full relative z-10">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart cx="50%" cy="50%" outerRadius="65%" data={data} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
             <PolarGrid stroke="currentColor" className="text-slate-200 dark:text-slate-700" strokeDasharray="3 3" />
             <PolarAngleAxis 
                 dataKey="subject" 
-                tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} 
+                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }} 
             />
             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
             <Radar
@@ -89,24 +101,25 @@ export const RiskCharts: React.FC<RiskChartsProps> = ({ categories }) => {
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 space-y-2 relative z-10">
+      <div className="mt-4 space-y-3 relative z-10">
         {categories.map((cat) => (
             <div key={cat.name} className="flex justify-between items-center text-sm group cursor-default">
-                <span className="text-slate-500 dark:text-slate-400 font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{cat.name}</span>
                 <div className="flex items-center gap-2">
-                    <div className="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className={`w-1.5 h-1.5 rounded-full ${getBgColor(cat.score)} shadow-[0_0_8px_rgba(0,0,0,0.1)] group-hover:scale-125 transition-transform`} />
+                    <span className={`font-semibold transition-colors ${getStatusColor(cat.score)} group-hover:opacity-80`}>
+                        {cat.name}
+                    </span>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
                         <div 
-                            className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                                cat.score >= 90 ? 'bg-emerald-500' : 
-                                cat.score >= 70 ? 'bg-amber-500' : 'bg-red-500'
-                            }`}
+                            className={`h-full rounded-full transition-all duration-1000 ease-out ${getBgColor(cat.score)}`}
                             style={{ width: `${cat.score}%` }}
                         />
                     </div>
-                    <span className={`font-bold w-8 text-right ${
-                        cat.score >= 90 ? 'text-emerald-600 dark:text-emerald-400' : 
-                        cat.score >= 70 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
-                    }`}>{cat.score}</span>
+                    <span className={`font-black w-8 text-right tabular-nums ${getStatusColor(cat.score)}`}>
+                        {cat.score}
+                    </span>
                 </div>
             </div>
         ))}

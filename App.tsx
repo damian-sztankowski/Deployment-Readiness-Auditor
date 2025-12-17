@@ -112,7 +112,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-500 selection:bg-indigo-100 selection:text-indigo-800 dark:selection:bg-indigo-900 dark:selection:text-indigo-200 flex flex-col relative font-sans text-slate-900 dark:text-slate-100">
+    <div className="min-h-[100dvh] w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-500 selection:bg-indigo-100 selection:text-indigo-800 dark:selection:bg-indigo-900 dark:selection:text-indigo-200 flex flex-col relative font-sans text-slate-900 dark:text-slate-100">
       
       <OnboardingTour startTour={!showSplash} />
 
@@ -133,7 +133,7 @@ const App: React.FC = () => {
       </div>
 
       {/* --- CONTENT --- */}
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col flex-grow">
         {showSplash ? (
           <SplashPage onStart={handleStart} />
         ) : (

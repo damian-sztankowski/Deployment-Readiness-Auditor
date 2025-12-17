@@ -257,7 +257,7 @@ resource "google_compute_disk" "unattached_disk" {
             value={inputCode}
             onChange={(e) => setInputCode(e.target.value)}
             placeholder={isReadingFiles ? "Reading files from folder..." : "Paste Terraform code, or Upload a File/Folder to analyze complete projects..."}
-            className="w-full h-[500px] p-6 font-mono text-sm text-slate-900 dark:text-slate-100 bg-slate-50/30 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-900 outline-none resize-none transition-all leading-6 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full h-[50vh] min-h-[300px] max-h-[800px] p-6 font-mono text-sm text-slate-900 dark:text-slate-100 bg-slate-50/30 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-900 outline-none resize-none transition-all leading-6 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             spellCheck={false}
           />
           

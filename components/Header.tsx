@@ -1,5 +1,6 @@
 import React from 'react';
-import { Hexagon, Zap, LayoutGrid, Info, Moon, Sun, History } from 'lucide-react';
+import { LayoutGrid, Info, Moon, Sun, History } from 'lucide-react';
+import { Logo } from './Logo';
 
 interface HeaderProps {
   currentView: 'about' | 'assessment';
@@ -12,38 +13,21 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkMode, toggleTheme, onToggleHistory }) => {
   return (
     <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-indigo-100 dark:border-slate-800 sticky top-0 z-50 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
         
-        {/* Logo Section - Automated & Catchy */}
+        {/* Logo Section */}
         <div 
-          className="flex items-center gap-3 cursor-pointer group animate-float" 
+          className="flex items-center gap-4 cursor-pointer group" 
           onClick={() => onNavigate('about')}
         >
-          <div className="relative w-10 h-10 flex items-center justify-center">
-             {/* Logo Base - Spins continuously slowly */}
-             <Hexagon 
-                className="w-10 h-10 text-indigo-600 dark:text-indigo-500 fill-indigo-100/50 dark:fill-indigo-900/50 animate-spin-slow" 
-                strokeWidth={1.5} 
-             />
-             
-             {/* Logo Inner - Wiggles automatically */}
-             <div className="absolute flex items-center justify-center animate-wiggle">
-                <Zap 
-                    className="w-5 h-5 text-indigo-600 dark:text-indigo-400 drop-shadow-md" 
-                    strokeWidth={2.5} 
-                />
-             </div>
-             
-             {/* Decorative Glow - Pulses automatically */}
-             <div className="absolute inset-0 bg-indigo-500/30 blur-lg rounded-full opacity-50 animate-pulse"></div>
-          </div>
+          <Logo size="md" className="group-hover:scale-110 transition-transform duration-300" />
           
           <div className="flex flex-col">
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              DRA
+            <h1 className="text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tighter leading-none group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              AUDITOR<span className="text-indigo-600 dark:text-indigo-400">.</span>
             </h1>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 group-hover:tracking-[0.2em] transition-all duration-300">
-              Auditor
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 transition-all duration-300">
+              DEPLOYMENT READINESS
             </span>
           </div>
         </div>
@@ -84,23 +68,23 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
                 <button 
                     id="header-history-btn"
                     onClick={onToggleHistory}
-                    className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 relative"
+                    className="p-2 md:p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 relative"
                     title="Audit History"
                 >
-                    <History className="w-5 h-5" />
+                    <History className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
 
                 <button 
                     id="header-theme-btn"
                     onClick={toggleTheme}
-                    className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="p-2 md:p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                     title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                 >
                     {isDarkMode ? (
-                        <Sun className="w-5 h-5" />
+                        <Sun className="w-4 h-4 md:w-5 md:h-5" />
                     ) : (
-                        <Moon className="w-5 h-5" />
+                        <Moon className="w-4 h-4 md:w-5 md:h-5" />
                     )}
                 </button>
             </div>
