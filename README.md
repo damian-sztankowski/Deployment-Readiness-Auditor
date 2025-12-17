@@ -2,7 +2,7 @@
 
 The **Deployment Readiness Auditor (DRA)** is a Google Cloud-native, AI-powered audit engine designed to analyze infrastructure-as-code (Terraform HCL or JSON) against the **Google Cloud Architecture Framework**.
 
-Leveraging **Gemini 3 Pro**, DRA provides semantic analysis of your cloud resources, identifying security vulnerabilities, cost-saving opportunities, and reliability gaps before you run `terraform apply`.
+Leveraging **Gemini**, DRA provides semantic analysis of your cloud resources, identifying security vulnerabilities, cost-saving opportunities, and reliability gaps before you run `terraform apply`.
 
 ## 📸 Core Interface
 
