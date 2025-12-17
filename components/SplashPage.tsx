@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, ArrowRight, Lock, Activity, Play, X } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Lock, Activity, Play, X, BookOpen, Info } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface SplashPageProps {
@@ -66,7 +66,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart }) => {
                     </button>
                 </div>
 
-                {/* Secondary Action - Watch Demo */}
+                {/* Secondary Action - Simple discovery video */}
                 <button 
                     onClick={() => setIsVideoOpen(true)}
                     className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 backdrop-blur-sm text-slate-700 dark:text-slate-200 rounded-full text-lg font-bold border border-slate-200 dark:border-slate-700 transition-all duration-300 hover:scale-[1.02] active:scale-95 group"
@@ -78,15 +78,12 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart }) => {
                 </button>
             </div>
 
-             <p className="mt-2 text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] animate-enter" style={{ animationDelay: '0.3s' }}>
-            </p>
-
             {/* Feature Pills */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-8 max-w-2xl mx-auto animate-enter" style={{ animationDelay: '0.4s' }}>
                 {[
-                    { icon: ShieldCheck, text: "Compliance Check" },
-                    { icon: Lock, text: "Security Posture" },
-                    { icon: Activity, text: "Cost Optimization" }
+                    { icon: ShieldCheck, text: "WAF Pillars" },
+                    { icon: Lock, text: "Compliance" },
+                    { icon: Activity, text: "FinOps Audit" }
                 ].map((feature, i) => (
                     <div key={i} className="flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all cursor-default">
                         <feature.icon className="w-4 h-4 text-indigo-500" />
@@ -106,24 +103,28 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart }) => {
                 />
                 
                 {/* Modal Content */}
-                <div className="relative w-full max-w-5xl aspect-video bg-black rounded-3xl shadow-2xl overflow-hidden border border-slate-800 animate-in zoom-in-95 duration-300">
-                    <button 
-                        onClick={() => setIsVideoOpen(false)}
-                        className="absolute top-6 right-6 z-10 p-3 bg-black/50 hover:bg-indigo-600 text-white rounded-full backdrop-blur-sm transition-all duration-200 group"
-                    >
-                        <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
-                    </button>
+                <div className="relative w-full max-w-5xl bg-black rounded-3xl shadow-2xl overflow-hidden border border-slate-800 animate-in zoom-in-95 duration-300 flex flex-col">
+                    <div className="absolute top-6 right-6 z-20 flex gap-2">
+                        <button 
+                            onClick={() => setIsVideoOpen(false)}
+                            className="p-3 bg-white/10 hover:bg-red-600 text-white rounded-xl backdrop-blur-sm transition-all duration-200 group"
+                        >
+                            <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+                        </button>
+                    </div>
                     
-                    <iframe 
-                        width="100%" 
-                        height="100%" 
-                        src="https://www.youtube.com/embed/l-hC0d5Fz54?autoplay=1&rel=0&modestbranding=1" 
-                        title="Google Cloud Architecture Framework Video"
-                        frameBorder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        allowFullScreen
-                        className="w-full h-full"
-                    ></iframe>
+                    <div className="aspect-video w-full">
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            src="https://www.youtube.com/embed/l-hC0d5Fz54?autoplay=1&rel=0&modestbranding=1" 
+                            title="Google Cloud Architecture Framework Video"
+                            frameBorder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            allowFullScreen
+                            className="w-full h-full"
+                        ></iframe>
+                    </div>
                 </div>
             </div>
         )}

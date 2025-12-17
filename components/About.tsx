@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { 
   Shield, Zap, Cloud, ArrowRight, AlertTriangle, TrendingUp, 
   TrendingDown, ChevronDown, HelpCircle, Brain, FolderSearch, 
   Code2, Gauge, ShieldCheck, Globe, FileCheck, Lock, Scale, 
   BarChart3, Activity, Cpu, Layers, BookOpen, Landmark,
-  // Fix: Import missing CheckCircle icon
   CheckCircle
 } from 'lucide-react';
 
@@ -85,7 +83,6 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         {/* Visual: Framework Interaction */}
         <div className="flex-1 relative z-10 hidden lg:block">
             <div className="relative w-full aspect-square max-w-md mx-auto">
-                {/* Visualizing the two layers */}
                 <div className="absolute inset-0 bg-indigo-500/10 rounded-full animate-pulse blur-3xl"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-64 h-64 border-2 border-indigo-500/30 rounded-3xl rotate-12 flex items-center justify-center bg-slate-900/40 backdrop-blur">
