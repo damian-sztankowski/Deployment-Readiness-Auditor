@@ -74,6 +74,60 @@ DRA goes beyond static analysis (regex-based tools) by understanding the *intent
     npx serve .
     ```
 
+## 🛡️ Security Note
+This application runs entirely in the browser. However, it calls the Gemini API directly.
+
+**Local Dev:** Safe to use direct keys.
+**Production:** For strict security, consider implementing a lightweight backend proxy (e.g., Cloud Functions or Next.js API routes) to hold the API key and forward requests, preventing key exposure in the client-side bundle.
+
+## ☁️ Deployment (Google Cloud Run)
+This application is optimized for deployment on Google Cloud Run as a static site served via Nginx.
+
+### 1. Create Dockerfile
+Ensure you have a Dockerfile in the root:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+RUN npm i -g serve
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD [ "serve", "-s", "dist" ]
+```
+
+### 2. Build & Push
+```bash
+export PROJECT_ID="your-gcp-project-id"
+export REPO="dra-repo"
+export REGION="us-central1"
+
+gcloud artifacts repositories create $REPO --repository-format=docker --location=$REGION
+
+docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app .
+docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app
+```
+
+### 3. Deploy
+```bash
+gcloud run deploy dra-app \
+  --image $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app \
+  --platform managed \
+  --region $REGION \
+  --allow-unauthenticated \
+  --port 3000
+```
+
 ## 🛡️ Security & Privacy
 
 - **Data Locality**: The app runs in your browser. Code snippets are sent directly to the Gemini API.
@@ -85,6 +139,3 @@ DRA goes beyond static analysis (regex-based tools) by understanding the *intent
 This project is released under the **MIT License**.
 
 > **Note**: Deployment Readiness Auditor is an independent tool and is not an official Google Cloud product. Built for the community by Damian Sztankowski.
-
----
-If you find this tool helpful, please consider giving it a ⭐ on GitHub and sharing your feedback!
