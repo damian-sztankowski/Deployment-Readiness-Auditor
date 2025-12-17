@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
-[![Gemini](https://img.shields.io/badge/AI-Gemini%202.0%20Pro-orange.svg)](https://deepmind.google/technologies/gemini/)
+[![Gemini](https://img.shields.io/badge/AI-Gemini%203.0%20Flash-orange.svg)](https://deepmind.google/technologies/gemini/)
 [![GCP](https://img.shields.io/badge/Platform-Google%20Cloud-blue.svg)](https://cloud.google.com/)
 
 > **The intelligent "Pre-Apply" layer for Google Cloud Infrastructure.**
