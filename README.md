@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
-[![Gemini](https://img.shields.io/badge/AI-Gemini%203.0%20Flash-orange.svg)](https://deepmind.google/technologies/gemini/)
+[![Gemini](https://img.shields.io/badge/AI-Gemini%202.0%20Pro-orange.svg)](https://deepmind.google/technologies/gemini/)
 [![GCP](https://img.shields.io/badge/Platform-Google%20Cloud-blue.svg)](https://cloud.google.com/)
 
 > **The intelligent "Pre-Apply" layer for Google Cloud Infrastructure.**
@@ -12,26 +12,17 @@ The **Deployment Readiness Auditor (DRA)** is a Cloud-native, AI-assisted tool t
 ---
 
 ## 📌 Table of Contents
-- [📸 Core Interface](#-core-interface)
 - [🚀 Key Features](#-key-features)
 - [🧠 How It Works](#-how-it-works)
 - [🆚 DRA vs. Static Analyzers](#-dra-vs-static-analyzers)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [📋 Prerequisites](#-prerequisites)
-- [💻 Quick Start](#-quick-start)
-- [☁️ Deployment (Cloud Run)](#️-deployment-google-cloud-run)
-- [🛡️ Security & Privacy](#️-security--privacy)
-- [🗺️ Roadmap](#️-roadmap)
+- [💻 Local Development](#-local-development)
+- [🛡️ Security Note](#️-security-note)
+- [☁️ Deployment (Google Cloud Run)](#️-deployment-google-cloud-run)
+- [🛡️ Privacy & Zero-Trust](#️-privacy--zero-trust)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
-
----
-
-## 📸 Core Interface
-
-| **Executive Dashboard** | **Semantic Risk Analysis** |
-|:---:|:---:|
-| ![Dashboard](https://raw.githubusercontent.com/sztankowski/dra/main/docs/dash.png) | ![Findings](https://raw.githubusercontent.com/sztankowski/dra/main/docs/findings.png) |
 
 ---
 
@@ -85,45 +76,76 @@ DRA utilizes a **Semantic Analysis Pipeline** rather than simple pattern matchin
 
 ---
 
-## 💻 Quick Start
+## 💻 Local Development
 
-### 1. Local Development
-```bash
-# Clone the repository
-git clone https://github.com/sztankowski/deployment-readiness-auditor.git
-cd deployment-readiness-auditor
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/your-username/deployment-readiness-auditor.git
+    cd deployment-readiness-auditor
+    ```
 
-# Set your API Key
-export API_KEY=your_gemini_api_key_here
+2.  **Set your API Key**
+    The application reads the API key from the environment.
+    ```bash
+    export API_KEY=your_gemini_api_key_here
+    ```
 
-# Serve locally
-npx serve .
-```
+3.  **Launch**
+    ```bash
+    npx serve .
+    ```
 
-### 🛡️ Security Note
+---
+
+## 🛡️ Security Note
 This application runs entirely in the browser. However, it calls the Gemini API directly.
+
 - **Local Dev**: Safe to use direct keys.
 - **Production**: For strict security, consider implementing a lightweight backend proxy (e.g., Cloud Functions or Next.js API routes) to hold the API key and forward requests, preventing key exposure in the client-side bundle.
 
 ---
 
 ## ☁️ Deployment (Google Cloud Run)
+This application is optimized for deployment on Google Cloud Run as a static site served via Nginx.
 
-This application is optimized for deployment on Google Cloud Run as a static site.
+### 1. Create Dockerfile
+Ensure you have a Dockerfile in the root:
 
-### 1. Build & Push
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+RUN npm i -g serve
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD [ "serve", "-s", "dist" ]
+```
+
+### 2. Build & Push
 ```bash
 export PROJECT_ID="your-gcp-project-id"
 export REPO="dra-repo"
 export REGION="us-central1"
 
+# Create Repository
 gcloud artifacts repositories create $REPO --repository-format=docker --location=$REGION
 
+# Build and Push
 docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app .
 docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app
 ```
 
-### 2. Deploy
+### 3. Deploy
 ```bash
 gcloud run deploy dra-app \
   --image $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app \
@@ -135,20 +157,11 @@ gcloud run deploy dra-app \
 
 ---
 
-## 🛡️ Security & Privacy
+## 🛡️ Privacy & Zero-Trust
 
 - **Data Locality**: No infrastructure code is stored on any server. Analysis is ephemeral and happens within your browser session.
 - **Model Privacy**: We use the professional Gemini API which respects enterprise data privacy standards (data is not used to train public models).
 - **Zero-Trust**: No database or backend storage is used. History is strictly in your browser's `localStorage`.
-
----
-
-## 🗺️ Roadmap
-
-- [ ] **GitHub Action Integration**: Automated PR comments with readiness scores.
-- [ ] **Custom Policy Support**: Define organization-specific "Forbidden Patterns".
-- [ ] **Multi-Cloud Support**: Azure and AWS Well-Architected engines.
-- [ ] **Interactive Remediation**: Apply fixes directly via Cloud Shell integration.
 
 ---
 
