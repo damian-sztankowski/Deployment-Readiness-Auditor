@@ -30,6 +30,7 @@ If the code is GCP-native, conduct a **Zero-Trust-aligned, 5-Pillar Architecture
 - For Security findings (like public firewall rules), the \`costSavings\` field **MUST be NULL or omitted**. Do not use "N/A", "None", or placeholder text like "fileName".
 - **ONLY** findings categorized as **"Cost Optimization"** should have a \`costSavings\` value.
 - **NEVER** use the literal string "fileName" or "lineNumber" as a value for ANY field unless it is actually the name of a file or a line number.
+- **DO NOT** hallucinate file paths if they are not clearly specified in the input.
 
 Identify cost wastage in GCP:
 *   **Machine Types:** Flag legacy families (N1). Recommend modern equivalents (N2D, T2D, E2).

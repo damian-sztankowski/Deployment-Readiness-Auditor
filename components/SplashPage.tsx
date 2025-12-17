@@ -38,10 +38,10 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart }) => {
                     </span>
                 </div>
 
-                <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-slate-900 dark:text-white leading-[0.95]">
-                    Architectural <br/>
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter text-slate-900 dark:text-white leading-[0.95]">
+                    Deployment Readiness <br/>
                     <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent bg-300% animate-gradient">
-                        Excellence
+                        Auditor
                     </span>
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
@@ -79,7 +79,6 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart }) => {
             </div>
 
              <p className="mt-2 text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] animate-enter" style={{ animationDelay: '0.3s' }}>
-                    Terraform & Google Asset Inventory Support
             </p>
 
             {/* Feature Pills */}

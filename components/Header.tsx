@@ -24,10 +24,10 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
           
           <div className="flex flex-col">
             <h1 className="text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tighter leading-none group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              AUDITOR<span className="text-indigo-600 dark:text-indigo-400">.</span>
+              DRA<span className="text-indigo-600 dark:text-indigo-400">.</span>
             </h1>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 transition-all duration-300">
-              DEPLOYMENT READINESS
+            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 transition-all duration-300">
+              Deployment Readiness Auditor
             </span>
           </div>
         </div>

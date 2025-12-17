@@ -30,11 +30,11 @@ export const Footer: React.FC = () => {
               <div className="flex items-center gap-3 group cursor-default">
                 <Logo size="sm" className="group-hover:scale-110 transition-transform duration-500" />
                 <div className="flex flex-col">
-                  <span className="text-sm font-black tracking-tighter text-slate-900 dark:text-white">
-                    AUDITOR<span className="text-indigo-500">.</span>
+                  <span className="text-sm font-black tracking-tighter text-slate-900 dark:text-white uppercase">
+                    Deployment Readiness Auditor
                   </span>
                   <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                    Infrastructure Integrity
+                    Infrastructure Integrity Audit
                   </span>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export const Footer: React.FC = () => {
           {/* Bottom Copyright Strip */}
           <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-              © 2025 DRA AUDITOR / MIT LICENSE
+              © 2025 Deployment Readiness Auditor (DRA) / MIT LICENSE
             </div>
             <div className="flex items-center gap-6">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
