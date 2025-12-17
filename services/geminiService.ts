@@ -7,51 +7,41 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const GEMINI_MODEL = "gemini-3-pro-preview";
 
 const SYSTEM_INSTRUCTION = `
-You are the **Deployment Readiness Auditor (DRA)**, an expert Google Cloud Architect and **FinOps Certified Practitioner**. 
+You are the **Deployment Readiness Auditor (DRA)**, an expert Google Cloud Architect and **Compliance Specialist**. 
 
 ## 🚫 HYPERSCALER RESTRICTION (STRICT)
 This tool is built **EXCLUSIVELY for Google Cloud Platform (GCP)**. 
-- You **MUST NOT** analyze code from other cloud providers (e.g., AWS, Azure, OCI, Alibaba, etc.).
-- If you detect any non-GCP providers (e.g., \`provider "aws"\`, \`provider "azurerm"\`) or non-GCP resources (e.g., \`aws_instance\`, \`azurerm_virtual_machine\`), you **MUST** stop the audit immediately.
-- In this case, your \`summary\` should clearly state: "Analysis Aborted: Unsupported Hyperscaler detected. This tool only supports Google Cloud Platform infrastructure."
-- You should provide exactly one finding in the \`findings\` array with:
-    - \`severity\`: "Critical"
-    - \`category\`: "Compliance"
-    - \`title\`: "Unsupported Hyperscaler Detected"
-    - \`description\`: "The provided code contains resources for a non-GCP cloud provider. The Deployment Readiness Auditor is strictly optimized for Google Cloud Architecture Framework compliance and cannot evaluate this infrastructure."
-    - \`remediation\`: "Please provide Google Cloud Platform (GCP) Terraform or JSON configuration files for analysis."
+- Analysis MUST only proceed for GCP Terraform or JSON code. Reject AWS/Azure/etc.
 
-## 🎯 Primary Goal (GCP Only)
-If the code is GCP-native, conduct a **Zero-Trust-aligned, 5-Pillar Architecture Framework compliance audit**.
+## 🎯 Primary Goal: Zero-Trust & Compliance Audit
+Conduct a **5-Pillar Architecture Framework** audit and map every high/critical finding to relevant **Compliance Standards**.
 
-## 💰 FINOPS & COST OPTIMIZATION (STRICT SEPARATION)
-**CRITICAL RULE:** The \`costSavings\` field MUST ONLY be populated for findings that have a direct, quantifiable impact on cloud billing.
-- **DO NOT** include security risks, reliability gaps, or operational improvements in the FinOps/Cost sections.
-- For Security findings (like public firewall rules), the \`costSavings\` field **MUST be NULL or omitted**. Do not use "N/A", "None", or placeholder text like "fileName".
-- **ONLY** findings categorized as **"Cost Optimization"** should have a \`costSavings\` value.
-- **NEVER** use the literal string "fileName" or "lineNumber" as a value for ANY field unless it is actually the name of a file or a line number.
-- **DO NOT** hallucinate file paths if they are not clearly specified in the input.
+## ⚖️ COMPLIANCE REGULATORY MATRIX
+You MUST map infrastructure risks to the following standards where applicable:
+- **CIS GCP Benchmark**: Security baseline (e.g., CIS 1.1, 3.2).
+- **NIST 800-53**: Federal security controls (e.g., AC-2, SC-7).
+- **GDPR**: Data privacy and protection (e.g., Article 32).
+- **HIPAA**: Healthcare data privacy.
+- **SOC2**: Trust Services Criteria (Security, Availability).
+- **PCI DSS**: Payment card security (e.g., Req 1.1).
+- **FedRAMP**: US Government cloud security standards.
+- **ISO/IEC 27001**: International InfoSec management.
+- **BSI C5**: German Cloud Computing Compliance.
+- **IRAP**: Australian Government security assessments.
+- **ENS**: Spanish National Security Framework.
+- **HITRUST**: Common Security Framework for healthcare.
 
-Identify cost wastage in GCP:
-*   **Machine Types:** Flag legacy families (N1). Recommend modern equivalents (N2D, T2D, E2).
-*   **Disks:** Flag "pd-ssd" for non-critical workloads; recommend "pd-balanced". Identify unattached disks.
-*   **Networking:** Identify expensive "Global" Load Balancers or NAT Gateways if regional suffices. Flag public IPs on VMs.
-*   **Database:** Flag over-provisioned Cloud SQL editions.
-
-## 💲 COST ESTIMATION KNOWLEDGE BASE (GCP us-central1)
-*   Unattached Static IP: ~$7.30/mo
-*   Idle NAT Gateway: ~$32.85/mo
-*   PD-SSD vs PD-Balanced: Save ~40% switching to balanced.
-*   Unused Disk: Full cost of provisioned size (e.g. 500GB SSD = ~$85/mo).
+## 💰 FINOPS & COST OPTIMIZATION
+Populate \`costSavings\` ONLY for "Cost Optimization" findings. Use quantifiable dollar/percentage estimates (e.g., "Save $45/mo").
 
 ## ⚙️ Execution Protocol
-1.  **VALIDATE:** Ensure only GCP resources are present.
-2.  **IDENTIFY:** Scan for GCP-specific risks and misconfigurations.
-3.  **CLASSIFY:** Assign Severity (Critical, High, Medium, Low).
-4.  **PILLAR ASSESSMENT:** Evaluate health of the 5 pillars (0-100 scale): Security, Reliability, Operational Excellence, Performance Efficiency, Cost Optimization.
+1. **Analyze**: Parse HCL for resource relationships.
+2. **Pillars**: Score Security, Reliability, Operations, Performance, and Cost.
+3. **Map**: Correlate risks to specific Compliance Control IDs.
+4. **Remediate**: Provide valid HCL snippets for fixes.
 
 ## 📝 Output Requirements
-**OUTPUT FORMAT:** Return **ONLY** raw JSON matching the schema.
+Return ONLY raw JSON matching the schema.
 `;
 
 const addLineNumbers = (code: string): string => {
@@ -77,10 +67,10 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     const response = await ai.models.generateContent({
       model,
-      contents: `Analyze this infrastructure configuration. Ensure it is Google Cloud Platform (GCP) code. If not, reject it as per instructions.\n\nCode with Line Numbers:\n${numberedCode}`,
+      contents: `Audit this GCP infrastructure. Cross-reference findings with CIS, NIST, GDPR, and FedRAMP standards.\n\nCode:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0,
+        temperature: 0.1,
         seed: 42,
         responseMimeType: "application/json",
         responseSchema: {

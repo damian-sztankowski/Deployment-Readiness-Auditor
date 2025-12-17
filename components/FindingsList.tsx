@@ -9,46 +9,82 @@ interface FindingsListProps {
 interface StandardDetail {
   name: string;
   description: string;
+  focus: 'Security' | 'Privacy' | 'Sovereignty' | 'Regulatory';
 }
 
-// Knowledge base for common compliance standards
+// Comprehensive knowledge base for international and regional compliance standards on GCP
 const COMPLIANCE_REGISTRY: Record<string, StandardDetail> = {
   'CIS': {
     name: 'CIS Google Cloud Platform Foundation Benchmark',
-    description: 'A set of best-practice cybersecurity standards for Google Cloud Platform, developed by the Center for Internet Security (CIS). These controls provide prescriptive guidance for establishing a secure baseline configuration for GCP services including IAM, Logging, Networking, and Virtual Machines.'
+    description: 'The industry-standard security baseline for GCP. It provides prescriptive guidance for establishing a secure configuration for Identity, Logging, Networking, and Virtual Machines.',
+    focus: 'Security'
   },
   'NIST': {
     name: 'NIST Special Publication 800-53',
-    description: 'A regulatory standard that provides a catalog of security and privacy controls for federal information systems and organizations to protect organizational operations and assets. It covers a broad range of areas including access control, incident response, and system integrity.'
+    description: 'A catalog of security and privacy controls for all U.S. federal information systems. It is the gold standard for comprehensive risk management and system security.',
+    focus: 'Regulatory'
+  },
+  'GDPR': {
+    name: 'General Data Protection Regulation',
+    description: 'The most stringent privacy and security law in the world. It mandates that organizations protect the personal data and privacy of EU citizens for transactions that occur within EU member states.',
+    focus: 'Privacy'
   },
   'HIPAA': {
     name: 'Health Insurance Portability and Accountability Act',
-    description: 'Standard for protecting sensitive patient data. Any company that deals with protected health information (PHI) must ensure that all the required physical, network, and process security measures are in place to ensure confidentiality and integrity of health records.'
+    description: 'U.S. law designed to provide privacy standards to protect patients\' medical records and other health information provided to health plans, doctors, hospitals and other health care providers.',
+    focus: 'Privacy'
   },
   'SOC2': {
     name: 'Service Organization Control 2',
-    description: 'A voluntary compliance standard for service organizations, developed by the AICPA, which specifies how organizations should manage customer data based on five "trust service principles": security, availability, processing integrity, confidentiality, and privacy.'
+    description: 'Developed by the AICPA, SOC 2 defines criteria for managing customer data based on five "trust service principles"—security, availability, processing integrity, confidentiality and privacy.',
+    focus: 'Security'
   },
   'PCI': {
     name: 'PCI Data Security Standard (PCI DSS)',
-    description: 'The Payment Card Industry Data Security Standard is an information security standard for organizations that handle branded credit cards from the major card schemes. It focuses on secure network architecture and data protection.'
+    description: 'A set of security standards designed to ensure that ALL companies that accept, process, store or transmit credit card information maintain a secure environment.',
+    focus: 'Security'
+  },
+  'FEDRAMP': {
+    name: 'Federal Risk and Authorization Management Program',
+    description: 'A U.S. government-wide program that provides a standardized approach to security assessment, authorization, and continuous monitoring for cloud products and services.',
+    focus: 'Regulatory'
+  },
+  'BSI': {
+    name: 'BSI C5 (Germany)',
+    description: 'The Cloud Computing Compliance Controls Catalogue (C5) is a German government-backed certification scheme that specifies a baseline security level for cloud computing.',
+    focus: 'Sovereignty'
+  },
+  'IRAP': {
+    name: 'IRAP (Australia)',
+    description: 'The Information Security Registered Assessors Program (IRAP) provides a framework for endorsing individuals to perform Australian Government information security assessments.',
+    focus: 'Sovereignty'
+  },
+  'ENS': {
+    name: 'Esquema Nacional de Seguridad (Spain)',
+    description: 'The Spanish National Security Framework (ENS) establishes security standards that apply to all government agencies and public organizations in Spain.',
+    focus: 'Sovereignty'
+  },
+  'HITRUST': {
+    name: 'HITRUST Common Security Framework (CSF)',
+    description: 'A certifiable framework that leverages nationally and internationally accepted standards including ISO, NIST, PCI, and HIPAA to effectively manage compliance.',
+    focus: 'Regulatory'
   },
   'ISO': {
     name: 'ISO/IEC 27001',
-    description: 'An international standard on how to manage information security. It details requirements for establishing, implementing, maintaining and continually improving an information security management system (ISMS).'
+    description: 'The leading international standard for information security management systems (ISMS). It provides a framework for managing security risks and protecting sensitive data.',
+    focus: 'Security'
   }
 };
 
 const getStandardDetails = (id: string): StandardDetail => {
   const upperId = id.toUpperCase();
-  // Match prefix
   const key = Object.keys(COMPLIANCE_REGISTRY).find(k => upperId.startsWith(k));
   if (key) return COMPLIANCE_REGISTRY[key];
   
-  // Fallback for unknown standards
   return {
     name: id,
-    description: `Specific security control and compliance requirement belonging to the ${id} framework. This control ensures adherence to best-practices within this regulatory domain for cloud infrastructure.`
+    description: `Specific security control and compliance requirement belonging to the ${id} framework. This control ensures adherence to best-practices within this regulatory domain for cloud infrastructure.`,
+    focus: 'Security'
   };
 };
 
@@ -103,6 +139,13 @@ const ComplianceModal = ({ standardId, finding, onClose }: { standardId: string 
   if (!standardId || !finding) return null;
   const details = getStandardDetails(standardId);
 
+  const focusColors = {
+    'Security': 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800',
+    'Privacy': 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800',
+    'Sovereignty': 'bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border-violet-100 dark:border-violet-800',
+    'Regulatory': 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800',
+  };
+
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
@@ -123,13 +166,21 @@ const ComplianceModal = ({ standardId, finding, onClose }: { standardId: string 
         </div>
         
         <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto pb-8">
-           {/* Section: Pillar Information */}
-           <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-              <Layout className="w-5 h-5 text-indigo-500" />
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Related Architecture Pillar</p>
-                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{finding.category}</p>
-              </div>
+           <div className="flex flex-wrap gap-3">
+               <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex-1 min-w-[200px]">
+                  <Layout className="w-5 h-5 text-indigo-500" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Architecture Pillar</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{finding.category}</p>
+                  </div>
+               </div>
+               <div className={`flex items-center gap-3 p-3 rounded-xl border flex-1 min-w-[200px] ${focusColors[details.focus]}`}>
+                  <Shield className="w-5 h-5" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Control Focus</p>
+                    <p className="text-sm font-bold">{details.focus}</p>
+                  </div>
+               </div>
            </div>
 
            <div className="space-y-3">
@@ -145,15 +196,14 @@ const ComplianceModal = ({ standardId, finding, onClose }: { standardId: string 
               </p>
            </div>
 
-           {/* Relevance Section */}
            <div className="space-y-3 bg-indigo-50/30 dark:bg-indigo-900/10 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
               <h4 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
                 <Target className="w-3.5 h-3.5" />
-                Relevance to Finding
+                Control Relevance
               </h4>
               <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                Adherence to <span className="font-bold text-indigo-700 dark:text-indigo-300">{standardId}</span> directly addresses the risk identified in <span className="italic">"{finding.title}"</span>. 
-                By following this control, you ensure your infrastructure meets regulatory expectations for <span className="font-medium">{finding.category.toLowerCase()}</span> integrity.
+                Implementation of <span className="font-bold text-indigo-700 dark:text-indigo-300">{standardId}</span> is required to mitigate the risks associated with <span className="italic">"{finding.title}"</span>. 
+                Failing to meet this control may result in significant non-compliance penalties or architectural insecurity within the <span className="font-medium text-indigo-600 dark:text-indigo-400">{details.focus.toLowerCase()}</span> domain.
               </div>
            </div>
         </div>
@@ -184,15 +234,11 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
     }
   };
 
-  // Improved validation to avoid rendering hallucinated field names or junk in costSavings
   const isValidCost = useMemo(() => {
     if (!finding.costSavings) return false;
     const s = finding.costSavings.toLowerCase().trim();
-    // Block literal field names or non-value placeholders
     const junk = ['filename', 'linenumber', 'line', 'n/a', 'none', 'null', 'undefined', 'placeholder'];
     if (junk.some(j => s.includes(j))) return false;
-    
-    // A valid cost usually has a number
     return /\d/.test(s) && s.length > 0;
   }, [finding.costSavings]);
 
@@ -256,7 +302,7 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
             
             {finding.compliance && finding.compliance.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-2 ml-1">
-                    {finding.compliance.slice(0, 2).map((std, idx) => (
+                    {finding.compliance.slice(0, 3).map((std, idx) => (
                         <button 
                             key={idx} 
                             onClick={(e) => { e.stopPropagation(); onShowCompliance(std, finding); }}
@@ -266,8 +312,8 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
                             {std}
                         </button>
                     ))}
-                    {finding.compliance.length > 2 && (
-                        <span className="text-[9px] text-slate-400 font-medium">+{finding.compliance.length - 2} more</span>
+                    {finding.compliance.length > 3 && (
+                        <span className="text-[9px] text-slate-400 font-medium">+{finding.compliance.length - 3}</span>
                     )}
                 </div>
             )}
@@ -286,7 +332,7 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
                     <div className="mb-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                         <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 flex items-center gap-2">
                             <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-                            Compliance Alignment
+                            Compliance Regulatory Alignment
                         </h5>
                         <div className="flex flex-wrap gap-2">
                             {finding.compliance.map((std, idx) => (
@@ -304,9 +350,6 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
                                 </button>
                             ))}
                         </div>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-3 italic">
-                            * Click standard badges for control definitions.
-                        </p>
                     </div>
                 )}
 
@@ -379,18 +422,6 @@ export const FindingsList: React.FC<FindingsListProps> = ({ findings }) => {
     });
     return c;
   }, [findings]);
-
-  if (findings.length === 0) {
-    return (
-        <div className="text-center p-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-emerald-500" />
-            </div>
-            <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-1">Well Architected!</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">No critical issues detected against the framework.</p>
-        </div>
-    )
-  }
 
   const severityOrder = {
     [Severity.CRITICAL]: 0,
