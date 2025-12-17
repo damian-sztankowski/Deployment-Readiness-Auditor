@@ -92,7 +92,7 @@
         100% { opacity: 1; transform: translateY(0); }
       }
 
-      .bg-300\% { background-size: 300% auto; }
+      .bg-300% { background-size: 300% auto; }
       .animate-gradient { animation: gradient 8s linear infinite; }
       @keyframes gradient {
         0% { background-position: 0% 50%; }
@@ -143,6 +143,18 @@
         to { transform: rotate(360deg) translateX(4px) rotate(-360deg); }
       }
       .animate-orbit { animation: orbit 6s linear infinite; }
+
+      @keyframes radar-pulse {
+        0%, 100% { filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.2)); transform: scale(1); }
+        50% { filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.5)); transform: scale(1.02); }
+      }
+      .animate-radar {
+        animation: radar-pulse 4s ease-in-out infinite;
+      }
+
+      .recharts-radar-polygon {
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
 
       .driver-popover.driverjs-theme {
         background-color: #1e293b;

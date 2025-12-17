@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TrendingDown, ArrowRight, PiggyBank, Sparkles, X, Target, Wand2, FileCode, Copy, Check } from 'lucide-react';
 import { Finding } from '../types';
 
@@ -9,7 +9,24 @@ interface CostImpactProps {
 export const CostImpact: React.FC<CostImpactProps> = ({ findings }) => {
   const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
   const [copied, setCopied] = useState(false);
-  const costFindings = findings.filter(f => f.costSavings);
+
+  // Strict filter for FinOps specific findings
+  const costFindings = useMemo(() => {
+    return findings.filter(f => {
+      if (!f.costSavings) return false;
+      
+      const category = f.category.toLowerCase();
+      const savings = f.costSavings.toLowerCase();
+      
+      // Must be cost-related category and have actual savings info (not N/A)
+      return (
+        (category.includes('cost') || category.includes('finops')) &&
+        !savings.includes('n/a') &&
+        !savings.includes('none') &&
+        savings.trim().length > 0
+      );
+    });
+  }, [findings]);
 
   if (costFindings.length === 0) return null;
 

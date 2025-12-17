@@ -184,6 +184,14 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
     }
   };
 
+  // Improved validation to avoid rendering hallucinated field names or junk in costSavings
+  const isValidCost = useMemo(() => {
+    if (!finding.costSavings) return false;
+    const s = finding.costSavings.toLowerCase();
+    // Block literal field names or non-value placeholders
+    return !['filename', 'line', 'n/a', 'none', 'null', 'undefined'].some(junk => s === junk || s.includes(junk)) && s.trim().length > 0;
+  }, [finding.costSavings]);
+
   return (
     <div className={`border border-slate-200 dark:border-slate-700 border-l-4 ${borderColors[finding.severity]} rounded-r-xl rounded-l-sm mb-3 bg-white dark:bg-slate-900 transition-all duration-200 hover:shadow-md group`}>
       <div 
@@ -201,7 +209,7 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
                 <div className="flex flex-wrap items-center gap-2">
                     {(finding.fileName || finding.lineNumber) && (
                         <>
-                            {finding.fileName && (
+                            {finding.fileName && finding.fileName.toLowerCase() !== 'filename' && (
                                 <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 max-w-full truncate" title={`File: ${finding.fileName}`}>
                                     <FileCode className="w-3 h-3 text-slate-400" />
                                     {finding.fileName}
@@ -215,7 +223,7 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
                             )}
                         </>
                     )}
-                    {finding.costSavings && (
+                    {isValidCost && (
                         <span className="flex items-center gap-1.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 animate-pulse">
                             <Banknote className="w-3 h-3" />
                             {finding.costSavings}
