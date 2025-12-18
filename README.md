@@ -1,4 +1,4 @@
-# 🛡️ Deployment Readiness Auditor (DRA)
+# 🛡️ Deployment Readiness Auditor (DRA) v2.5
 
 **Architect with Confidence. Audit with Intelligence.**
 
@@ -23,13 +23,12 @@ Before you begin, ensure you have the following:
 1.  **Google Gemini API Key**: Obtain one from the [Google AI Studio](https://aistudio.google.com/).
 2.  **Node.js & NPM**: Installed on your local machine (v18+ recommended).
 3.  **GCP Project** (Optional for deployment): A project with billing enabled for Cloud Run.
-4.  **Docker** (Optional for deployment): To build and push the container image.
 
 ---
 
 ## 💻 Local Development (Idiot-Proof Guide)
 
-Follow these exact steps to get the app running on your laptop in under 2 minutes:
+Follow these exact steps to get the app running on your laptop:
 
 ### 1. Clone the Repository
 ```bash
@@ -47,17 +46,18 @@ window.process = {
   }
 };
 ```
-*Note: In a production environment, you should never hardcode keys. For local testing, this is the fastest way.*
+*Note: In a production environment, you should use environment variables. For local testing, this is the fastest way.*
 
-### 3. Install Dependencies
+### 3. Install and Build
 ```bash
 npm install
+npm run build
 ```
+This converts the `index.tsx` file into a browser-readable `index.js` file using **esbuild**.
 
 ### 4. Start the Development Server
 ```bash
-# Using a simple static server (recommended)
-npx serve .
+npm start
 ```
 The terminal will provide a URL (usually `http://localhost:3000`). Open it in your browser!
 
@@ -65,42 +65,21 @@ The terminal will provide a URL (usually `http://localhost:3000`). Open it in yo
 
 ## ☁️ Deployment to Google Cloud Run
 
-Cloud Run is the best way to host DRA. It's serverless, scales to zero (meaning it's free when not used), and highly secure.
+Cloud Run is the best way to host DRA. It's serverless, scales to zero, and highly secure.
 
-### 1. Build and Push the Container
-Replace `[PROJECT_ID]` with your actual Google Cloud Project ID.
+### 1. Build and Deploy in One Command
+Replace `[PROJECT_ID]` with your actual Google Cloud Project ID. This command uses the provided `Dockerfile` to bundle and serve your app automatically.
 
-```bash
-# Variables
-PROJECT_ID="your-gcp-project-id"
-REGION="us-central1"
-IMAGE_NAME="dra-app"
-
-# Enable required APIs
-gcloud services enable artifactregistry.googleapis.com run.googleapis.com cloudbuild.googleapis.com
-
-# Create an Artifact Registry repository
-gcloud artifacts repositories create dra-repo \
-    --repository-format=docker \
-    --location=$REGION \
-    --description="DRA Docker repository"
-
-# Build and Push using Cloud Build (No local Docker needed!)
-gcloud builds submit --tag $REGION-docker.pkg.dev/$PROJECT_ID/dra-repo/$IMAGE_NAME .
-```
-
-### 2. Deploy to Cloud Run
 ```bash
 gcloud run deploy dra-app \
-  --image $REGION-docker.pkg.dev/$PROJECT_ID/dra-repo/$IMAGE_NAME \
-  --platform managed \
-  --region $REGION \
+  --source . \
+  --region us-central1 \
   --allow-unauthenticated \
   --set-env-vars API_KEY=your_actual_gemini_key_here \
   --port 3000
 ```
 
-### 3. Access the App
+### 2. Access the App
 Once finished, the command output will provide a **Service URL**. Click it to access your live Deployment Readiness Auditor!
 
 ---
