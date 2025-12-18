@@ -77,7 +77,7 @@ REGION="us-central1"
 IMAGE_NAME="dra-app"
 
 # Enable required APIs
-gcloud services enable artifactregistry.googleapis.com run.googleapis.com
+gcloud services enable artifactregistry.googleapis.com run.googleapis.com cloudbuild.googleapis.com
 
 # Create an Artifact Registry repository
 gcloud artifacts repositories create dra-repo \
