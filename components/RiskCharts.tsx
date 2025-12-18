@@ -51,21 +51,28 @@ const PulsingDot = (props: any) => {
 };
 
 export const RiskCharts: React.FC<RiskChartsProps> = ({ categories }) => {
-  const [activeCategoryName, setActiveCategoryName] = useState<string | null>(
-    categories.length > 0 ? categories.sort((a, b) => a.score - b.score)[0].name : null
-  );
+  // Sort categories by score to highlight the lowest (weakest) one by default
+  const [activeCategoryName, setActiveCategoryName] = useState<string | null>(() => {
+    if (categories.length === 0) return null;
+    const sorted = [...categories].sort((a, b) => a.score - b.score);
+    return sorted[0].name;
+  });
 
   const activeCategory = useMemo(() => 
     categories.find(c => c.name === activeCategoryName) || categories[0],
     [categories, activeCategoryName]
   );
 
-  const data = categories.map(c => ({
-    subject: c.name.replace('Optimization', 'Opt.').replace('Efficiency', 'Eff.').replace('Operational', 'Ops.'),
+  const data = useMemo(() => categories.map(c => ({
+    subject: c.name
+      .replace('Optimization', 'Opt.')
+      .replace('Efficiency', 'Eff.')
+      .replace('Performance', 'Perf.')
+      .replace('Operational', 'Ops.'),
     fullSubject: c.name,
     score: c.score,
     fullMark: 100,
-  }));
+  })), [categories]);
 
   const getStatusColor = (score: number) => {
     if (score >= 90) return 'text-emerald-600 dark:text-emerald-400';
@@ -93,7 +100,9 @@ export const RiskCharts: React.FC<RiskChartsProps> = ({ categories }) => {
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">GCP Architecture Framework</p>
             </div>
         </div>
-        <a href="https://docs.cloud.google.com/architecture/framework" target="_blank" className="p-2.5 text-slate-400 hover:text-indigo-600 rounded-xl transition-all border border-transparent hover:border-indigo-100 shadow-sm"><ExternalLink className="w-5 h-5" /></a>
+        <a href="https://docs.cloud.google.com/architecture/framework" target="_blank" rel="noopener noreferrer" className="p-2.5 text-slate-400 hover:text-indigo-600 rounded-xl transition-all border border-transparent hover:border-indigo-100 shadow-sm">
+          <ExternalLink className="w-5 h-5" />
+        </a>
       </div>
       
       <div className="flex flex-col xl:flex-row gap-8 items-stretch flex-1">
@@ -104,10 +113,21 @@ export const RiskCharts: React.FC<RiskChartsProps> = ({ categories }) => {
                 <PolarGrid stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeDasharray="4 4" />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }} />
                 <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                <Radar name="Pillar Score" dataKey="score" stroke="#6366f1" strokeWidth={3} fill="url(#radarGradient)" fillOpacity={0.6} dot={<PulsingDot />} isAnimationActive={true} animationDuration={1000} />
+                <Radar 
+                  name="Pillar Score" 
+                  dataKey="score" 
+                  stroke="#6366f1" 
+                  strokeWidth={3} 
+                  fill="url(#radarGradient)" 
+                  fillOpacity={0.6} 
+                  dot={<PulsingDot />} 
+                  isAnimationActive={true} 
+                  animationDuration={1000} 
+                />
                 <defs>
                 <linearGradient id="radarGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#818cf8" stopOpacity={0.8}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0.2}/>
+                    <stop offset="5%" stopColor="#818cf8" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0.2}/>
                 </linearGradient>
                 </defs>
                 <Tooltip content={<CustomTooltip />} cursor={false} />
