@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, ArrowRight, Lock, Activity, Play, X, BookOpen, Info } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Lock, Activity, Play, X } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface SplashPageProps {
@@ -10,83 +10,81 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart }) => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-12 relative">
+    <div className="flex flex-col items-center justify-center min-h-screen py-12 relative overflow-hidden">
         
         {/* Center Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-10">
             
             {/* Logo Section */}
-            <div className="flex justify-center mb-4">
-                <div className="relative group cursor-default animate-float">
-                    <Logo size="xl" className="transform transition-transform duration-700 hover:rotate-6" />
-                    
-                    {/* Floating Orbiting Badges */}
-                    <div className="absolute -right-8 -top-4 bg-white dark:bg-slate-800 p-2.5 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 animate-bounce" style={{ animationDuration: '3s' }}>
-                        <Lock className="w-6 h-6 text-emerald-500" />
-                    </div>
-                    <div className="absolute -left-8 -bottom-4 bg-white dark:bg-slate-800 p-2.5 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }}>
-                        <Activity className="w-6 h-6 text-amber-500" />
-                    </div>
+            <div className="flex justify-center mb-12">
+                <div className="relative flex items-center justify-center">
+                    {/* The Master Logo (now includes orbiting elements) */}
+                    <Logo 
+                        size="xl" 
+                        animate={true}
+                        className="transform transition-transform duration-700 hover:scale-110" 
+                    />
                 </div>
             </div>
 
             {/* Hero Typography */}
             <div className="space-y-6 animate-enter">
-                <div className="inline-block">
-                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em] shadow-sm">
+                <div className="inline-block relative group">
+                    <div className="absolute -inset-2 bg-indigo-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <span className="relative inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-900 dark:bg-slate-900 border border-indigo-500/30 text-indigo-400 text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl">
                         Enterprise Audit Intelligence
                     </span>
                 </div>
 
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter text-slate-900 dark:text-white leading-[0.95]">
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-slate-900 dark:text-white leading-[0.9] pt-4">
                     Deployment Readiness <br/>
-                    <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent bg-300% animate-gradient">
+                    <span className="bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500 bg-clip-text text-transparent bg-300% animate-gradient">
                         Auditor
                     </span>
                 </h1>
-                <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
-                    Automated pre-deployment risk analysis. Align with the 
-                    <span className="text-indigo-900 dark:text-indigo-300 font-bold mx-1 underline decoration-indigo-500/30">Google Cloud Architecture Framework</span> 
+                <p className="text-xl md:text-2xl text-slate-500 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed font-medium">
+                    Analyze architectural integrity against the 
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold mx-2">Google Cloud Framework</span> 
                     using advanced AI semantics.
                 </p>
             </div>
 
             {/* CTA Buttons */}
-            <div className="animate-enter pt-4 flex flex-col sm:flex-row items-center justify-center gap-4" style={{ animationDelay: '0.2s' }}>
+            <div className="animate-enter pt-8 flex flex-col sm:flex-row items-center justify-center gap-6" style={{ animationDelay: '0.2s' }}>
                 
                 {/* Primary Action */}
                 <div className="relative group inline-block w-full sm:w-auto">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-200 animate-gradient bg-300%"></div>
+                    <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 rounded-full blur opacity-40 group-hover:opacity-100 transition duration-500 animate-gradient bg-300%"></div>
                     <button 
                         onClick={onStart}
-                        className="relative w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-lg font-black tracking-wide shadow-2xl transition-all duration-300 hover:scale-[1.05] active:scale-95"
+                        className="relative w-full sm:w-auto flex items-center justify-center gap-4 px-12 py-6 bg-indigo-600 text-white rounded-full text-xl font-black tracking-tight shadow-2xl transition-all duration-300 hover:scale-[1.05] active:scale-95"
                     >
                         Scan Infrastructure
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                     </button>
                 </div>
 
-                {/* Secondary Action - Simple discovery video */}
+                {/* Secondary Action */}
                 <button 
                     onClick={() => setIsVideoOpen(true)}
-                    className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 backdrop-blur-sm text-slate-700 dark:text-slate-200 rounded-full text-lg font-bold border border-slate-200 dark:border-slate-700 transition-all duration-300 hover:scale-[1.02] active:scale-95 group"
+                    className="w-full sm:w-auto flex items-center justify-center gap-4 px-12 py-6 bg-white/10 dark:bg-white/5 hover:bg-white/20 dark:hover:bg-white/10 backdrop-blur-2xl text-slate-700 dark:text-slate-200 rounded-full text-xl font-bold border border-slate-200/50 dark:border-white/10 transition-all duration-300 group"
                 >
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
-                        <Play className="w-4 h-4 fill-current ml-0.5" />
+                    <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300">
+                        <Play className="w-5 h-5 fill-current ml-1" />
                     </div>
                     Learn More
                 </button>
             </div>
 
             {/* Feature Pills */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-8 max-w-2xl mx-auto animate-enter" style={{ animationDelay: '0.4s' }}>
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-12 animate-enter" style={{ animationDelay: '0.4s' }}>
                 {[
-                    { icon: ShieldCheck, text: "WAF Pillars" },
-                    { icon: Lock, text: "Compliance" },
-                    { icon: Activity, text: "FinOps Audit" }
+                    { icon: ShieldCheck, text: "WAF Pillars", color: "text-indigo-400" },
+                    { icon: Lock, text: "Compliance", color: "text-emerald-400" },
+                    { icon: Activity, text: "FinOps Audit", color: "text-amber-400" }
                 ].map((feature, i) => (
-                    <div key={i} className="flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all cursor-default">
-                        <feature.icon className="w-4 h-4 text-indigo-500" />
+                    <div key={i} className="flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-xl border border-white/5 text-xs font-black text-slate-300 uppercase tracking-widest shadow-2xl hover:bg-slate-900 transition-colors">
+                        <feature.icon className={`w-4 h-4 ${feature.color}`} />
                         {feature.text}
                     </div>
                 ))}
@@ -95,23 +93,19 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart }) => {
 
         {/* Video Modal */}
         {isVideoOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-200">
-                {/* Backdrop */}
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300">
                 <div 
-                    className="absolute inset-0 bg-slate-900/90 backdrop-blur-md transition-opacity" 
+                    className="absolute inset-0 bg-slate-950/95 backdrop-blur-xl transition-opacity" 
                     onClick={() => setIsVideoOpen(false)}
                 />
                 
-                {/* Modal Content */}
-                <div className="relative w-full max-w-5xl bg-black rounded-3xl shadow-2xl overflow-hidden border border-slate-800 animate-in zoom-in-95 duration-300 flex flex-col">
-                    <div className="absolute top-6 right-6 z-20 flex gap-2">
-                        <button 
-                            onClick={() => setIsVideoOpen(false)}
-                            className="p-3 bg-white/10 hover:bg-red-600 text-white rounded-xl backdrop-blur-sm transition-all duration-200 group"
-                        >
-                            <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
-                        </button>
-                    </div>
+                <div className="relative w-full max-w-6xl bg-black rounded-[3rem] shadow-2xl overflow-hidden border border-white/10 animate-in zoom-in-95 duration-500">
+                    <button 
+                        onClick={() => setIsVideoOpen(false)}
+                        className="absolute top-8 right-8 z-20 p-4 bg-white/10 hover:bg-red-500 text-white rounded-2xl backdrop-blur-xl transition-all duration-300 group"
+                    >
+                        <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+                    </button>
                     
                     <div className="aspect-video w-full">
                         <iframe 

@@ -16,10 +16,17 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
       <div className="max-w-[2200px] mx-auto px-6 sm:px-10 lg:px-16 2xl:px-24 h-20 md:h-24 flex items-center justify-between">
         
         <div 
-          className="flex items-center gap-5 cursor-pointer group" 
+          className="flex items-center gap-10 cursor-pointer group pr-4" 
           onClick={() => onNavigate('about')}
         >
-          <Logo size="md" className="group-hover:scale-110 transition-transform duration-500" />
+          {/* Added extra horizontal padding to the logo container to handle badge overflows */}
+          <div className="relative py-2 px-3">
+            <Logo 
+                size="md" 
+                className="group-hover:rotate-[360deg] transition-all duration-1000 ease-in-out" 
+            />
+          </div>
+          
           <div className="flex flex-col">
             <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tighter leading-none group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
               DRA<span className="text-indigo-600 dark:text-indigo-400">.</span>
@@ -63,16 +70,18 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
 
             <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
                 <button 
+                    id="header-history-btn"
                     onClick={onToggleHistory}
-                    className="p-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-110"
+                    className="p-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-110 active:scale-95"
                     title="Audit History"
                 >
                     <History className="w-5 h-5" />
                 </button>
 
                 <button 
+                    id="header-theme-btn"
                     onClick={toggleTheme}
-                    className="p-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-110"
+                    className="p-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-110 active:scale-95"
                     title={isDarkMode ? "Light Mode" : "Dark Mode"}
                 >
                     {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

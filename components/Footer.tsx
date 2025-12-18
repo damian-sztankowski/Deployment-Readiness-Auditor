@@ -22,10 +22,12 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-12 items-start">
           
           <div className="space-y-10">
-            <div className="flex items-center gap-4 group cursor-default">
-              <Logo size="md" />
+            <div className="flex items-center gap-10 group cursor-default">
+              <div className="relative py-2 px-3">
+                <Logo size="md" className="group-hover:animate-morph-fast transition-all duration-500" />
+              </div>
               <div className="flex flex-col">
-                <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white uppercase leading-none">
+                <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white uppercase leading-none group-hover:text-indigo-600 transition-colors">
                   Deployment Readiness Auditor
                 </span>
                 <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400 mt-1">
