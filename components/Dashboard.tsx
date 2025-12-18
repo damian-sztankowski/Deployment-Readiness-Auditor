@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import { AuditResult, Severity } from '../types';
 import { ScoreCard } from './ScoreCard';
@@ -98,7 +99,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
       currentY = 25;
       doc.setFont("helvetica", "bold").setFontSize(18).setTextColor(...theme.dark).text("Detailed Infrastructure Assessment", margin, currentY);
       
-      const findingsRows = result.findings.map(f => [
+      // Fix: Use explicit any[][] type for findingsRows to bypass FontStyle union type mismatch in jspdf-autotable
+      const findingsRows: any[][] = result.findings.map(f => [
         `${f.severity.toUpperCase()}\n\n${f.category}`,
         `${f.fileName || 'Global'}\nLine ${f.lineNumber || 'N/A'}${f.costSavings ? '\n\n' + f.costSavings : ''}`,
         {

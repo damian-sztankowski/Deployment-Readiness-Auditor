@@ -196,7 +196,7 @@ resource "google_compute_disk" "unattached_disk" {
             id="code-editor-area"
             value={inputCode}
             onChange={(e) => setInputCode(e.target.value)}
-            placeholder={isReadingFiles ? "Reading files..." : "Paste HCL / JSON here..."}
+            placeholder={isReadingFiles ? "Reading files..." : "Paste HCL here..."}
             className="w-full h-[65vh] min-h-[500px] p-12 font-mono text-lg text-slate-900 dark:text-slate-100 bg-transparent outline-none resize-none leading-relaxed placeholder:text-slate-300 dark:placeholder:text-slate-700"
             spellCheck={false}
           />
