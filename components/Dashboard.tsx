@@ -102,7 +102,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
         `${f.severity.toUpperCase()}\n\n${f.category}`,
         `${f.fileName || 'Global'}\nLine ${f.lineNumber || 'N/A'}${f.costSavings ? '\n\n' + f.costSavings : ''}`,
         {
-          content: `${f.title.toUpperCase()}\n\n${f.description}\n\nACTION: ${f.remediation}\n\nREGULATORY AUTHORITY: ${f.complianceUrls?.join(', ') || 'N/A'}`,
+          content: `${f.title.toUpperCase()}\n\n${f.description}\n\nACTION: ${f.remediation}`,
           styles: { fontStyle: 'normal' }
         }
       ]);
@@ -110,7 +110,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
       autoTable(doc, {
         startY: currentY + 10,
         margin: { left: margin, right: margin },
-        head: [['Severity / Pillar', 'Context', 'Finding & Authority Verification']],
+        head: [['Severity / Pillar', 'Context', 'Finding Details']],
         body: findingsRows,
         theme: 'striped',
         headStyles: { fillColor: theme.primary, fontSize: 10, cellPadding: 5 },

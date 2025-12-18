@@ -13,6 +13,13 @@ export interface CategoryScore {
   explanation?: string; // AI reasoning for this specific score
 }
 
+export interface ComplianceDetail {
+  standard: string;      // e.g. "CIS GCP Benchmark"
+  controlId: string;     // e.g. "CIS 1.2"
+  description: string;   // Formal definition of the control
+  impact: string;        // The business/security impact of non-compliance
+}
+
 export interface Finding {
   id: string;
   severity: Severity;
@@ -21,9 +28,7 @@ export interface Finding {
   description: string;
   remediation: string;
   fix?: string; // Terraform/Code snippet to resolve the issue
-  compliance?: string[]; // e.g., ["CIS 1.2", "NIST 800-53 SC-7"]
-  documentationUrls?: string[]; // Official documentation links (e.g. cloud.google.com)
-  complianceUrls?: string[]; // New: Official regulatory/benchmark links (e.g. nist.gov, cisecurity.org, etc.)
+  compliance?: ComplianceDetail[]; // Standards mapping with structured info
   lineNumber?: number;
   fileName?: string;
   costSavings?: string; // e.g., "Save ~20% ($50/mo)"

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, ShieldCheck, Wand2, Copy, Check, FileCode, Hash, Banknote, Shield, ExternalLink, X, BookOpen, Globe, Landmark, Link as LinkIcon, Book, Eye, EyeOff } from 'lucide-react';
-import { Finding, Severity } from '../types';
+import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, ShieldCheck, Wand2, Copy, Check, FileCode, Hash, Banknote, Shield, X, Eye, EyeOff, Landmark, Activity, BookOpen, AlertCircle, Bookmark, Compass } from 'lucide-react';
+import { Finding, Severity, ComplianceDetail } from '../types';
 
 interface FindingsListProps {
   findings: Finding[];
@@ -30,7 +30,7 @@ const SeverityBadge = ({ severity }: { severity: Severity }) => {
   );
 };
 
-const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, finding: Finding) => void }> = ({ finding, onShowCompliance }) => {
+const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (comp: ComplianceDetail) => void }> = ({ finding, onShowCompliance }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showFix, setShowFix] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -44,42 +44,61 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
     }
   };
 
+  // Dynamic category styling
+  const getCategoryStyles = (category: string) => {
+    const cat = category.toLowerCase();
+    if (cat.includes('security')) return 'text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-900/10';
+    if (cat.includes('cost')) return 'text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10';
+    if (cat.includes('reliabil')) return 'text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10';
+    return 'text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20';
+  };
+
   return (
     <div className={`border border-slate-200 dark:border-slate-800 border-l-4 ${finding.severity === Severity.CRITICAL ? 'border-l-red-500' : finding.severity === Severity.HIGH ? 'border-l-orange-500' : 'border-l-indigo-500'} rounded-xl mb-4 bg-white dark:bg-slate-900 transition-all duration-300 hover:shadow-lg group overflow-hidden shadow-sm`}>
       <div onClick={() => setIsOpen(!isOpen)} className="p-5 flex items-start gap-4 cursor-pointer select-none">
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start mb-2">
-            <h4 className="text-slate-900 dark:text-white font-bold text-sm md:text-base tracking-tight">{finding.title}</h4>
+            <h4 className="text-slate-900 dark:text-white font-bold text-sm md:text-base tracking-tight leading-snug">{finding.title}</h4>
             <div className="flex items-center gap-3">
               <SeverityBadge severity={finding.severity} />
               <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 mb-3">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             {finding.fileName && (
-              <span className="flex items-center gap-1.5 text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+              <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                 <FileCode className="w-3 h-3 text-slate-400" /> {finding.fileName}
               </span>
             )}
             {finding.lineNumber && (
-              <span className="flex items-center gap-1.5 text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+              <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                 <Hash className="w-3 h-3 text-slate-400" /> Ln {finding.lineNumber}
               </span>
             )}
             {finding.costSavings && (
-              <span className="flex items-center gap-1.5 text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20">
+              <span className="flex items-center gap-1.5 text-[10px] font-black bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20">
                 <Banknote className="w-3 h-3" /> {finding.costSavings}
               </span>
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2">{finding.category}</span>
-            <div className="flex flex-wrap gap-1.5">
-              {finding.compliance?.map((std, idx) => (
-                <button key={idx} onClick={(e) => { e.stopPropagation(); onShowCompliance(std, finding); }} className="text-[9px] font-mono bg-indigo-500/5 text-indigo-500 px-2 py-0.5 rounded border border-indigo-500/10 hover:bg-indigo-500/10 transition-all">
-                  <Shield className="w-2.5 h-2.5 inline mr-1" />{std}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest shadow-sm ${getCategoryStyles(finding.category)}`}>
+              <Bookmark className="w-3 h-3 opacity-60" />
+              {finding.category}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              {finding.compliance?.map((comp, idx) => (
+                <button 
+                  key={idx} 
+                  onClick={(e) => { e.stopPropagation(); onShowCompliance(comp); }} 
+                  className="text-[9px] font-mono bg-white dark:bg-slate-950 text-indigo-500 dark:text-indigo-300 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all flex items-center gap-1.5 group/comp shadow-sm whitespace-nowrap"
+                >
+                  <Compass className="w-3 h-3 opacity-50 group-hover/comp:rotate-90 transition-transform duration-500 shrink-0" />
+                  <span className="font-bold opacity-60 mr-0.5">{comp.standard}</span>
+                  <span className="font-black">{comp.controlId}</span>
                 </button>
               ))}
             </div>
@@ -91,34 +110,6 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
         <div className="overflow-hidden">
           <div className="px-5 pb-6 pt-2 ml-4 md:ml-9 space-y-6">
             <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{finding.description}</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {finding.documentationUrls && finding.documentationUrls.length > 0 && (
-                <div className="p-4 bg-blue-500/5 rounded-xl border border-blue-500/10">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-blue-500 mb-3 flex items-center gap-2">
-                    <Globe className="w-3.5 h-3.5" /> GCP Architecture Docs
-                  </span>
-                  <div className="space-y-1.5">
-                    {finding.documentationUrls.map((url, i) => (
-                      <a key={i} href={url} target="_blank" rel="noopener" className="text-[11px] text-indigo-500 hover:underline block truncate font-medium">{url}</a>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {finding.complianceUrls && finding.complianceUrls.length > 0 && (
-                <div className="p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500 mb-3 flex items-center gap-2">
-                    <Landmark className="w-3.5 h-3.5" /> Regulatory Source Authority
-                  </span>
-                  <div className="space-y-1.5">
-                    {finding.complianceUrls.map((url, i) => (
-                      <a key={i} href={url} target="_blank" rel="noopener" className="text-[11px] text-emerald-600 hover:underline block truncate font-medium">{url}</a>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
             
             <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-xl border border-slate-100 dark:border-slate-800 relative">
               <div className="flex justify-between items-center mb-4">
@@ -165,6 +156,7 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
 
 export const FindingsList: React.FC<FindingsListProps> = ({ findings }) => {
   const [filter, setFilter] = useState<'ALL' | Severity>('ALL');
+  const [activeCompliance, setActiveCompliance] = useState<ComplianceDetail | null>(null);
 
   const filteredFindings = useMemo(() => 
     findings.filter(f => filter === 'ALL' || f.severity === filter)
@@ -198,7 +190,7 @@ export const FindingsList: React.FC<FindingsListProps> = ({ findings }) => {
 
       <div className="space-y-1">
         {filteredFindings.length > 0 ? (
-            filteredFindings.map(f => <FindingItem key={f.id} finding={f} onShowCompliance={() => {}} />)
+            filteredFindings.map(f => <FindingItem key={f.id} finding={f} onShowCompliance={setActiveCompliance} />)
         ) : (
             <div className="py-24 text-center bg-slate-50 dark:bg-slate-950/20 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-800">
                 <ShieldCheck className="w-12 h-12 text-slate-200 dark:text-slate-800 mx-auto mb-4" />
@@ -206,6 +198,76 @@ export const FindingsList: React.FC<FindingsListProps> = ({ findings }) => {
             </div>
         )}
       </div>
+
+      {/* COMPLIANCE EXPLANATION MODAL (PROFESSIONAL INFO) */}
+      {activeCompliance && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setActiveCompliance(null)} />
+          <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Header */}
+            <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/50 flex justify-between items-center">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400">
+                  <Landmark className="w-6 h-6" />
+                </div>
+                <div>
+                   <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none">{activeCompliance.standard}</h3>
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5 block">Regulatory Framework Advisory</span>
+                </div>
+              </div>
+              <button onClick={() => setActiveCompliance(null)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-8">
+              {/* Control Identification */}
+              <div className="flex items-center justify-between p-4 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100/50 dark:border-indigo-800/30">
+                  <div className="flex items-center gap-3">
+                      <BookOpen className="w-4 h-4 text-indigo-500" />
+                      <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Control Reference</span>
+                  </div>
+                  <span className="text-sm font-black text-indigo-600 dark:text-indigo-300 font-mono bg-white dark:bg-slate-800 px-3 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-sm">
+                      {activeCompliance.controlId}
+                  </span>
+              </div>
+
+              {/* Requirement Text */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    Requirement Definition
+                </div>
+                <p className="text-slate-700 dark:text-slate-200 text-base leading-relaxed font-medium">
+                  {activeCompliance.description}
+                </p>
+              </div>
+
+              {/* Business/Security Impact */}
+              <div className="space-y-3 p-5 bg-red-50/30 dark:bg-red-950/10 rounded-2xl border border-red-100/50 dark:border-red-900/20">
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-red-500">
+                    <Activity className="w-3.5 h-3.5" />
+                    Risk & Impact
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed italic">
+                  {activeCompliance.impact}
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-8 py-5 bg-slate-50 dark:bg-slate-950/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <button 
+                onClick={() => setActiveCompliance(null)} 
+                className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-xs uppercase tracking-widest active:scale-95"
+              >
+                Acknowledge Risk
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

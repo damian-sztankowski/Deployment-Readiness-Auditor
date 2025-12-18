@@ -12,10 +12,13 @@ You are the **Deployment Readiness Auditor (DRA) v2.5**, an expert Google Cloud 
 ## 🏛️ ARCHITECTURE FRAMEWORK MANDATE
 You MUST evaluate infrastructure against EXACTLY FIVE pillars: Security, Cost Optimization, Reliability, Operational Excellence, and Performance Optimization.
 
-## 📖 DUAL-SOURCE EVIDENCE
-For EVERY finding, you MUST provide:
-1. 'documentationUrls': 1-2 links to official cloud.google.com documentation.
-2. 'complianceUrls': 1-2 links to the official regulatory source (nist.gov, cisecurity.org, etc.).
+## ⚖️ PROFESSIONAL COMPLIANCE ADVISORY (CRITICAL)
+For EVERY finding, map it to 1-2 regulatory standards (e.g., CIS GCP Benchmark, NIST 800-53, GDPR). 
+For each mapping, you MUST provide:
+- 'standard': The formal name of the framework.
+- 'controlId': The specific control reference number (e.g., "CIS 1.2" or "NIST SC-7").
+- 'description': A professional, technical description of what the standard requires.
+- 'impact': The specific business, legal, or security risk of violating this control.
 
 ## 💰 FINOPS & REMEDIATION (CRITICAL)
 - **Code Fixes**: For EVERY finding, you MUST provide a valid 'fix' (Terraform/HCL code snippet) that resolves the issue.
@@ -25,6 +28,7 @@ For EVERY finding, you MUST provide:
 ## 📝 OUTPUT RULES
 - Return ONLY raw JSON matching the schema.
 - 'explanation' in categories must explain the 'Why' and 'Impact' in 20-30 words.
+- DO NOT include URLs. Provide only high-fidelity, professional text.
 `;
 
 const addLineNumbers = (code: string): string => {
@@ -50,7 +54,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     const response = await ai.models.generateContent({
       model,
-      contents: `Perform a deep audit. You MUST provide a 'fix' code snippet for every finding. Identify exact file names and line numbers. Include both GCP and Regulatory documentation links.\n\nInput Code:\n${numberedCode}`,
+      contents: `Perform a deep audit. You MUST provide structured 'compliance' info for every finding including controlId, formal description, and impact. Provide a 'fix' code snippet for every finding. Identify exact file names and line numbers.\n\nInput Code:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.1,
@@ -88,11 +92,21 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
                   fileName: { type: Type.STRING },
                   lineNumber: { type: Type.INTEGER },
                   costSavings: { type: Type.STRING },
-                  documentationUrls: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  complianceUrls: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  compliance: { type: Type.ARRAY, items: { type: Type.STRING } }
+                  compliance: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        standard: { type: Type.STRING },
+                        controlId: { type: Type.STRING },
+                        description: { type: Type.STRING },
+                        impact: { type: Type.STRING }
+                      },
+                      required: ["standard", "controlId", "description", "impact"]
+                    }
+                  }
                 },
-                required: ["severity", "category", "title", "description", "remediation", "id", "lineNumber", "documentationUrls", "complianceUrls", "fileName", "fix"]
+                required: ["severity", "category", "title", "description", "remediation", "id", "lineNumber", "fileName", "fix", "compliance"]
               }
             }
           },
@@ -103,7 +117,6 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     const result = JSON.parse(response.text) as AuditResult;
     
-    // Attach usage metadata if available
     if (response.usageMetadata) {
       result.usage = {
         promptTokenCount: response.usageMetadata.promptTokenCount,
