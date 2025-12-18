@@ -17,14 +17,19 @@ app.use(express.static(__dirname));
 app.get('/', (req, res) => {
   const indexPath = path.join(__dirname, 'index.html');
   fs.readFile(indexPath, 'utf8', (err, data) => {
-    if (err) return res.status(500).send('Error');
+    if (err) {
+      res.status(500).send('Error loading index.html');
+      return;
+    }
 
-    // Pobierz klucz z ENV i wstrzyknij go
-    const apiKey = process.env.API_KEY || "AIzaSy..."; // fallback na Twój klucz dev
+    const apiKey = process.env.API_KEY || '';
+    
+
     const result = data.replace(
-      'API_KEY: ""',
+      /API_KEY:\s*["'][^"']*["']/g,
       `API_KEY: "${apiKey}"`
     );
+
     res.send(result);
   });
 });
@@ -37,3 +42,4 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
