@@ -177,7 +177,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
         f.severity.toUpperCase(),
         f.category,
         {
-          content: `${f.title.toUpperCase()}\n\n${f.description}\n\nACTION: ${f.remediation}${f.compliance?.length ? '\n\nCOMPLIANCE MAPPING: ' + f.compliance.join(', ') : ''}`,
+          content: `${f.title.toUpperCase()}\n\n${f.description}\n\nACTION: ${f.remediation}${f.documentationUrls?.length ? '\n\nREFERENCES: ' + f.documentationUrls.join(', ') : ''}${f.compliance?.length ? '\n\nCOMPLIANCE: ' + f.compliance.join(', ') : ''}`,
           styles: { fontStyle: 'normal' }
         }
       ]);

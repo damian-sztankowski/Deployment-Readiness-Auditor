@@ -23,6 +23,9 @@ For EACH pillar, you MUST provide an 'explanation' string (approx 20-30 words) t
 
 If a pillar has no findings, you MUST still include it with a score of 100 and a positive explanation.
 
+## 📖 DOCUMENTATION EVIDENCE
+For EVERY finding, you MUST provide at least one (ideally two) official documentation URLs from **cloud.google.com** that support the best practice or identify the risk. These are critical for professional audits.
+
 ## 🚫 HYPERSCALER RESTRICTION
 This tool is built **EXCLUSIVELY for Google Cloud Platform (GCP)**. Reject non-GCP code.
 
@@ -60,7 +63,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     const response = await ai.models.generateContent({
       model,
-      contents: `Audit this GCP infrastructure. You MUST return exactly 5 categories: Security, Cost Optimization, Reliability, Operational Excellence, and Performance Optimization. Do not omit the Performance Optimization category.\n\nCode:\n${numberedCode}`,
+      contents: `Audit this GCP infrastructure. You MUST return exactly 5 categories: Security, Cost Optimization, Reliability, Operational Excellence, and Performance Optimization. Ensure every single finding includes 'documentationUrls' pointing to cloud.google.com documentation.\n\nCode:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.1,
@@ -98,12 +101,17 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
                   fileName: { type: Type.STRING },
                   lineNumber: { type: Type.INTEGER },
                   costSavings: { type: Type.STRING },
+                  documentationUrls: { 
+                    type: Type.ARRAY, 
+                    items: { type: Type.STRING },
+                    description: "Links to official cloud.google.com documentation for this best practice."
+                  },
                   compliance: { 
                     type: Type.ARRAY, 
                     items: { type: Type.STRING }
                   }
                 },
-                required: ["severity", "category", "title", "description", "remediation", "id", "lineNumber"]
+                required: ["severity", "category", "title", "description", "remediation", "id", "lineNumber", "documentationUrls"]
               }
             }
           },

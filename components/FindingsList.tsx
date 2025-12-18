@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check, FileCode, Hash, Banknote, Shield, ExternalLink, X, BookOpen, Globe, Layout } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check, FileCode, Hash, Banknote, Shield, ExternalLink, X, BookOpen, Globe, Layout, Book } from 'lucide-react';
 import { Finding, Severity } from '../types';
 
 interface FindingsListProps {
@@ -171,7 +171,7 @@ const ComplianceModal = ({ standardId, finding, onClose }: { standardId: string 
                   <Layout className="w-5 h-5 text-indigo-500" />
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Architecture Pillar</p>
-                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{finding.category}</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-200">{finding.category}</p>
                   </div>
                </div>
                <div className={`flex items-center gap-3 p-3 rounded-xl border flex-1 min-w-[200px] ${focusColors[details.focus]}`}>
@@ -327,6 +327,31 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
                 <div className="text-base text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
                     {finding.description}
                 </div>
+
+                {/* Reference Documentation Section */}
+                {finding.documentationUrls && finding.documentationUrls.length > 0 && (
+                  <div className="mb-4 bg-blue-50/30 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                    <h5 className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-2">
+                        <Book className="w-3.5 h-3.5" />
+                        Official Best Practice Documentation
+                    </h5>
+                    <div className="flex flex-col gap-2">
+                        {finding.documentationUrls.map((url, idx) => (
+                          <a 
+                            key={idx} 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1.5 group/link"
+                          >
+                            <span className="truncate max-w-[90%]">{url}</span>
+                            <ExternalLink className="w-3 h-3 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                          </a>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
                 {finding.compliance && finding.compliance.length > 0 && (
                     <div className="mb-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">

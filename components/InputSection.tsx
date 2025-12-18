@@ -85,28 +85,12 @@ resource "google_compute_disk" "unattached_disk" {
     });
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-    
-    setIsReadingFiles(true);
-    let combinedCode = "";
-    
-    // Sort files alphabetically for deterministic output
-    const sortedFiles = (Array.from(files) as File[]).sort((a, b) => a.name.localeCompare(b.name));
-    
-    for (const file of sortedFiles) {
-      try {
-        const content = await readFileContent(file);
-        combinedCode += `### FILE: ${file.name} ###\n${content}\n\n`;
-      } catch (err) {
-        console.error(`Failed to read ${file.name}`, err);
-      }
-    }
-    
-    setInputCode(combinedCode.trim());
-    setIsReadingFiles(false);
-    
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    readFileContent(file).then(content => {
+      setInputCode(`### FILE: ${file.name} ###\n${content}`);
+    });
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (minimized && onToggleMinimize) onToggleMinimize();
   };
@@ -118,14 +102,17 @@ resource "google_compute_disk" "unattached_disk" {
     let combinedCode = "# --- MULTI-FILE PROJECT ---\n\n";
     let fileCount = 0;
     const validExtensions = ['.tf', '.tfvars', '.json', '.yaml', '.yml'];
+    // Fix: cast Array.from(files) as File[] to ensure 'a' and 'b' have 'name' property
     const sortedFiles = (Array.from(files) as File[]).sort((a, b) => a.name.localeCompare(b.name));
-    
     for (const file of sortedFiles) {
+        // Fix: Ensure file is treated as File to access 'name' property
         const fileName = (file as File).name;
         const ext = fileName.substring(fileName.lastIndexOf('.'));
+        // Fix: use type assertion to access non-standard webkitRelativePath property
         const relativePath = (file as any).webkitRelativePath;
         if (validExtensions.includes(ext) && !relativePath.includes('/.git/')) {
             try {
+                // Fix: cast file as File for readFileContent
                 const content = await readFileContent(file as File);
                 if (!content.includes('\0')) {
                     combinedCode += `### FILE: ${relativePath || (file as File).name} ###\n${content}\n\n`;
@@ -176,20 +163,14 @@ resource "google_compute_disk" "unattached_disk" {
           <div className="flex items-center gap-4" id="action-buttons-group">
               <label className="flex items-center gap-3 text-sm font-black text-slate-600 dark:text-slate-300 px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
                   <Upload className="w-5 h-5" />
-                  Upload Files
-                  <input 
-                    ref={fileInputRef} 
-                    type="file" 
-                    className="hidden" 
-                    onChange={handleFileUpload} 
-                    accept=".tf,.json,.yaml,.yml" 
-                    multiple 
-                  />
+                  Upload File
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".tf,.json,.yaml,.yml" />
               </label>
 
               <label className="flex items-center gap-3 text-sm font-black text-slate-600 dark:text-slate-300 px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
                   <FolderUp className="w-5 h-5" />
                   Upload Project
+                  {/* Using type assertion for non-standard attributes webkitdirectory and directory to fix TS error */}
                   <input 
                     ref={folderInputRef} 
                     type="file" 
