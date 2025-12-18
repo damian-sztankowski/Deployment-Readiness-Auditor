@@ -1,10 +1,27 @@
 # 🛡️ Deployment Readiness Auditor (DRA)
 
-![Google Cloud](https://img.shields.io/badge/Google%20Cloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white)
-![For Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
-![Build with Gemini](https://img.shields.io/badge/AI-Powered%20by%20Gemini-blue?style=for-the-badge&logo=google-gemini&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
+<p align="left">
+  <img src="https://img.shields.io/badge/Google%20Cloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white" />
+  <img src="https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white" />
+  <img src="https://img.shields.io/badge/AI-Powered%20by%20Gemini-blue?style=for-the-badge&logo=google-gemini&logoColor=white" />
+  <img src="https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F%20%26%20AI-red?style=for-the-badge" />
+</p>
 
+---
+
+## 📖 Table of Contents
+* [🌟 Key Features](#-key-features)
+* [📋 Prerequisites](#-prerequisites)
+* [💻 Local Development](#-local-development-idiot-proof-guide)
+    * [1. Clone Repository](#1-clone-the-repository)
+    * [2. Configure API Key](#2-configure-your-api-key)
+    * [3. Install and Build](#3-install-and-build)
+* [☁️ Deployment to Google Cloud Run](#️-deployment-to-google-cloud-run)
+* [🛠️ How to Use](#️-how-to-use)
+* [🔒 Security & Privacy](#-security--privacy)
+* [📄 License](#-license)
+
+---
 
 **Architect with Confidence. Audit with Intelligence.**
 
