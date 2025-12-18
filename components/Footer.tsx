@@ -1,5 +1,5 @@
 import React from 'react';
-import { Github, Linkedin, ExternalLink, Cpu, Globe, ShieldCheck } from 'lucide-react';
+import { Github, Linkedin, ExternalLink, Cpu, Globe, ShieldCheck, Sparkle } from 'lucide-react';
 import { Logo } from './Logo';
 import { GEMINI_MODEL } from '../services/geminiService';
 
@@ -50,12 +50,23 @@ export const Footer: React.FC = () => {
 
           <div className="flex flex-col items-center justify-center space-y-8">
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-60 transition duration-700"></div>
-              <div className="relative px-12 py-10 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-5 shadow-2xl">
-                <Cpu className="w-10 h-10 text-indigo-500 animate-float" />
-                <div className="text-center">
+              {/* ANIMATED GRADIENT BORDER WRAPPER */}
+              <div className="absolute -inset-[1.5px] bg-gradient-to-r from-cyan-400 via-indigo-400 via-purple-400 via-pink-400 to-cyan-400 rounded-[2.1rem] animate-gradient bg-300% opacity-100"></div>
+              
+              {/* OUTER SOFT GLOW */}
+              <div className="absolute -inset-[4px] bg-gradient-to-r from-cyan-400/30 via-indigo-400/30 via-purple-400/30 via-pink-400/30 to-cyan-400/30 rounded-[2.3rem] blur-md opacity-0 group-hover:opacity-100 transition duration-700 animate-gradient bg-300%"></div>
+              
+              {/* INNER BOX - DARKENED BACKGROUND */}
+              <div className="relative px-12 py-10 bg-slate-100 dark:bg-[#080c1a] rounded-[2rem] flex flex-col items-center gap-5 shadow-2xl overflow-hidden">
+                {/* Subtle Background Glass Effect */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent dark:from-white/[0.02] dark:to-transparent pointer-events-none"></div>
+                
+                <div className="relative">
+                  <Cpu className="w-10 h-10 text-indigo-500 animate-float" />
+                </div>
+                <div className="text-center relative z-10">
                   <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400 mb-2">Core Intelligence</p>
-                  <p className="text-lg font-black bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                  <p className="text-lg font-black bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 bg-clip-text text-transparent">
                     Google GenAI SDK
                   </p>
                 </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Info, Moon, Sun, History } from 'lucide-react';
+import { LayoutGrid, Info, Moon, Sun, History, Sparkles, Search } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface HeaderProps {
@@ -38,34 +38,48 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
         </div>
 
         <div className="flex items-center gap-4">
-            <nav className="hidden lg:flex items-center gap-2 bg-slate-100/40 dark:bg-slate-800/40 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50">
-            <button 
-                onClick={() => onNavigate('about')}
-                className={`
-                    flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-black transition-all duration-300
-                    ${currentView === 'about' 
-                    ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-md' 
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                    }
-                `}
-            >
-                <Info className="w-4 h-4" />
-                About
-            </button>
+            <nav className="hidden lg:flex items-center gap-6">
+              {/* AI MODE BUTTON */}
+              <div className="relative group">
+                <div className="absolute -inset-[1px] bg-gradient-to-r from-yellow-400 via-green-400 via-blue-400 via-purple-400 to-red-400 rounded-full animate-gradient bg-300% opacity-70 group-hover:opacity-100 transition-opacity"></div>
+                <button className="relative flex items-center gap-2 px-5 py-2 bg-white dark:bg-slate-900 rounded-full text-xs font-black text-slate-800 dark:text-slate-100 transition-all">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5" />
+                    <Sparkles className="absolute -top-1 -right-1.5 w-2.5 h-2.5 text-indigo-500" />
+                  </div>
+                  AI Mode
+                </button>
+              </div>
 
-            <button 
-                onClick={() => onNavigate('assessment')}
-                className={`
-                    flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-black transition-all duration-300
-                    ${currentView === 'assessment' 
-                    ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20' 
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                    }
-                `}
-            >
-                <LayoutGrid className="w-4 h-4" />
-                Audit Engine
-            </button>
+              <div className="flex items-center gap-2 bg-slate-100/40 dark:bg-slate-800/40 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+                <button 
+                    onClick={() => onNavigate('about')}
+                    className={`
+                        flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-black transition-all duration-300
+                        ${currentView === 'about' 
+                        ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-md' 
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }
+                    `}
+                >
+                    <Info className="w-4 h-4" />
+                    About
+                </button>
+
+                <button 
+                    onClick={() => onNavigate('assessment')}
+                    className={`
+                        flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-black transition-all duration-300
+                        ${currentView === 'assessment' 
+                        ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20' 
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }
+                    `}
+                >
+                    <LayoutGrid className="w-4 h-4" />
+                    Audit Engine
+                </button>
+              </div>
             </nav>
 
             <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
