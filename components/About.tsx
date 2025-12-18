@@ -176,7 +176,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 <h3 className="text-3xl font-bold text-slate-900 dark:text-white">Semantic vs Static Audit</h3>
                 <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                     Static analyzers check for specific strings or syntax. <strong>DRA understands architectural intent.</strong> 
-                    By using Gemini 3 Pro, we can identify logical flaws—like cross-region data egress that violates sovereignty—even if the individual resources are "syntactically" valid.
+                    By using Gemini models, we can identify logical flaws—like cross-region data egress that violates sovereignty—even if the individual resources are "syntactically" valid.
                 </p>
                 <ul className="space-y-3">
                     {[
@@ -220,7 +220,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
           <div className="inline-flex p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400 mb-4">
              <HelpCircle className="w-6 h-6" />
           </div>
-          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Audit Intelligence FAQ</h3>
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Deployment Readiness Auditor FAQ</h3>
           <p className="text-slate-600 dark:text-slate-400">Common questions regarding our auditing methodology and coverage.</p>
         </div>
 
