@@ -1,4 +1,4 @@
-# 🛡️ Deployment Readiness Auditor (DRA) v2.5
+# 🛡️ Deployment Readiness Auditor (DRA)
 
 **Architect with Confidence. Audit with Intelligence.**
 
