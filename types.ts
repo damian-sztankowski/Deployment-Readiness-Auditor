@@ -10,6 +10,7 @@ export interface CategoryScore {
   name: string;
   score: number;
   status: 'Safe' | 'Warning' | 'Critical';
+  explanation?: string; // AI reasoning for this specific score
 }
 
 export interface Finding {

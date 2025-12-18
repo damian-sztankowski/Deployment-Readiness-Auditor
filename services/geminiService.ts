@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 
@@ -20,6 +19,10 @@ You MUST evaluate the infrastructure against exactly FIVE pillars. Your JSON res
 3. "Reliability"
 4. "Operational Excellence"
 5. "Performance Efficiency"
+
+For EACH pillar, you MUST provide an 'explanation' string (approx 20-30 words) that answers:
+- **Why**: The specific technical reason for the score (e.g., "Missing WAF and public IPs").
+- **Consequence**: The direct business or technical impact (e.g., "Exposes backend to SQL injection and unauthorized data exfiltration").
 
 ## 💰 FINOPS PRECISION ENGINE
 When identifying "Cost Optimization" findings, you MUST calculate estimated savings using these unit prices:
@@ -56,7 +59,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     const response = await ai.models.generateContent({
       model,
-      contents: `Audit this GCP infrastructure. Ensure you return scores for all 5 pillars: Security, Cost Optimization, Reliability, Operational Excellence, and Performance Efficiency.\n\nCode:\n${numberedCode}`,
+      contents: `Audit this GCP infrastructure. Ensure you return scores and detailed explanations for all 5 pillars: Security, Cost Optimization, Reliability, Operational Excellence, and Performance Efficiency.\n\nCode:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.1,
@@ -73,9 +76,10 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
                 properties: {
                   name: { type: Type.STRING },
                   score: { type: Type.NUMBER },
-                  status: { type: Type.STRING, enum: ["Safe", "Warning", "Critical"] }
+                  status: { type: Type.STRING, enum: ["Safe", "Warning", "Critical"] },
+                  explanation: { type: Type.STRING }
                 },
-                required: ["name", "score", "status"]
+                required: ["name", "score", "status", "explanation"]
               }
             },
             findings: {
