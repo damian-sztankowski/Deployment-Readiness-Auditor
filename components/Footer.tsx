@@ -1,9 +1,14 @@
 import React from 'react';
-import { Github, Linkedin, ExternalLink, Cpu, Globe, ShieldCheck, Sparkle } from 'lucide-react';
+import { Github, Linkedin, ExternalLink, Cpu, Globe, ShieldCheck, Sparkle, Coins, Database } from 'lucide-react';
 import { Logo } from './Logo';
 import { GEMINI_MODEL } from '../services/geminiService';
+import { AuditResult } from '../types';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  lastResult: AuditResult | null;
+}
+
+export const Footer: React.FC<FooterProps> = ({ lastResult }) => {
   const formattedModelName = GEMINI_MODEL
     .replace('gemini-', 'Gemini ')
     .replace('-preview', ' Preview')
@@ -13,6 +18,17 @@ export const Footer: React.FC = () => {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 
+  // Pricing estimate (approximate for Gemini Pro 1.5/3 Preview models)
+  // Input: $1.25 / 1M tokens, Output: $5.00 / 1M tokens
+  const calculateCost = () => {
+    if (!lastResult?.usage) return null;
+    const inputCost = (lastResult.usage.promptTokenCount / 1000000) * 1.25;
+    const outputCost = (lastResult.usage.candidatesTokenCount / 1000000) * 5.00;
+    return (inputCost + outputCost).toFixed(5);
+  };
+
+  const estimatedCost = calculateCost();
+
   return (
     <footer className="w-full mt-auto relative border-t border-slate-100 dark:border-slate-800/50 bg-white/40 dark:bg-slate-950/40 backdrop-blur-2xl">
       {/* Visual Accents spanning full width */}
@@ -21,7 +37,7 @@ export const Footer: React.FC = () => {
       <div className="max-w-[2200px] mx-auto px-6 sm:px-10 lg:px-16 2xl:px-24 py-16 md:py-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-12 items-start">
           
-          <div className="space-y-10">
+          <div className="space-y-8">
             <div className="flex items-center gap-10 group cursor-default">
               <div className="relative py-2 px-3">
                 <Logo size="md" className="group-hover:animate-morph-fast transition-all duration-500" />
@@ -36,11 +52,28 @@ export const Footer: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 w-fit">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.8)]"></div>
-              <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">
-                Engine: {formattedModelName}
-              </span>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 w-fit">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.8)]"></div>
+                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                  Engine: {formattedModelName}
+                </span>
+              </div>
+
+              {/* TOKEN & COST DISPLAY */}
+              {lastResult?.usage && (
+                <div className="flex flex-wrap items-center gap-4 px-5 py-2 animate-in fade-in slide-in-from-left-2 duration-500">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <Database className="w-3 h-3 text-indigo-400" />
+                    <span>{lastResult.usage.totalTokenCount.toLocaleString()} Tokens</span>
+                  </div>
+                  <div className="h-3 w-[1px] bg-slate-200 dark:bg-slate-800"></div>
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <Coins className="w-3 h-3 text-amber-400" />
+                    <span>Est. Cost: ${estimatedCost}</span>
+                  </div>
+                </div>
+              )}
             </div>
             
             <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">

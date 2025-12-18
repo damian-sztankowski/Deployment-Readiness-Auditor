@@ -23,16 +23,23 @@ export interface Finding {
   fix?: string; // Terraform/Code snippet to resolve the issue
   compliance?: string[]; // e.g., ["CIS 1.2", "NIST 800-53 SC-7"]
   documentationUrls?: string[]; // Official documentation links (e.g. cloud.google.com)
-  complianceUrls?: string[]; // New: Official regulatory/benchmark links (e.g. nist.gov, cisecurity.org)
+  complianceUrls?: string[]; // New: Official regulatory/benchmark links (e.g. nist.gov, cisecurity.org, etc.)
   lineNumber?: number;
   fileName?: string;
   costSavings?: string; // e.g., "Save ~20% ($50/mo)"
+}
+
+export interface UsageMetadata {
+  promptTokenCount: number;
+  candidatesTokenCount: number;
+  totalTokenCount: number;
 }
 
 export interface AuditResult {
   summary: string;
   categories: CategoryScore[];
   findings: Finding[];
+  usage?: UsageMetadata;
 }
 
 export interface AnalysisState {

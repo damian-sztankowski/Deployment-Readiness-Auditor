@@ -186,8 +186,8 @@ const App: React.FC = () => {
               </div>
             </main>
             
-            {/* Footer always spans full width */}
-            <Footer />
+            {/* Footer receives latest analysis usage metadata */}
+            <Footer lastResult={analysis.result} />
           </>
         )}
       </div>

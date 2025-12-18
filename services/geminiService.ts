@@ -101,7 +101,18 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
       }
     });
 
-    return JSON.parse(response.text) as AuditResult;
+    const result = JSON.parse(response.text) as AuditResult;
+    
+    // Attach usage metadata if available
+    if (response.usageMetadata) {
+      result.usage = {
+        promptTokenCount: response.usageMetadata.promptTokenCount,
+        candidatesTokenCount: response.usageMetadata.candidatesTokenCount,
+        totalTokenCount: response.usageMetadata.totalTokenCount
+      };
+    }
+
+    return result;
   } catch (error) {
     console.error("Analysis failed:", error);
     throw error;
