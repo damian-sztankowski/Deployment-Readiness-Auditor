@@ -46,7 +46,8 @@ window.process = {
   }
 };
 ```
-*Note: In a production environment, you should use environment variables. For local testing, this is the fastest way.*
+> [!IMPORTANT]
+> *Note: In a production environment, you should use **environment variables**. For local testing, this is the fastest way.*
 
 ### 3. Install and Build
 ```bash
@@ -65,7 +66,8 @@ The terminal will provide a URL (usually `http://localhost:8080`). Open it in yo
 
 ## ☁️ Deployment to Google Cloud Run
 
-Cloud Run is the best way to host DRA. It's serverless, scales to zero, and highly secure.
+> [!TIP]
+> Cloud Run is the best way to host DRA. It's serverless, scales to zero, and highly secure.
 
 ### 1. Build and Deploy in One Command
 Replace `[PROJECT_ID]` with your actual Google Cloud Project ID. This command uses the provided `Dockerfile` to bundle and serve your app automatically.
