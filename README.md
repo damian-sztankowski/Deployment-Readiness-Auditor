@@ -1,4 +1,4 @@
-# 🛡️ Deployment Readiness Auditor (DRA) v2.5
+# 🛡️ Deployment Readiness Auditor (DRA)
 
 **Architect with Confidence. Audit with Intelligence.**
 
@@ -57,9 +57,9 @@ This converts the `index.tsx` file into a browser-readable `index.js` file using
 
 ### 4. Start the Development Server
 ```bash
-npm start
+API_KEY=KEY npm start
 ```
-The terminal will provide a URL (usually `http://localhost:3000`). Open it in your browser!
+The terminal will provide a URL (usually `http://localhost:8080`). Open it in your browser!
 
 ---
 
@@ -70,13 +70,22 @@ Cloud Run is the best way to host DRA. It's serverless, scales to zero, and high
 ### 1. Build and Deploy in One Command
 Replace `[PROJECT_ID]` with your actual Google Cloud Project ID. This command uses the provided `Dockerfile` to bundle and serve your app automatically.
 
+Open the `index.html` file in the root directory. Look for this block:
+```javascript
+// Shim for process.env used by @google/genai
+window.process = {
+  env: {
+    API_KEY: "PASTE_YOUR_GEMINI_API_KEY_HERE" 
+  }
+};
+```
+
 ```bash
 gcloud run deploy dra-app \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars API_KEY=your_actual_gemini_key_here \
-  --port 3000
+  --port 8080
 ```
 
 ### 2. Access the App
