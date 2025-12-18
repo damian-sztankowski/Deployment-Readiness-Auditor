@@ -7,37 +7,24 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const GEMINI_MODEL = "gemini-3-pro-preview";
 
 const SYSTEM_INSTRUCTION = `
-You are the **Deployment Readiness Auditor (DRA) v2.5**, an expert Google Cloud Architect and **FinOps Specialist**.
+You are the **Deployment Readiness Auditor (DRA) v2.5**, an expert Google Cloud Architect and **FinOps Compliance Officer**.
 
 ## 🏛️ ARCHITECTURE FRAMEWORK MANDATE
-You MUST evaluate the infrastructure against EXACTLY FIVE pillars. Your JSON response 'categories' array MUST contain exactly these 5 names in every response:
-1. "Security"
-2. "Cost Optimization"
-3. "Reliability"
-4. "Operational Excellence"
-5. "Performance Optimization"
+You MUST evaluate infrastructure against EXACTLY FIVE pillars: Security, Cost Optimization, Reliability, Operational Excellence, and Performance Optimization.
 
-For EACH pillar, you MUST provide an 'explanation' string (approx 20-30 words) that answers:
-- **Why**: The specific technical reason for the score.
-- **Consequence**: The direct business or technical impact.
+## 📖 DUAL-SOURCE EVIDENCE
+For EVERY finding, you MUST provide:
+1. 'documentationUrls': 1-2 links to official cloud.google.com documentation.
+2. 'complianceUrls': 1-2 links to the official regulatory source (nist.gov, cisecurity.org, etc.).
 
-If a pillar has no findings, you MUST still include it with a score of 100 and a positive explanation.
-
-## 📖 DOCUMENTATION EVIDENCE
-For EVERY finding, you MUST provide at least one (ideally two) official documentation URLs from **cloud.google.com** that support the best practice or identify the risk. These are critical for professional audits.
-
-## 🚫 HYPERSCALER RESTRICTION
-This tool is built **EXCLUSIVELY for Google Cloud Platform (GCP)**. Reject non-GCP code.
-
-## 💰 FINOPS PRECISION ENGINE
-When identifying "Cost Optimization" findings, you MUST calculate estimated savings using these unit prices:
-- **Compute**: E2 is ~30% cheaper than N1. Unattached Static IPs: ~$3.65/mo.
-- **Storage**: Standard ($0.026/GB) vs Nearline ($0.010/GB).
-- **Network**: Inter-region egress ~$0.01 to $0.12 per GB.
+## 💰 FINOPS & REMEDIATION (CRITICAL)
+- **Code Fixes**: For EVERY finding, you MUST provide a valid 'fix' (Terraform/HCL code snippet) that resolves the issue.
+- **Cost Savings**: For ALL 'Cost Optimization' findings, provide a string like "Save ~$45.00/mo" or "~30% compute savings".
+- **Context**: Identify the 'fileName' and 'lineNumber' accurately from the provided input.
 
 ## 📝 OUTPUT RULES
-- Score categories from 0-100 based on architectural integrity.
 - Return ONLY raw JSON matching the schema.
+- 'explanation' in categories must explain the 'Why' and 'Impact' in 20-30 words.
 `;
 
 const addLineNumbers = (code: string): string => {
@@ -63,7 +50,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     const response = await ai.models.generateContent({
       model,
-      contents: `Audit this GCP infrastructure. You MUST return exactly 5 categories: Security, Cost Optimization, Reliability, Operational Excellence, and Performance Optimization. Ensure every single finding includes 'documentationUrls' pointing to cloud.google.com documentation.\n\nCode:\n${numberedCode}`,
+      contents: `Perform a deep audit. You MUST provide a 'fix' code snippet for every finding. Identify exact file names and line numbers. Include both GCP and Regulatory documentation links.\n\nInput Code:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.1,
@@ -101,17 +88,11 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
                   fileName: { type: Type.STRING },
                   lineNumber: { type: Type.INTEGER },
                   costSavings: { type: Type.STRING },
-                  documentationUrls: { 
-                    type: Type.ARRAY, 
-                    items: { type: Type.STRING },
-                    description: "Links to official cloud.google.com documentation for this best practice."
-                  },
-                  compliance: { 
-                    type: Type.ARRAY, 
-                    items: { type: Type.STRING }
-                  }
+                  documentationUrls: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  complianceUrls: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  compliance: { type: Type.ARRAY, items: { type: Type.STRING } }
                 },
-                required: ["severity", "category", "title", "description", "remediation", "id", "lineNumber", "documentationUrls"]
+                required: ["severity", "category", "title", "description", "remediation", "id", "lineNumber", "documentationUrls", "complianceUrls", "fileName", "fix"]
               }
             }
           },
@@ -120,12 +101,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
       }
     });
 
-    const text = response.text;
-    if (!text) throw new Error("No response from Gemini.");
-
-    const result = JSON.parse(text) as AuditResult;
-    return result;
-
+    return JSON.parse(response.text) as AuditResult;
   } catch (error) {
     console.error("Analysis failed:", error);
     throw error;

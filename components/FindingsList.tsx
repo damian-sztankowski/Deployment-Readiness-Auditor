@@ -1,92 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, Filter, ShieldCheck, Wand2, Copy, Check, FileCode, Hash, Banknote, Shield, ExternalLink, X, BookOpen, Globe, Layout, Book } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, Info, CheckCircle, ChevronDown, Target, ShieldCheck, Wand2, Copy, Check, FileCode, Hash, Banknote, Shield, ExternalLink, X, BookOpen, Globe, Landmark, Link as LinkIcon, Book, Eye, EyeOff } from 'lucide-react';
 import { Finding, Severity } from '../types';
 
 interface FindingsListProps {
   findings: Finding[];
 }
-
-interface StandardDetail {
-  name: string;
-  description: string;
-  focus: 'Security' | 'Privacy' | 'Sovereignty' | 'Regulatory';
-}
-
-// Comprehensive knowledge base for international and regional compliance standards on GCP
-const COMPLIANCE_REGISTRY: Record<string, StandardDetail> = {
-  'CIS': {
-    name: 'CIS Google Cloud Platform Foundation Benchmark',
-    description: 'The industry-standard security baseline for GCP. It provides prescriptive guidance for establishing a secure configuration for Identity, Logging, Networking, and Virtual Machines.',
-    focus: 'Security'
-  },
-  'NIST': {
-    name: 'NIST Special Publication 800-53',
-    description: 'A catalog of security and privacy controls for all U.S. federal information systems. It is the gold standard for comprehensive risk management and system security.',
-    focus: 'Regulatory'
-  },
-  'GDPR': {
-    name: 'General Data Protection Regulation',
-    description: 'The most stringent privacy and security law in the world. It mandates that organizations protect the personal data and privacy of EU citizens for transactions that occur within EU member states.',
-    focus: 'Privacy'
-  },
-  'HIPAA': {
-    name: 'Health Insurance Portability and Accountability Act',
-    description: 'U.S. law designed to provide privacy standards to protect patients\' medical records and other health information provided to health plans, doctors, hospitals and other health care providers.',
-    focus: 'Privacy'
-  },
-  'SOC2': {
-    name: 'Service Organization Control 2',
-    description: 'Developed by the AICPA, SOC 2 defines criteria for managing customer data based on five "trust service principles"—security, availability, processing integrity, confidentiality and privacy.',
-    focus: 'Security'
-  },
-  'PCI': {
-    name: 'PCI Data Security Standard (PCI DSS)',
-    description: 'A set of security standards designed to ensure that ALL companies that accept, process, store or transmit credit card information maintain a secure environment.',
-    focus: 'Security'
-  },
-  'FEDRAMP': {
-    name: 'Federal Risk and Authorization Management Program',
-    description: 'A U.S. government-wide program that provides a standardized approach to security assessment, authorization, and continuous monitoring for cloud products and services.',
-    focus: 'Regulatory'
-  },
-  'BSI': {
-    name: 'BSI C5 (Germany)',
-    description: 'The Cloud Computing Compliance Controls Catalogue (C5) is a German government-backed certification scheme that specifies a baseline security level for cloud computing.',
-    focus: 'Sovereignty'
-  },
-  'IRAP': {
-    name: 'IRAP (Australia)',
-    description: 'The Information Security Registered Assessors Program (IRAP) provides a framework for endorsing individuals to perform Australian Government information security assessments.',
-    focus: 'Sovereignty'
-  },
-  'ENS': {
-    name: 'Esquema Nacional de Seguridad (Spain)',
-    description: 'The Spanish National Security Framework (ENS) establishes security standards that apply to all government agencies and public organizations in Spain.',
-    focus: 'Sovereignty'
-  },
-  'HITRUST': {
-    name: 'HITRUST Common Security Framework (CSF)',
-    description: 'A certifiable framework that leverages nationally and internationally accepted standards including ISO, NIST, PCI, and HIPAA to effectively manage compliance.',
-    focus: 'Regulatory'
-  },
-  'ISO': {
-    name: 'ISO/IEC 27001',
-    description: 'The leading international standard for information security management systems (ISMS). It provides a framework for managing security risks and protecting sensitive data.',
-    focus: 'Security'
-  }
-};
-
-const getStandardDetails = (id: string): StandardDetail => {
-  const upperId = id.toUpperCase();
-  const key = Object.keys(COMPLIANCE_REGISTRY).find(k => upperId.startsWith(k));
-  if (key) return COMPLIANCE_REGISTRY[key];
-  
-  return {
-    name: id,
-    description: `Specific security control and compliance requirement belonging to the ${id} framework. This control ensures adherence to best-practices within this regulatory domain for cloud infrastructure.`,
-    focus: 'Security'
-  };
-};
 
 const severityTooltips: Record<Severity, string> = {
   [Severity.CRITICAL]: "Critical Risk: Immediate security breach (e.g., public access), data loss risk, or compliance failure. Requires urgent remediation.",
@@ -96,119 +14,19 @@ const severityTooltips: Record<Severity, string> = {
   [Severity.INFO]: "Informational: Neutral observation or context about the infrastructure."
 };
 
-const SeverityIcon = ({ severity }: { severity: Severity }) => {
-  switch (severity) {
-    case Severity.CRITICAL:
-      return <AlertOctagon className="w-5 h-5 text-red-600 dark:text-red-400" />;
-    case Severity.HIGH:
-      return <AlertTriangle className="w-5 h-5 text-orange-500 dark:text-orange-400" />;
-    case Severity.MEDIUM:
-      return <AlertTriangle className="w-5 h-5 text-amber-500 dark:text-amber-400" />;
-    case Severity.LOW:
-      return <Info className="w-5 h-5 text-blue-500 dark:text-blue-400" />;
-    default:
-      return <CheckCircle className="w-5 h-5 text-slate-400" />;
-  }
-};
-
 const SeverityBadge = ({ severity }: { severity: Severity }) => {
   const styles = {
-    [Severity.CRITICAL]: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800',
-    [Severity.HIGH]: 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800',
-    [Severity.MEDIUM]: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
-    [Severity.LOW]: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-    [Severity.INFO]: 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700',
-  };
-
-  const tooltipText = severityTooltips[severity];
-
-  return (
-    <div className="relative group/tooltip inline-flex">
-        <span className={`cursor-help px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[severity]}`}>
-          {severity}
-        </span>
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2.5 bg-slate-800 text-white text-xs font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none text-center leading-relaxed border border-slate-700">
-            {tooltipText}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
-        </div>
-    </div>
-  );
-};
-
-const ComplianceModal = ({ standardId, finding, onClose }: { standardId: string | null, finding: Finding | null, onClose: () => void }) => {
-  if (!standardId || !finding) return null;
-  const details = getStandardDetails(standardId);
-
-  const focusColors = {
-    'Security': 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800',
-    'Privacy': 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800',
-    'Sovereignty': 'bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border-violet-100 dark:border-violet-800',
-    'Regulatory': 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800',
+    [Severity.CRITICAL]: 'bg-red-500/10 text-red-500 border-red-500/20',
+    [Severity.HIGH]: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+    [Severity.MEDIUM]: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    [Severity.LOW]: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    [Severity.INFO]: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 animate-enter overflow-hidden">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start">
-          <div className="flex items-center gap-3">
-             <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl">
-                <ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-             </div>
-             <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{standardId}</h3>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Compliance Standard</span>
-             </div>
-          </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        
-        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto pb-8">
-           <div className="flex flex-wrap gap-3">
-               <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex-1 min-w-[200px]">
-                  <Layout className="w-5 h-5 text-indigo-500" />
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Architecture Pillar</p>
-                    <p className="text-sm font-bold text-slate-800 dark:text-200">{finding.category}</p>
-                  </div>
-               </div>
-               <div className={`flex items-center gap-3 p-3 rounded-xl border flex-1 min-w-[200px] ${focusColors[details.focus]}`}>
-                  <Shield className="w-5 h-5" />
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Control Focus</p>
-                    <p className="text-sm font-bold">{details.focus}</p>
-                  </div>
-               </div>
-           </div>
-
-           <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <BookOpen className="w-3.5 h-3.5" />
-                Standard Overview
-              </h4>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
-                {details.name}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                {details.description}
-              </p>
-           </div>
-
-           <div className="space-y-3 bg-indigo-50/30 dark:bg-indigo-900/10 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
-              <h4 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-                <Target className="w-3.5 h-3.5" />
-                Control Relevance
-              </h4>
-              <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                Implementation of <span className="font-bold text-indigo-700 dark:text-indigo-300">{standardId}</span> is required to mitigate the risks associated with <span className="italic">"{finding.title}"</span>. 
-                Failing to meet this control may result in significant non-compliance penalties or architectural insecurity within the <span className="font-medium text-indigo-600 dark:text-indigo-400">{details.focus.toLowerCase()}</span> domain.
-              </div>
-           </div>
-        </div>
-      </div>
-    </div>
+    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${styles[severity]}`}>
+      {severity}
+    </span>
   );
 };
 
@@ -216,219 +34,129 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
   const [isOpen, setIsOpen] = useState(false);
   const [showFix, setShowFix] = useState(false);
   const [copied, setCopied] = useState(false);
-  
-  const borderColors = {
-    [Severity.CRITICAL]: 'border-l-red-500',
-    [Severity.HIGH]: 'border-l-orange-500',
-    [Severity.MEDIUM]: 'border-l-amber-500',
-    [Severity.LOW]: 'border-l-blue-500',
-    [Severity.INFO]: 'border-l-slate-300 dark:border-l-slate-600',
-  };
 
   const handleCopyFix = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (finding.fix) {
-        navigator.clipboard.writeText(finding.fix);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+      navigator.clipboard.writeText(finding.fix);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  const isValidCost = useMemo(() => {
-    if (!finding.costSavings) return false;
-    const s = finding.costSavings.toLowerCase().trim();
-    const junk = ['filename', 'linenumber', 'line', 'n/a', 'none', 'null', 'undefined', 'placeholder'];
-    if (junk.some(j => s.includes(j))) return false;
-    return /\d/.test(s) && s.length > 0;
-  }, [finding.costSavings]);
-
-  const isValidFileName = useMemo(() => {
-    if (!finding.fileName) return false;
-    const s = finding.fileName.toLowerCase().trim();
-    return s !== 'filename' && s.length > 0;
-  }, [finding.fileName]);
-
   return (
-    <div className={`border border-slate-200 dark:border-slate-700 border-l-4 ${borderColors[finding.severity]} rounded-r-xl rounded-l-sm mb-3 bg-white dark:bg-slate-900 transition-all duration-200 hover:shadow-md group`}>
-      <div 
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-5 flex items-start gap-4 cursor-pointer select-none"
-      >
-        <div className="mt-0.5 flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-          <SeverityIcon severity={finding.severity} />
-        </div>
+    <div className={`border border-slate-200 dark:border-slate-800 border-l-4 ${finding.severity === Severity.CRITICAL ? 'border-l-red-500' : finding.severity === Severity.HIGH ? 'border-l-orange-500' : 'border-l-indigo-500'} rounded-xl mb-4 bg-white dark:bg-slate-900 transition-all duration-300 hover:shadow-lg group overflow-hidden shadow-sm`}>
+      <div onClick={() => setIsOpen(!isOpen)} className="p-5 flex items-start gap-4 cursor-pointer select-none">
         <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-start gap-4 mb-1">
-             <div className="flex flex-col gap-1.5 min-w-0">
-                <h4 className="text-slate-900 dark:text-white font-semibold text-sm md:text-base leading-tight break-words">{finding.title}</h4>
-                
-                <div className="flex flex-wrap items-center gap-2">
-                    {(isValidFileName || finding.lineNumber) && (
-                        <>
-                            {isValidFileName && (
-                                <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 max-w-full truncate" title={`File: ${finding.fileName}`}>
-                                    <FileCode className="w-3 h-3 text-slate-400" />
-                                    {finding.fileName}
-                                </span>
-                            )}
-                            {finding.lineNumber && (
-                                <span className="flex items-center gap-1.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                                    <Hash className="w-3 h-3 text-slate-400" />
-                                    Ln {finding.lineNumber}
-                                </span>
-                            )}
-                        </>
-                    )}
-                    {isValidCost && (
-                        <span className="flex items-center gap-1.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 animate-pulse">
-                            <Banknote className="w-3 h-3" />
-                            {finding.costSavings}
-                        </span>
-                    )}
-                </div>
-             </div>
-             
-             <div className="flex items-center gap-3 flex-shrink-0">
-                <SeverityBadge severity={finding.severity} />
-                <div className={`transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-180' : ''}`}>
-                    <ChevronDown className="w-4 h-4 text-slate-400"/>
-                </div>
-             </div>
+          <div className="flex justify-between items-start mb-2">
+            <h4 className="text-slate-900 dark:text-white font-bold text-sm md:text-base tracking-tight">{finding.title}</h4>
+            <div className="flex items-center gap-3">
+              <SeverityBadge severity={finding.severity} />
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 mt-2">
-            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[10px] text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700">
-                {finding.category}
-            </span>
-            
-            {finding.compliance && finding.compliance.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-2 ml-1">
-                    {finding.compliance.slice(0, 3).map((std, idx) => (
-                        <button 
-                            key={idx} 
-                            onClick={(e) => { e.stopPropagation(); onShowCompliance(std, finding); }}
-                            className="inline-flex items-center gap-1 bg-indigo-50/50 dark:bg-indigo-900/20 text-[9px] text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded font-mono border border-indigo-100/50 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
-                        >
-                            <Shield className="w-2.5 h-2.5" />
-                            {std}
-                        </button>
-                    ))}
-                    {finding.compliance.length > 3 && (
-                        <span className="text-[9px] text-slate-400 font-medium">+{finding.compliance.length - 3}</span>
-                    )}
-                </div>
+          
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            {finding.fileName && (
+              <span className="flex items-center gap-1.5 text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                <FileCode className="w-3 h-3 text-slate-400" /> {finding.fileName}
+              </span>
             )}
+            {finding.lineNumber && (
+              <span className="flex items-center gap-1.5 text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                <Hash className="w-3 h-3 text-slate-400" /> Ln {finding.lineNumber}
+              </span>
+            )}
+            {finding.costSavings && (
+              <span className="flex items-center gap-1.5 text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20">
+                <Banknote className="w-3 h-3" /> {finding.costSavings}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2">{finding.category}</span>
+            <div className="flex flex-wrap gap-1.5">
+              {finding.compliance?.map((std, idx) => (
+                <button key={idx} onClick={(e) => { e.stopPropagation(); onShowCompliance(std, finding); }} className="text-[9px] font-mono bg-indigo-500/5 text-indigo-500 px-2 py-0.5 rounded border border-indigo-500/10 hover:bg-indigo-500/10 transition-all">
+                  <Shield className="w-2.5 h-2.5 inline mr-1" />{std}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-      
-      <div className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+
+      <div className={`grid transition-all duration-500 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className="overflow-hidden">
-            <div className="px-5 pb-5 pt-0 pl-[3.5rem]">
-                <div className="text-base text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
-                    {finding.description}
-                </div>
-
-                {/* Reference Documentation Section */}
-                {finding.documentationUrls && finding.documentationUrls.length > 0 && (
-                  <div className="mb-4 bg-blue-50/30 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                    <h5 className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-2">
-                        <Book className="w-3.5 h-3.5" />
-                        Official Best Practice Documentation
-                    </h5>
-                    <div className="flex flex-col gap-2">
-                        {finding.documentationUrls.map((url, idx) => (
-                          <a 
-                            key={idx} 
-                            href={url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1.5 group/link"
-                          >
-                            <span className="truncate max-w-[90%]">{url}</span>
-                            <ExternalLink className="w-3 h-3 opacity-0 group-hover/link:opacity-100 transition-opacity" />
-                          </a>
-                        ))}
-                    </div>
+          <div className="px-5 pb-6 pt-2 ml-4 md:ml-9 space-y-6">
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{finding.description}</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {finding.documentationUrls && finding.documentationUrls.length > 0 && (
+                <div className="p-4 bg-blue-500/5 rounded-xl border border-blue-500/10">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-blue-500 mb-3 flex items-center gap-2">
+                    <Globe className="w-3.5 h-3.5" /> GCP Architecture Docs
+                  </span>
+                  <div className="space-y-1.5">
+                    {finding.documentationUrls.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener" className="text-[11px] text-indigo-500 hover:underline block truncate font-medium">{url}</a>
+                    ))}
                   </div>
-                )}
-
-                {finding.compliance && finding.compliance.length > 0 && (
-                    <div className="mb-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 flex items-center gap-2">
-                            <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-                            Compliance Regulatory Alignment
-                        </h5>
-                        <div className="flex flex-wrap gap-2">
-                            {finding.compliance.map((std, idx) => (
-                                <button 
-                                    key={idx} 
-                                    onClick={() => onShowCompliance(std, finding)}
-                                    className="group/std flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:border-indigo-300 dark:hover:border-indigo-600 active:scale-95"
-                                >
-                                    <div className="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-[8px] font-black">
-                                        ✓
-                                    </div>
-                                    <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-200 group-hover/std:text-indigo-600 dark:group-hover/std:text-indigo-400 transition-colors">
-                                        {std}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                <div className="bg-slate-50/80 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-700 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/20"></div>
-                    <div className="flex justify-between items-center mb-2">
-                        <h5 className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase flex items-center gap-1.5">
-                            <Target className="w-3 h-3" />
-                            Recommended Action
-                        </h5>
-                        
-                        {finding.fix && (
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); setShowFix(!showFix); }}
-                                className={`
-                                    flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all
-                                    ${showFix 
-                                        ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-700' 
-                                        : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-300 shadow-sm'}
-                                `}
-                            >
-                                <Wand2 className="w-3 h-3" />
-                                {showFix ? 'Hide Fix' : 'Show Code Fix'}
-                            </button>
-                        )}
-                    </div>
-                    
-                    <p className="text-sm md:text-base text-slate-800 dark:text-slate-200 font-mono break-all whitespace-pre-wrap bg-white dark:bg-slate-900 p-3 rounded border border-slate-200 dark:border-slate-700 shadow-sm">
-                        {finding.remediation}
-                    </p>
-
-                    {finding.fix && (
-                        <div className={`mt-3 overflow-hidden transition-all duration-300 ease-in-out ${showFix ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                            <div className="relative group/code">
-                                <div className="absolute -top-3 left-4 bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded-t-md font-mono border-t border-l border-r border-slate-700">
-                                    Suggested Fix
-                                </div>
-                                <div className="bg-slate-900 rounded-lg border border-slate-700 shadow-inner p-4 pt-5 overflow-x-auto relative">
-                                    <button 
-                                        onClick={handleCopyFix}
-                                        className="absolute top-2 right-2 p-1.5 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700 rounded-md transition-colors"
-                                        title="Copy code"
-                                    >
-                                        {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                                    </button>
-                                    <pre className="text-xs md:text-sm font-mono text-emerald-300 leading-relaxed whitespace-pre-wrap">
-                                        {finding.fix}
-                                    </pre>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
+              )}
+
+              {finding.complianceUrls && finding.complianceUrls.length > 0 && (
+                <div className="p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500 mb-3 flex items-center gap-2">
+                    <Landmark className="w-3.5 h-3.5" /> Regulatory Source Authority
+                  </span>
+                  <div className="space-y-1.5">
+                    {finding.complianceUrls.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener" className="text-[11px] text-emerald-600 hover:underline block truncate font-medium">{url}</a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+            
+            <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-xl border border-slate-100 dark:border-slate-800 relative">
+              <div className="flex justify-between items-center mb-4">
+                <h5 className="text-[10px] font-black text-indigo-500 uppercase flex items-center gap-2 tracking-widest">
+                  <Target className="w-4 h-4" /> Recommended Action
+                </h5>
+                <div className="flex items-center gap-2">
+                  {finding.fix && (
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setShowFix(!showFix); }} 
+                      className="text-[10px] font-bold text-slate-500 hover:text-indigo-500 flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg transition-all"
+                    >
+                      {showFix ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      {showFix ? 'Hide Fix' : 'Show Code Fix'}
+                    </button>
+                  )}
+                  {finding.fix && showFix && (
+                    <button onClick={handleCopyFix} className="text-[10px] font-bold text-slate-400 hover:text-indigo-500 flex items-center gap-1.5 transition-colors p-1">
+                      {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <p className="text-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm leading-relaxed mb-4">
+                {finding.remediation}
+              </p>
+              {finding.fix && showFix && (
+                <div className="relative group/code mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="absolute top-2 right-2 flex items-center gap-2">
+                    <span className="text-[9px] font-bold text-slate-500 bg-slate-800/80 px-2 py-0.5 rounded uppercase">HCL / Terraform</span>
+                  </div>
+                  <pre className="p-4 bg-slate-900 rounded-lg text-emerald-400 text-xs font-mono overflow-x-auto leading-relaxed border border-slate-800 shadow-inner">
+                    {finding.fix}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -437,85 +165,44 @@ const FindingItem: React.FC<{ finding: Finding, onShowCompliance: (id: string, f
 
 export const FindingsList: React.FC<FindingsListProps> = ({ findings }) => {
   const [filter, setFilter] = useState<'ALL' | Severity>('ALL');
-  const [activeStandard, setActiveStandard] = useState<{ id: string, finding: Finding } | null>(null);
 
-  const counts = useMemo(() => {
-    const c: Record<string, number> = { ALL: findings.length };
-    Object.values(Severity).forEach(s => c[s] = 0);
-    findings.forEach(f => {
-        c[f.severity] = (c[f.severity] || 0) + 1;
-    });
-    return c;
-  }, [findings]);
-
-  const severityOrder = {
-    [Severity.CRITICAL]: 0,
-    [Severity.HIGH]: 1,
-    [Severity.MEDIUM]: 2,
-    [Severity.LOW]: 3,
-    [Severity.INFO]: 4,
-  };
-
-  const filteredFindings = findings
-    .filter(f => filter === 'ALL' || f.severity === filter)
-    .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
-
-  const tabs = [
-      { id: 'ALL', label: 'All Issues', count: counts.ALL, color: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' },
-      { id: Severity.CRITICAL, label: 'Critical', count: counts[Severity.CRITICAL], color: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300' },
-      { id: Severity.HIGH, label: 'High', count: counts[Severity.HIGH], color: 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' },
-      { id: Severity.MEDIUM, label: 'Medium', count: counts[Severity.MEDIUM], color: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' },
-      { id: Severity.LOW, label: 'Low', count: counts[Severity.LOW], color: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
-  ];
-
-  const handleShowCompliance = (id: string, finding: Finding) => {
-    setActiveStandard({ id, finding });
-  };
+  const filteredFindings = useMemo(() => 
+    findings.filter(f => filter === 'ALL' || f.severity === filter)
+  , [findings, filter]);
 
   return (
     <div className="h-full flex flex-col">
-      <ComplianceModal 
-        standardId={activeStandard?.id || null} 
-        finding={activeStandard?.finding || null}
-        onClose={() => setActiveStandard(null)} 
-      />
-      
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            Key Findings
-        </h3>
+      <div className="flex items-center justify-between mb-8">
+        <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">Key Audit Findings</h3>
+        <div className="flex gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            {['ALL', Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW].map(f => (
+                <div key={f} className="relative group/filter-tooltip">
+                    <button 
+                        onClick={() => setFilter(f as any)}
+                        className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300
+                            ${filter === f ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}
+                        `}
+                    >
+                        {f}
+                    </button>
+                    {f !== 'ALL' && (
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 p-2.5 bg-slate-800 text-white text-[10px] font-bold rounded-xl shadow-2xl opacity-0 invisible group-hover/filter-tooltip:opacity-100 group-hover/filter-tooltip:visible transition-all duration-200 z-[100] text-center leading-relaxed border border-slate-700 pointer-events-none uppercase tracking-wide">
+                            {severityTooltips[f as Severity]}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {tabs.map(tab => (
-            <button
-                key={tab.id}
-                onClick={() => setFilter(tab.id as any)}
-                disabled={tab.count === 0}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all duration-200
-                    ${filter === tab.id 
-                        ? 'ring-2 ring-offset-1 ring-indigo-500 dark:ring-offset-slate-900 border-transparent shadow-sm scale-105' 
-                        : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'}
-                    ${tab.count === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                    ${filter === tab.id ? tab.color.replace('50', '100') : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400'}
-                `}
-            >
-                {tab.label}
-                <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${filter === tab.id ? 'bg-white/50 dark:bg-black/20' : 'bg-slate-100 dark:bg-slate-800'}`}>
-                    {tab.count}
-                </span>
-            </button>
-        ))}
-      </div>
-
-      <div className="space-y-3">
+      <div className="space-y-1">
         {filteredFindings.length > 0 ? (
-            filteredFindings.map((finding) => (
-            <FindingItem key={finding.id} finding={finding} onShowCompliance={handleShowCompliance} />
-            ))
+            filteredFindings.map(f => <FindingItem key={f.id} finding={f} onShowCompliance={() => {}} />)
         ) : (
-            <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                <p className="text-slate-400 text-sm">No findings match this filter.</p>
+            <div className="py-24 text-center bg-slate-50 dark:bg-slate-950/20 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-800">
+                <ShieldCheck className="w-12 h-12 text-slate-200 dark:text-slate-800 mx-auto mb-4" />
+                <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">No matching findings identified.</p>
             </div>
         )}
       </div>
