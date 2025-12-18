@@ -1,60 +1,133 @@
-# 🛡️ Deployment Readiness Auditor (DRA)
+# 🛡️ Deployment Readiness Auditor (DRA) v2.5
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
-[![Gemini](https://img.shields.io/badge/AI-Gemini%202.0%20Pro-orange.svg)](https://deepmind.google/technologies/gemini/)
-[![GCP](https://img.shields.io/badge/Platform-Google%20Cloud-blue.svg)](https://cloud.google.com/)
+**Architect with Confidence. Audit with Intelligence.**
 
-> **The intelligent "Pre-Apply" layer for Google Cloud Infrastructure.**
+The **Deployment Readiness Auditor (DRA)** is a Google Cloud-native, AI-assisted platform designed to analyze infrastructure-as-code (Terraform/HCL) before it hits production. It evaluates your deployment specification against the official **Google Cloud Well-Architected Framework** and maps risks to global regulatory standards like **NIST, CIS, GDPR, and HIPAA**.
 
 ---
 
-## 💻 Local Development
+## 🌟 Key Features
 
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/your-username/deployment-readiness-auditor.git
-    cd deployment-readiness-auditor
-    ```
-
-2.  **Set your API Key**
-    Open `index.html` and update the `window.process.env.API_KEY` value, or ensure your local environment provides it.
-
-3.  **Launch**
-    Use any static server (like `npx serve .`) or open `index.html` in a browser that supports ESM and JSX (or use a tool like Vite for a faster local experience).
+- **Dual-Analysis Engine**: Simultaneously evaluates Architecture Best Practices and Regulatory Compliance.
+- **FinOps Intelligence**: Specifically identifies cost-saving opportunities with estimated monthly reclaimable budget.
+- **Auto-Remediation**: Generates precise HCL/Terraform code snippets to fix identified vulnerabilities.
+- **Professional Reporting**: Export comprehensive PDF audit briefs for stakeholders and security teams.
+- **Semantic Understanding**: Uses Gemini 3 Pro to understand architectural *intent*, not just syntax.
 
 ---
 
-## ☁️ Deployment (Google Cloud Run)
+## 📋 Prerequisites
 
-### 1. Build & Push
+Before you begin, ensure you have the following:
+
+1.  **Google Gemini API Key**: Obtain one from the [Google AI Studio](https://aistudio.google.com/).
+2.  **Node.js & NPM**: Installed on your local machine (v18+ recommended).
+3.  **GCP Project** (Optional for deployment): A project with billing enabled for Cloud Run.
+4.  **Docker** (Optional for deployment): To build and push the container image.
+
+---
+
+## 💻 Local Development (Idiot-Proof Guide)
+
+Follow these exact steps to get the app running on your laptop in under 2 minutes:
+
+### 1. Clone the Repository
 ```bash
-export PROJECT_ID="your-gcp-project-id"
-export REPO="dra-repo"
-export REGION="us-central1"
-
-gcloud artifacts repositories create $REPO --repository-format=docker --location=$REGION
-
-docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app .
-docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app
+git clone https://github.com/your-username/deployment-readiness-auditor.git
+cd deployment-readiness-auditor
 ```
 
-### 2. Deploy
+### 2. Configure your API Key
+Open the `index.html` file in the root directory. Look for this block:
+```javascript
+// Shim for process.env used by @google/genai
+window.process = {
+  env: {
+    API_KEY: "PASTE_YOUR_GEMINI_API_KEY_HERE" 
+  }
+};
+```
+*Note: In a production environment, you should never hardcode keys. For local testing, this is the fastest way.*
+
+### 3. Install Dependencies
+```bash
+npm install
+```
+
+### 4. Start the Development Server
+```bash
+# Using a simple static server (recommended)
+npx serve .
+```
+The terminal will provide a URL (usually `http://localhost:3000`). Open it in your browser!
+
+---
+
+## ☁️ Deployment to Google Cloud Run
+
+Cloud Run is the best way to host DRA. It's serverless, scales to zero (meaning it's free when not used), and highly secure.
+
+### 1. Build and Push the Container
+Replace `[PROJECT_ID]` with your actual Google Cloud Project ID.
+
+```bash
+# Variables
+PROJECT_ID="your-gcp-project-id"
+REGION="us-central1"
+IMAGE_NAME="dra-app"
+
+# Enable required APIs
+gcloud services enable artifactregistry.googleapis.com run.googleapis.com
+
+# Create an Artifact Registry repository
+gcloud artifacts repositories create dra-repo \
+    --repository-format=docker \
+    --location=$REGION \
+    --description="DRA Docker repository"
+
+# Build and Push using Cloud Build (No local Docker needed!)
+gcloud builds submit --tag $REGION-docker.pkg.dev/$PROJECT_ID/dra-repo/$IMAGE_NAME .
+```
+
+### 2. Deploy to Cloud Run
 ```bash
 gcloud run deploy dra-app \
-  --image $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/dra-app \
+  --image $REGION-docker.pkg.dev/$PROJECT_ID/dra-repo/$IMAGE_NAME \
   --platform managed \
   --region $REGION \
   --allow-unauthenticated \
-  --port 3000 \
-  --set-env-vars API_KEY=your_actual_key_here
+  --set-env-vars API_KEY=your_actual_gemini_key_here \
+  --port 3000
 ```
 
----
-
-## 🛡️ Security Note
-This application runs entirely in the browser. For production environments, it is recommended to proxy API requests through a backend to keep your API key secure.
+### 3. Access the App
+Once finished, the command output will provide a **Service URL**. Click it to access your live Deployment Readiness Auditor!
 
 ---
 
-> Built with ❤️ for the Google Cloud Community by Damian Sztankowski.
+## 🛠️ How to Use
+
+1.  **Input**: Paste your `.tf` or `.tfvars` code into the "Deployment Specification" editor.
+2.  **Analyze**: Click **Run Global Audit**.
+3.  **Review**: 
+    - Use the **Pillar Matrix** to see which area needs most attention.
+    - Check the **FinOps Opportunities** section for quick budget wins.
+    - Click any **Standard Tag** (e.g., NIST 800-53 AC-3) to see the formal regulatory requirement and business impact.
+4.  **Remediate**: Expand findings to see the **Terraform Change** and copy the fix directly into your source code.
+5.  **Report**: Click **Export Professional Audit** to generate a PDF for your compliance record.
+
+---
+
+## 🔒 Security & Privacy
+
+- **No Persistence**: DRA does not store your code. Analysis is ephemeral and exists only during your session.
+- **Client-Side Processing**: The UI runs entirely in your browser. Code is sent securely via HTTPS to the Gemini API for analysis.
+- **Zero-Knowledge**: No database is used. History is stored in your browser's `localStorage`.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE.md` for more information.
+
+**Disclaimer**: *This tool provides AI-generated architectural advice. Always perform a manual review of infrastructure changes before applying them to production environments.*
