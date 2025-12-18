@@ -1,5 +1,7 @@
 # 🛡️ Deployment Readiness Auditor (DRA)
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/damiansztankowski)
+
 **Architect with Confidence. Audit with Intelligence.**
 
 The **Deployment Readiness Auditor (DRA)** is a Google Cloud-native, AI-assisted platform designed to analyze infrastructure-as-code (Terraform/HCL) before it hits production. It evaluates your deployment specification against the official **Google Cloud Well-Architected Framework** and maps risks to global regulatory standards like **NIST, CIS, GDPR, and HIPAA**.
