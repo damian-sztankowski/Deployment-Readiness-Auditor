@@ -19,7 +19,6 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('assessment');
   const [isInputMinimized, setIsInputMinimized] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [showKeyInfo, setShowKeyInfo] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
   
   const [history, setHistory] = useState<HistoryItem[]>(() => {
@@ -87,7 +86,6 @@ const App: React.FC = () => {
     setCurrentView('assessment');
     setAnalysis({ isLoading: true, error: null, result: null });
     
-    // Simulate thinking/loading for the showcase
     await new Promise(resolve => setTimeout(resolve, 2500));
     
     setAnalysis({ isLoading: false, error: null, result: MOCK_AUDIT_RESULT });
@@ -128,31 +126,20 @@ const App: React.FC = () => {
       
       <OnboardingTour startTour={!showSplash} />
 
-      {/* Optimized Background matching reference screenshot */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Base Layer */}
         <div className="absolute inset-0 bg-[#020617]"></div>
-        
-        {/* Central Radial Lightening */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(28,37,65,1)_0%,rgba(2,6,23,0)_75%)]"></div>
-
-        {/* Floating Ambient Glows */}
         <div className="absolute inset-0">
-            <div className="absolute top-[-10%] left-[-5%] w-[80vw] h-[80vw] bg-indigo-500/5 dark:bg-indigo-500/5 rounded-full blur-[160px] animate-blob" />
-            <div className="absolute bottom-[-10%] right-[-5%] w-[70vw] h-[70vw] bg-violet-500/5 dark:bg-violet-500/5 rounded-full blur-[140px] animate-blob animation-delay-4000" />
+            <div className="absolute top-[-10%] left-[-5%] w-[80vw] h-[80vw] bg-indigo-500/5 rounded-full blur-[160px] animate-blob" />
+            <div className="absolute bottom-[-10%] right-[-5%] w-[70vw] h-[70vw] bg-violet-500/5 rounded-full blur-[140px] animate-blob animation-delay-4000" />
         </div>
-
-        {/* Precision Grid Overlay */}
         <div className="absolute inset-0 opacity-[0.1]" style={{ 
           backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
           backgroundSize: '40px 40px'
         }}></div>
-
-        {/* Outer Darkening */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_60%,rgba(2,6,23,1)_100%)]"></div>
       </div>
 
-      {/* --- CONTENT LAYER --- */}
       <div className="relative z-10 flex flex-col flex-grow w-full">
         {showSplash ? (
           <SplashPage onStart={handleStart} onRunDemo={handleRunDemo} />
@@ -164,8 +151,6 @@ const App: React.FC = () => {
               isDarkMode={isDarkMode}
               toggleTheme={() => setIsDarkMode(!isDarkMode)}
               onToggleHistory={() => setShowHistory(true)}
-              onToggleKeyInfo={() => setShowKeyInfo(!showKeyInfo)}
-              isKeyInfoVisible={showKeyInfo}
             />
             
             <HistorySidebar 
@@ -220,8 +205,6 @@ const App: React.FC = () => {
                         isAnalyzing={analysis.isLoading} 
                         minimized={isInputMinimized}
                         onToggleMinimize={() => setIsInputMinimized(!isInputMinimized)}
-                        showKeyInfo={showKeyInfo}
-                        onCloseKeyInfo={() => setShowKeyInfo(false)}
                         onRunDemo={handleRunDemo}
                       />
                   </div>

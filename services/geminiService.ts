@@ -1,13 +1,8 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 
-/**
- * According to Google GenAI SDK Coding Guidelines:
- * 1. API key must be obtained exclusively from process.env.API_KEY.
- * 2. initialization must use: new GoogleGenAI({ apiKey: process.env.API_KEY }).
- */
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
+// Standardizing on Pro for comprehensive architectural analysis
 export const GEMINI_MODEL = "gemini-3-pro-preview";
 
 const SYSTEM_INSTRUCTION = `
@@ -70,6 +65,18 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
   if (!inputCode.trim()) {
     throw new Error("Input cannot be empty.");
   }
+
+  /**
+   * DEPLOYMENT KEY ACCESS
+   * The API_KEY is provided via Cloud Run environment variables and injected by server.js.
+   */
+  const apiKey = process.env.API_KEY;
+
+  if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
+    throw new Error("DRA System Configuration Error: API_KEY environment variable is missing in deployment.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
 
   try {
     const numberedCode = addLineNumbers(inputCode);
@@ -149,9 +156,12 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     return result;
   } catch (error: any) {
     console.error("Analysis failed:", error);
-    if (error.message?.includes('429')) {
-      throw new Error("Quota Exceeded. The global trial key is rate-limited.");
+    
+    // Transparent error reporting for deployment issues
+    if (error.message?.includes('403') || error.message?.includes('PERMISSION_DENIED')) {
+        throw new Error("Audit Failed: Deployment identity lacks permission. Verify the Cloud Run API_KEY restriction and status.");
     }
+    
     throw error;
   }
 };

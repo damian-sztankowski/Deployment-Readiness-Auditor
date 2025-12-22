@@ -1,9 +1,8 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Play, Upload, RefreshCw, Terminal, ChevronUp, Edit2, 
-  FileCode, FolderUp, Key, X, Save, ShieldCheck, 
-  Lock, Zap, ChevronRight, Database, Sparkles
+  FileCode, FolderUp, Sparkles
 } from 'lucide-react';
 
 interface InputSectionProps {
@@ -11,8 +10,6 @@ interface InputSectionProps {
   isAnalyzing: boolean;
   minimized?: boolean;
   onToggleMinimize?: () => void;
-  showKeyInfo: boolean;
-  onCloseKeyInfo: () => void;
   onRunDemo: () => void;
 }
 
@@ -21,36 +18,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
   isAnalyzing, 
   minimized = false, 
   onToggleMinimize,
-  showKeyInfo,
-  onCloseKeyInfo,
   onRunDemo
 }) => {
   const [inputCode, setInputCode] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [isReadingFiles, setIsReadingFiles] = useState(false);
-  
-  // Sovereign Key State
-  const [tempKey, setTempKey] = useState('');
-  const [hasUserKey, setHasUserKey] = useState(false);
-
-  useEffect(() => {
-    const key = localStorage.getItem('dra-custom-api-key');
-    setHasUserKey(!!key);
-    if (key) setTempKey(key);
-  }, []);
-
-  const saveKey = () => {
-    if (tempKey.trim()) {
-      localStorage.setItem('dra-custom-api-key', tempKey.trim());
-      setHasUserKey(true);
-    } else {
-      localStorage.removeItem('dra-custom-api-key');
-      setHasUserKey(false);
-    }
-    onCloseKeyInfo();
-    window.location.reload();
-  };
 
   const handleAnalyze = () => {
     if (inputCode.trim()) onAnalyze(inputCode);
@@ -181,7 +154,6 @@ resource "google_compute_disk" "unattached_disk" {
 
   return (
     <div id="input-section-container" className="relative group w-full max-w-[1400px] mx-auto">
-       {/* Background Glow matching the screenshot's depth */}
        <div className="absolute -inset-1 rounded-[2.2rem] bg-indigo-500/10 blur-2xl pointer-events-none"></div>
 
       <div className="relative bg-white dark:bg-[#0a0f1e] rounded-[2rem] shadow-3xl overflow-hidden border border-slate-200 dark:border-slate-800/80 transition-all duration-500">
@@ -230,110 +202,6 @@ resource "google_compute_disk" "unattached_disk" {
             spellCheck={false}
           />
           
-          {/* THE SOVEREIGN KEY BOX - CENTERED IN THE EDITOR AREA */}
-          {showKeyInfo && (
-            <div className="absolute inset-0 z-40 flex items-center justify-center p-6 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-300">
-               <div className="bg-white dark:bg-[#0a0f1e] w-full max-w-xl rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-[0_32px_128px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
-                  {/* Internal Modal Header */}
-                  <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 flex justify-between items-center">
-                    <div className="flex items-center gap-5">
-                       <div className="p-4 bg-indigo-600 text-white rounded-2xl shadow-xl shadow-indigo-500/20">
-                          <Key className="w-7 h-7" strokeWidth={2.5} />
-                       </div>
-                       <div>
-                          <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">Sovereignty Setup</h3>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                             Identity & Quota Protocol
-                          </p>
-                       </div>
-                    </div>
-                    <button 
-                      onClick={onCloseKeyInfo} 
-                      className="p-3 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all group"
-                    >
-                      <X className="w-6 h-6 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white group-hover:rotate-90 transition-transform" />
-                    </button>
-                  </div>
-
-                  {/* Internal Body */}
-                  <div className="p-10 space-y-8">
-                    <div className="grid grid-cols-2 gap-5">
-                        <div className="p-5 bg-slate-50 dark:bg-slate-950/60 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col gap-3">
-                           <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-                              <Lock className="w-5 h-5" />
-                              <h4 className="text-[10px] font-black uppercase tracking-widest">Privacy</h4>
-                           </div>
-                           <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                              Stored in <span className="font-bold text-indigo-500">LocalStorage</span>. Peer-to-peer transit with Google APIs.
-                           </p>
-                        </div>
-                        <div className="p-5 bg-slate-50 dark:bg-slate-950/60 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col gap-3">
-                           <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                              <Zap className="w-5 h-5" />
-                              <h4 className="text-[10px] font-black uppercase tracking-widest">Quota</h4>
-                           </div>
-                           <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                              Bypass shared MVP limits for high-fidelity auditing throughput.
-                           </p>
-                        </div>
-                    </div>
-
-                    {/* API KEY INPUT */}
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center px-1">
-                          <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Gemini API Credentials</label>
-                          {hasUserKey && (
-                              <div className="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
-                                  <ShieldCheck className="w-3.5 h-3.5" />
-                                  Active
-                              </div>
-                          )}
-                      </div>
-                      <div className="relative group/input">
-                          <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-                             <Database className="w-6 h-6 text-slate-300 group-focus-within/input:text-indigo-500 transition-colors" />
-                          </div>
-                          <input 
-                            type="password" 
-                            value={tempKey}
-                            onChange={(e) => setTempKey(e.target.value)}
-                            placeholder="Enter AIzaSy... key"
-                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl pl-16 pr-8 py-6 font-mono text-base outline-none focus:border-indigo-500 transition-all shadow-inner placeholder:text-slate-400"
-                          />
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-4 py-6 border-t border-slate-100 dark:border-slate-800">
-                        <a 
-                          href="https://aistudio.google.com/app/apikey" 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="group flex items-center gap-2 text-sm font-black text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 transition-all"
-                        >
-                          Obtain key from Google AI Studio
-                          <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </a>
-                    </div>
-                  </div>
-
-                  {/* Action Footer */}
-                  <div className="px-10 py-8 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-100 dark:border-slate-800">
-                    <button 
-                      onClick={saveKey}
-                      className="w-full group relative overflow-hidden bg-indigo-600 hover:bg-indigo-700 text-white font-black py-6 rounded-3xl shadow-2xl shadow-indigo-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-4"
-                    >
-                      <Save className="w-6 h-6 relative z-10" />
-                      <span className="relative z-10 text-xl tracking-tight">Apply Credentials</span>
-                    </button>
-                    <p className="text-[10px] text-center text-slate-400 mt-4 uppercase tracking-[0.3em] font-bold">
-                       Persists in local session
-                    </p>
-                  </div>
-               </div>
-            </div>
-          )}
-          
           <div className="absolute bottom-10 right-10 z-30 flex flex-col items-end gap-5">
             {!inputCode.trim() && !isAnalyzing && (
               <button 
@@ -341,7 +209,7 @@ resource "google_compute_disk" "unattached_disk" {
                 className="group flex items-center gap-3 px-8 py-4 bg-white/5 dark:bg-white/[0.03] backdrop-blur-3xl border border-indigo-500/20 hover:border-indigo-500 rounded-2xl text-sm font-black text-indigo-500 dark:text-indigo-400 shadow-2xl transition-all animate-in slide-in-from-bottom-4 duration-700"
               >
                 <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                No Key? Try Interactive Showcase
+                Interactive Showcase
               </button>
             )}
 

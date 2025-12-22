@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/driver.js/dist/driver.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Tailwind Configuration for the CDN version
+      // Tailwind Configuration
       tailwind.config = {
         darkMode: 'class',
         theme: {
@@ -46,17 +46,17 @@
       }
 
       /**
-       * SOVEREIGN KEY SHIM
-       * Dynamically resolves the API_KEY from localStorage.
-       * This ensures no keys are hardcoded in the deployment bundle.
+       * DEPLOYMENT KEY SHIM
+       * The server replaces the placeholder with the actual Cloud Run environment variable.
        */
-      window.process = {
+      const processShim = {
         env: {
-          get API_KEY() {
-            return localStorage.getItem('dra-custom-api-key') || "";
-          }
+          API_KEY: "__DRA_API_KEY_PLACEHOLDER__"
         }
       };
+      
+      window.process = processShim;
+      globalThis.process = processShim;
 
       try {
         const localTheme = localStorage.getItem('dra-theme');
