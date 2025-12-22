@@ -1,7 +1,8 @@
+
 import express from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,43 +11,42 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 /**
- * PRODUCTION MVP SERVER:
- * 1. Serves static frontend assets.
- * 2. Injects API_KEY into index.html at runtime.
- * 3. Fallback for SPA routing.
+ * DEPLOYMENT READINESS SERVER
+ * Dynamically injects the API_KEY from Cloud Run environment variables
+ * into the index.html served to the client.
  */
 
-// Serve static files from the root directory
-app.use(express.static(__dirname));
-
-// Custom route for index.html to inject the API key
 app.get('/', (req, res) => {
-  const indexPath = path.join(__dirname, 'index.html');
-  fs.readFile(indexPath, 'utf8', (err, data) => {
+  const filePath = path.join(__dirname, 'index.html');
+  fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
-      res.status(500).send('Critical Error: Failed to load index.html');
-      return;
+      console.error('Error reading index.html:', err);
+      return res.status(500).send('Internal Server Error');
     }
 
-    // Default to empty string if not provided in environment
+    // Inject the API_KEY from the server environment into the client shim
     const apiKey = process.env.API_KEY || '';
-
-    // Regex to find and replace the shimmed API_KEY
-    const result = data.replace(
-      /API_KEY:\s*["'][^"']*["']/g,
-      `API_KEY: "${apiKey}"`
-    );
-
+    const result = data.replace('__DRA_API_KEY_PLACEHOLDER__', apiKey);
+    
     res.send(result);
   });
 });
 
-// Fallback for SPA-like behavior (Ensures refreshes on subroutes work)
+// Serve static assets (js, css, etc.)
+app.use(express.static(__dirname));
+
+// Fallback for SPA-like behavior
 app.get('*', (req, res) => {
-  res.redirect('/');
+  const filePath = path.join(__dirname, 'index.html');
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).send('Internal Server Error');
+    const apiKey = process.env.API_KEY || '';
+    const result = data.replace('__DRA_API_KEY_PLACEHOLDER__', apiKey);
+    res.send(result);
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 DRA Production Server active on port ${PORT}`);
-  console.log(`🛡️ Global API Key: ${process.env.API_KEY ? 'CONFIGURED' : 'NOT FOUND'}`);
+  console.log(`🚀 DRA Deployment active on port ${PORT}`);
+  console.log(`🛡️ Environment: Cloud Run Native (API_KEY bound)`);
 });

@@ -1,20 +1,8 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 
-/**
- * PRODUCTION MVP KEY STRATEGY:
- * 1. Check for user-provided key in localStorage (BYOK) - Priority.
- * 2. Fallback to injected process.env.API_KEY (Global MVP Key).
- */
-const getActiveApiKey = () => {
-  if (typeof window !== 'undefined') {
-    const userKey = localStorage.getItem('dra-custom-api-key');
-    if (userKey) return userKey;
-  }
-  // This is shimmed in index.html and replaced by server.js at runtime
-  return (window as any).process?.env?.API_KEY || "";
-};
-
+// Standardizing on Pro for comprehensive architectural analysis
 export const GEMINI_MODEL = "gemini-3-pro-preview";
 
 const SYSTEM_INSTRUCTION = `
@@ -61,7 +49,6 @@ You MUST iterate through EVERY resource block defined in the code and perform th
 - Do NOT assess other hyperscalers terraform code. If you find different hyperscaler, return *CRITICAL** with proper info.
 `;
 
-
 const addLineNumbers = (code: string): string => {
   const lines = code.split('\n');
   let currentLine = 1;
@@ -75,27 +62,31 @@ const addLineNumbers = (code: string): string => {
 };
 
 export const analyzeInfrastructure = async (inputCode: string): Promise<AuditResult> => {
-  const apiKey = getActiveApiKey();
-  
-  if (!apiKey) {
-    throw new Error("No API Key detected. Please provide your own Gemini API Key in the Settings (Key icon) to proceed.");
-  }
-
   if (!inputCode.trim()) {
     throw new Error("Input cannot be empty.");
   }
 
+  /**
+   * DEPLOYMENT KEY ACCESS
+   * The API_KEY is provided via Cloud Run environment variables and injected by server.js.
+   */
+  const apiKey = process.env.API_KEY;
+
+  if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
+    throw new Error("DRA System Configuration Error: API_KEY environment variable is missing in deployment.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+
   try {
-    const ai = new GoogleGenAI({ apiKey });
     const numberedCode = addLineNumbers(inputCode);
 
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,
-      contents: `Perform a deep audit. You MUST provide structured 'compliance' info for every finding. Provide a 'fix' code snippet for every finding. Identify exact file names and line numbers.\n\nInput Code:\n${numberedCode}`,
+      contents: `Perform a deep audit. Provide structured findings with compliance mapping and code fixes.\n\nInput Code:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.1,
-        seed: 42,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -152,7 +143,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
       }
     });
 
-    const result = JSON.parse(response.text) as AuditResult;
+    const result = JSON.parse(response.text || "{}") as AuditResult;
     
     if (response.usageMetadata) {
       result.usage = {
@@ -166,11 +157,9 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
   } catch (error: any) {
     console.error("Analysis failed:", error);
     
-    if (error.message?.includes('429')) {
-      throw new Error("Public Quota Exceeded. The global trial key is rate-limited. To continue immediately, please add your own API Key in Settings.");
-    }
-    if (error.message?.includes('403')) {
-      throw new Error("Invalid API Key or Restriction Error. Please verify your settings or provide a valid Gemini key.");
+    // Transparent error reporting for deployment issues
+    if (error.message?.includes('403') || error.message?.includes('PERMISSION_DENIED')) {
+        throw new Error("Audit Failed: Deployment identity lacks permission. Verify the Cloud Run API_KEY restriction and status.");
     }
     
     throw error;

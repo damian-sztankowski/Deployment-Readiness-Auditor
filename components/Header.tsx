@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Info, Moon, Sun, History, Sparkles, Key, X } from 'lucide-react';
+
+import React from 'react';
+import { LayoutGrid, Info, Moon, Sun, History, Sparkles } from 'lucide-react';
 import { Logo } from './Logo';
 
 export type ViewType = 'about' | 'features' | 'assessment';
@@ -10,8 +11,6 @@ interface HeaderProps {
   isDarkMode: boolean;
   toggleTheme: () => void;
   onToggleHistory: () => void;
-  onToggleKeyInfo: () => void;
-  isKeyInfoVisible: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -19,17 +18,8 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate, 
   isDarkMode, 
   toggleTheme, 
-  onToggleHistory,
-  onToggleKeyInfo,
-  isKeyInfoVisible
+  onToggleHistory
 }) => {
-  const [hasUserKey, setHasUserKey] = useState(false);
-
-  useEffect(() => {
-    const key = localStorage.getItem('dra-custom-api-key');
-    setHasUserKey(!!key);
-  }, []);
-
   return (
     <header className="w-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50 transition-all duration-500">
       <div className="max-w-[2200px] mx-auto px-6 sm:px-10 lg:px-16 2xl:px-24 h-20 md:h-24 flex items-center justify-between">
@@ -50,8 +40,8 @@ export const Header: React.FC<HeaderProps> = ({
                 <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tighter leading-none group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 DRA<span className="text-indigo-600 dark:text-indigo-400">.</span>
                 </h1>
-                <div className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border ${hasUserKey ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}>
-                    {hasUserKey ? 'Professional' : 'Public MVP'}
+                <div className="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border transition-colors bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                    System Active
                 </div>
             </div>
             <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 transition-all duration-300">
@@ -108,14 +98,6 @@ export const Header: React.FC<HeaderProps> = ({
             </nav>
 
             <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
-                <button 
-                    onClick={onToggleKeyInfo}
-                    className={`p-3 rounded-2xl transition-all hover:scale-110 active:scale-95 ${isKeyInfoVisible || hasUserKey ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg shadow-indigo-500/10' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                    title="API Sovereignty Settings"
-                >
-                    <Key className="w-5 h-5" />
-                </button>
-
                 <button 
                     id="header-history-btn"
                     onClick={onToggleHistory}

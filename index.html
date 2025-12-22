@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,7 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/driver.js/dist/driver.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Tailwind Configuration for the CDN version
+      // Tailwind Configuration
       tailwind.config = {
         darkMode: 'class',
         theme: {
@@ -44,12 +45,18 @@
         }
       }
 
-      // Shim for process.env used by @google/genai
-      window.process = {
+      /**
+       * DEPLOYMENT KEY SHIM
+       * The server replaces the placeholder with the actual Cloud Run environment variable.
+       */
+      const processShim = {
         env: {
-          API_KEY: "" 
+          API_KEY: "__DRA_API_KEY_PLACEHOLDER__"
         }
       };
+      
+      window.process = processShim;
+      globalThis.process = processShim;
 
       try {
         const localTheme = localStorage.getItem('dra-theme');
@@ -78,7 +85,7 @@
         padding: 0;
         overflow-x: hidden;
         font-family: 'Inter', sans-serif;
-        background-color: #020617; /* Default to dark bg */
+        background-color: #020617;
       }
 
       #root {
@@ -124,7 +131,6 @@
         66% { transform: translate(-20px, 20px) scale(0.9); }
         100% { transform: translate(0px, 0px) scale(1); }
       }
-      /* Enhanced Liquid Morph with better keyframe continuity */
       @keyframes morph {
         0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: rotate(0deg) scale(1); }
         33% { border-radius: 40% 60% 50% 50% / 40% 40% 60% 60%; transform: rotate(120deg) scale(1.08); }
@@ -134,7 +140,6 @@
         0%, 100% { transform: translateY(0) rotate(0); }
         50% { transform: translateY(-15px) rotate(5deg); }
       }
-      /* Stable start to prevent jumping */
       @keyframes float-orbit-1 {
         0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
         33% { transform: translate3d(20px, -15px, 0) rotate(5deg); }

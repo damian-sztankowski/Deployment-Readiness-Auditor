@@ -134,7 +134,7 @@ export const Footer: React.FC<FooterProps> = ({ lastResult }) => {
 
         <div className="mt-20 pt-12 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">
-            © 2025 Deployment Readiness Auditor | MIT License
+            © 2025 Deployment Readiness Auditor / Damian Sztankowski
           </div>
           <div className="flex items-center gap-12">
               <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2.5">
