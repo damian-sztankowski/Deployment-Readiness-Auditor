@@ -183,7 +183,8 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                         'Detects cross-resource relationship risks',
                         'Understands environment context (Prod vs Dev)',
                         'Maps logical flaws to specific NIST/CIS controls',
-                        'Generates valid Terraform code for remediations'
+                        'Generates valid Terraform code for remediations',
+                        'Eliminates "Severity Masking" by identifying all-tier risks in a single pass.'
                     ].map((item, i) => (
                         <li key={i} className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
                             <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -229,7 +230,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 p-8 md:p-12 shadow-sm transition-all">
              <FAQItem
                 question="What makes this different from tools like Checkov, Terrascan, or TFLint?"
-                answer="Traditional static analysis tools rely on hardcoded regex or YAML-based policies that check for specific key-value pairs. DRA utilizes LLM-based semantic analysis via Gemini 3 Pro. This allows the auditor to understand the 'intent' and 'context' of your architecture. For example, DRA can identify that a specific load balancer configuration is under-provisioned for a production workload, or that an IAM role is too broad for the specific service accounts it interacts with, even if the HCL syntax itself is valid."
+                answer="Traditional static analysis tools rely on hardcoded regex or YAML-based policies that check for specific key-value pairs. DRA utilizes LLM-based semantic analysis via the selected Gemini model. This allows the auditor This allows the auditor to understand the 'intent' and 'context' of your architecture. For example, DRA can identify that a specific load balancer configuration is under-provisioned for a production workload, or that an IAM role is too broad for the specific service accounts it interacts with, even if the HCL syntax itself is valid."
              />
              <FAQItem
                 question="How accurate are the FinOps cost savings estimates?"

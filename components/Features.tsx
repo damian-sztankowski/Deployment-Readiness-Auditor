@@ -4,7 +4,7 @@ import { Shield, Sparkles, Zap, Brain, FileText, Code, Database, Compass, CheckC
 export const Features: React.FC = () => {
   const featureList = [
     {
-      title: "Gemini 3 Pro Intelligence",
+      title: "Dynamic Gemini Intelligence",
       description: "Leverages cutting-edge multimodal models to understand architectural intent beyond simple syntax checks.",
       icon: Brain,
       color: "text-purple-500",
