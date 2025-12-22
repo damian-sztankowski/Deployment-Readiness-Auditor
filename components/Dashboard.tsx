@@ -199,11 +199,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
         const complianceText = f.compliance?.map(c => `• ${c.standard}: ${c.controlId}`).join('\n') || 'Architectural Best Practice.';
         const context = `SOURCE: ${f.fileName || 'Project-wide'}\nLOCATION: Line ${f.lineNumber || 'N/A'}\nCATEGORY: ${f.category}`;
         
+        let observationContent = `${f.title.toUpperCase()}\n\n${f.description}\n\nREMEDIATION STRATEGY: ${f.remediation}\n\nCOMPLIANCE MAPPING:\n${complianceText}`;
+        
+        // Add code fix if available
+        if (f.fix) {
+          observationContent += `\n\nRECOMMENDED HCL FIX:\n------------------------------------------------\n${f.fix}\n------------------------------------------------`;
+        }
+
         return [
           { content: `${f.severity.toUpperCase()}`, styles: { fontStyle: 'bold' as const, halign: 'center' as const } },
           { content: context, styles: { fontSize: 8.5, fontStyle: 'italic' as const } },
           { 
-            content: `${f.title.toUpperCase()}\n\n${f.description}\n\nREMEDIATION STRATEGY: ${f.remediation}\n\nCOMPLIANCE MAPPING:\n${complianceText}`,
+            content: observationContent,
             styles: { fontSize: 9.5 }
           }
         ];
@@ -223,6 +230,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
           2: { cellWidth: 'auto' } 
         },
         didParseCell: (data) => {
+          // Severity Styling
           if (data.section === 'body' && data.column.index === 0) {
             const val = data.cell.text[0];
             if (val.includes('CRITICAL')) {
@@ -236,15 +244,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
         }
       });
 
+      // Enterprise Footer for all content pages
       const totalPages = doc.internal.pages.length - 1;
+      const exportTimestamp = new Date().toLocaleString('en-GB', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      });
+
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        doc.setFontSize(9).setTextColor(...theme.slateMuted);
+        doc.setFontSize(8.5).setTextColor(...theme.slateMuted);
         
         doc.setDrawColor(...theme.slateMuted, 0.15);
         doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
         
-        doc.text(`Deployment Readiness Auditor | CONFIDENTIAL AUDIT REPORT | ${reportId}`, margin, pageHeight - 10);
+        doc.text(`DRA Auditor | CONFIDENTIAL AUDIT | Generated: ${exportTimestamp} | ID: ${reportId}`, margin, pageHeight - 10);
         doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
       }
 

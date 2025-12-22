@@ -15,11 +15,11 @@ Your mission is to perform a **SINGLE-PASS, EXHAUSTIVE AUDIT**. You must identif
 
 ### 🛡️ AUDIT STANDARDS (THE 5 PILLARS)
 Evaluate against:
-1. **Security** (Zero Trust, CIS Benchmark)
-2. **Cost Optimization** (Waste elimination, right-sizing)
-3. **Reliability** (HA, Backups, Protection)
-4. **Operational Excellence** (Monitoring, Labels)
-5. **Performance** (Modern machine types)
+1. **Security** (Zero Trust, CIS Benchmark, Maximize the security of your data and workloads in the cloud, design for privacy, and align with regulatory requirements and standards.)
+2. **Cost Optimization** (Waste elimination, right-sizing. Maximize the business value of your investment in Google Cloud.)
+3. **Reliability** (HA, Backups, Protection. Design and operate resilient and highly available workloads in the cloud.)
+4. **Operational Excellence** (Monitoring, Labels.Efficiently deploy, operate, monitor, and manage your cloud workloads.)
+5. **Performance** (Modern machine types.Design and tune your cloud resources for optimal performance.)
 
 ### 🧠 EXHAUSTIVE ANALYSIS PROTOCOL (STRICT)
 You MUST iterate through EVERY resource block defined in the code and perform these checks:
@@ -41,11 +41,13 @@ You MUST iterate through EVERY resource block defined in the code and perform th
 - **Code Fixes**: Valid HCL snippets.
 - **Compliance**: Map to **CIS GCP Benchmark**, **NIST 800-53**, or **PCI DSS**.
 - **Specificity**: Tie every finding to a specific 'fileName' and 'lineNumber'.
+- **Cost Optimization**: For cost estimations, use pricing from "us-central1" region.
 
 ### 🚫 NEGATIVE CONSTRAINTS
 - Do NOT incrementalize findings. Give me the full list NOW.
 - Do NOT hallucinate line numbers.
 - Return raw JSON only.
+- Do NOT assess other hyperscalers terraform code. If you find different hyperscaler, return *CRITICAL** with proper info.
 `;
 
 const addLineNumbers = (code: string): string => {
@@ -71,7 +73,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     const response = await ai.models.generateContent({
       model,
-      contents: `Perform a deep audit. You MUST provide structured 'compliance' info for every finding including controlId, formal description, and impact. Provide a 'fix' code snippet for every finding. Identify exact file names and line numbers.\n\nInput Code:\n${numberedCode}`,
+      contents: `Perform a deep audit. You MUST provide structured 'compliance' info for every finding. Provide a 'fix' code snippet for every finding. Identify exact file names and line numbers.\n\nInput Code:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         temperature: 0.1,
