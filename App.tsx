@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Header, ViewType } from './components/Header';
 import { InputSection } from './components/InputSection';
@@ -123,17 +124,32 @@ const App: React.FC = () => {
   const handleNavigate = (view: ViewType) => setCurrentView(view);
 
   return (
-    <div className="flex-1 flex flex-col w-full bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative font-sans text-slate-900 dark:text-slate-100">
+    <div className="flex-1 flex flex-col w-full bg-[#020617] transition-colors duration-500 relative font-sans text-slate-900 dark:text-slate-100">
       
       <OnboardingTour startTour={!showSplash} />
 
-      {/* --- BACKGROUND LAYER --- */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:48px_48px]"></div>
-        <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-[-10%] left-[-5%] w-[80vw] h-[80vw] bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[160px] animate-blob" />
-            <div className="absolute bottom-[-10%] right-[-5%] w-[70vw] h-[70vw] bg-violet-500/5 dark:bg-violet-500/10 rounded-full blur-[140px] animate-blob animation-delay-4000" />
+      {/* Optimized Background matching reference screenshot */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Base Layer */}
+        <div className="absolute inset-0 bg-[#020617]"></div>
+        
+        {/* Central Radial Lightening */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(28,37,65,1)_0%,rgba(2,6,23,0)_75%)]"></div>
+
+        {/* Floating Ambient Glows */}
+        <div className="absolute inset-0">
+            <div className="absolute top-[-10%] left-[-5%] w-[80vw] h-[80vw] bg-indigo-500/5 dark:bg-indigo-500/5 rounded-full blur-[160px] animate-blob" />
+            <div className="absolute bottom-[-10%] right-[-5%] w-[70vw] h-[70vw] bg-violet-500/5 dark:bg-violet-500/5 rounded-full blur-[140px] animate-blob animation-delay-4000" />
         </div>
+
+        {/* Precision Grid Overlay */}
+        <div className="absolute inset-0 opacity-[0.1]" style={{ 
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }}></div>
+
+        {/* Outer Darkening */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_60%,rgba(2,6,23,1)_100%)]"></div>
       </div>
 
       {/* --- CONTENT LAYER --- */}
