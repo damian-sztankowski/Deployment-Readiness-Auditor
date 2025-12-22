@@ -81,7 +81,7 @@ This converts the `index.tsx` file into a browser-readable `index.js` file using
 
 ### 4. Start the Development Server
 ```bash
-API_KEY=KEY npm start
+npm start
 ```
 The terminal will provide a URL (usually `http://localhost:8080`). Open it in your browser!
 
@@ -120,7 +120,7 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
 
 ## 🛠️ How to Use
 
-1.  **Input**: Paste your `.tf` or `.tfvars` code into the "Deployment Specification" editor.
+1.  **Input**: Paste your `.tf` or `.tfvars` code into the "Deployment Specification" editor. You can also update entire directory.
 2.  **Analyze**: Click **Run Global Audit**.
 3.  **Review**: 
     - Use the **Pillar Matrix** to see which area needs most attention.
@@ -128,6 +128,22 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
     - Click any **Standard Tag** (e.g., NIST 800-53 AC-3) to see the formal regulatory requirement and business impact.
 4.  **Remediate**: Expand findings to see the **Terraform Change** and copy the fix directly into your source code.
 5.  **Report**: Click **Export Professional Audit** to generate a PDF for your compliance record.
+
+
+## 🖼️ Screenshots
+
+<p align="center">
+  <img src="images/splash-page.png" width="30%" />
+  <img src="images/scan-infra.png" width="30%" />
+  <img src="images/running-analysis.png" width="30%" />
+  <img src="images/summary.png" width="30%" />
+  <img src="images/key-findings.png" width="30%" />
+  <img src="images/model-info.png" width="30%" />
+</p>
+
+## 📄 Project Report
+Report example and analysis can be found here:
+[**Download / View Project Report (PDF)**](./examples/reports/DRA_Audit_Report_1766383676416.pdf)
 
 ---
 
@@ -143,4 +159,4 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
 
 Distributed under the MIT License. See `LICENSE.md` for more information.
 
-**Disclaimer**: *This tool provides AI-generated architectural advice. Always perform a manual review of infrastructure changes before applying them to production environments.*
+**Disclaimer**: *This tool provides AI-generated architectural advice. **Always perform a manual review** of infrastructure changes before applying them to production environments.*
