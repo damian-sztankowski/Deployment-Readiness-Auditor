@@ -105,6 +105,11 @@ window.process = {
 };
 ```
 
+If you want to change your model, open the `services/geminiService.ts` file in the root directory. Look for this block:
+```javascript
+export const GEMINI_MODEL = "gemini-3-pro-preview";
+```
+
 ```bash
 gcloud run deploy dra-app \
   --source . \
@@ -144,7 +149,7 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
 
 ## 📄 Project Report
 Report example and analysis can be found here:
-[**Download / View Project Report (PDF)**](./examples/reports/DRA_Audit_Report_1766383676416.pdf)
+[**Download / View Project Report (PDF)**](./examples/reports/DRA_Audit_Report.pdf)
 
 ---
 
@@ -161,3 +166,5 @@ Report example and analysis can be found here:
 Distributed under the MIT License. See `LICENSE.md` for more information.
 
 **Disclaimer**: *This tool provides AI-generated architectural advice. **Always perform a manual review** of infrastructure changes before applying them to production environments.*
+
+**Info**: This is not an official Google or Google Cloud product. This project has been built and is maintained by the community. It is provided "as-is" without any official support or warranties from Google.
