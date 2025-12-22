@@ -63,17 +63,13 @@ const addLineNumbers = (code: string): string => {
 
 export const analyzeInfrastructure = async (inputCode: string): Promise<AuditResult> => {
   if (!inputCode.trim()) {
-    throw new Error("Input cannot be empty.");
+    throw new Error("AUDIT_ERROR: Input configuration is empty.");
   }
 
-  /**
-   * DEPLOYMENT KEY ACCESS
-   * The API_KEY is provided via Cloud Run environment variables and injected by server.js.
-   */
   const apiKey = process.env.API_KEY;
 
   if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
-    throw new Error("DRA System Configuration Error: API_KEY environment variable is missing in deployment.");
+    throw new Error("CONFIG_ERROR: The API_KEY environment variable is missing or invalid. Deployment failed to bind a valid credential.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -155,13 +151,18 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     return result;
   } catch (error: any) {
-    console.error("Analysis failed:", error);
+    const msg = error.message?.toLowerCase() || "";
     
-    // Transparent error reporting for deployment issues
-    if (error.message?.includes('403') || error.message?.includes('PERMISSION_DENIED')) {
-        throw new Error("Audit Failed: Deployment identity lacks permission. Verify the Cloud Run API_KEY restriction and status.");
+    if (msg.includes('403') || msg.includes('permission_denied')) {
+        throw new Error("AUTH_ERROR: API Key lacks permission. Check Google AI Studio restrictions.");
+    } else if (msg.includes('401') || msg.includes('invalid api key')) {
+        throw new Error("AUTH_ERROR: Provided API Key is invalid or expired.");
+    } else if (msg.includes('429') || msg.includes('quota')) {
+        throw new Error("LIMIT_ERROR: Rate limit exceeded for this API Key.");
+    } else if (msg.includes('billing')) {
+        throw new Error("BILLING_ERROR: Google Cloud project billing is not enabled.");
     }
     
-    throw error;
+    throw new Error(`SYSTEM_ERROR: ${error.message || "An unexpected engine failure occurred."}`);
   }
 };
