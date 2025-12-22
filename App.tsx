@@ -13,7 +13,7 @@ import { Footer } from './components/Footer';
 import { analyzeInfrastructure } from './services/geminiService';
 import { MOCK_AUDIT_RESULT } from './services/mockData';
 import { AnalysisState, AuditResult, HistoryItem } from './types';
-import { AlertOctagon, ShieldAlert, Terminal, RefreshCw, ChevronRight } from 'lucide-react';
+import { AlertOctagon, ShieldAlert, Terminal, RefreshCw, Key, ShieldX, Globe } from 'lucide-react';
 
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -123,55 +123,97 @@ const App: React.FC = () => {
   const handleNavigate = (view: ViewType) => setCurrentView(view);
 
   const renderError = (error: string) => {
-    const isAuthError = error.includes('AUTH_ERROR') || error.includes('CONFIG_ERROR');
+    const errorCode = error.split(':')[0] || 'SYSTEM_FAILURE';
+    const errorMsg = error.split(':').slice(1).join(':').trim() || error;
     
     return (
-      <div className="max-w-5xl mx-auto mb-12 animate-enter">
-        <div className="bg-white dark:bg-[#0a0f1e] rounded-[2.5rem] border border-red-200 dark:border-red-900/50 shadow-3xl overflow-hidden">
-          <div className="px-10 py-8 bg-red-50 dark:bg-red-950/20 border-b border-red-100 dark:border-red-900/30 flex items-center gap-6">
-            <div className="p-4 bg-white dark:bg-red-900/40 rounded-3xl shadow-lg">
-              <AlertOctagon className="w-10 h-10 text-red-600 dark:text-red-400" />
+      <div className="max-w-4xl mx-auto mb-16 animate-enter">
+        <div className="bg-white dark:bg-[#0a0f1e] rounded-[2.5rem] border border-red-200 dark:border-red-900/40 shadow-3xl overflow-hidden">
+          {/* Header */}
+          <div className="px-10 py-8 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-[#0a0f1e] border-b border-red-100 dark:border-red-900/30 flex items-center gap-6">
+            <div className="p-4 bg-red-600 rounded-3xl shadow-xl shadow-red-500/20">
+              <AlertOctagon className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-red-700 dark:text-red-300 tracking-tight">Deployment Readiness Check Failed</h3>
-              <p className="text-red-600/80 dark:text-red-400/60 font-mono text-xs uppercase tracking-widest mt-1">Error Code: {error.split(':')[0] || 'SYSTEM_FAILURE'}</p>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Audit Engine Halted</h3>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-red-600 dark:text-red-400 font-black text-[10px] uppercase tracking-[0.2em]">{errorCode}</span>
+                <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">Protocol Check Required</span>
+              </div>
             </div>
           </div>
           
-          <div className="p-10 space-y-8">
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
-              <p className="text-lg text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
-                {error.split(':').slice(1).join(':').trim() || error}
+          <div className="p-10 space-y-10">
+            {/* Error Message Box */}
+            <div className="bg-slate-50 dark:bg-slate-900/60 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 flex gap-5">
+              <div className="mt-1 shrink-0">
+                <ShieldX className="w-6 h-6 text-red-500 opacity-60" />
+              </div>
+              <p className="text-base text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
+                {errorMsg}
               </p>
             </div>
 
-            <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Troubleshooting Protocols</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
-                  <Terminal className="w-5 h-5 text-indigo-500 mt-1" />
-                  <div>
-                    <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">Verify Environment</span>
-                    <span className="text-xs text-slate-500">Ensure the --set-env-vars API_KEY= flag was used in your gcloud command.</span>
+            {/* Diagnostics & Troubleshooting */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                  <Terminal className="w-3.5 h-3.5" />
+                  Deployment Fixes
+                </h4>
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Run gcloud with environment flags:</span>
                   </div>
+                  <pre className="text-[10px] font-mono bg-slate-900 p-3 rounded-lg text-emerald-400 overflow-x-auto border border-slate-800">
+                    --set-env-vars API_KEY=YOUR_KEY
+                  </pre>
+                  <p className="text-[10px] text-slate-500 leading-relaxed italic">
+                    Ensure there are no leading or trailing spaces in your key during deployment.
+                  </p>
                 </div>
-                <div className="flex items-start gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
-                  <ShieldAlert className="w-5 h-5 text-amber-500 mt-1" />
-                  <div>
-                    <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">Credential Validity</span>
-                    <span className="text-xs text-slate-500">Check if your key is active in <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-indigo-500 underline">Google AI Studio</a>.</span>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                  <Key className="w-3.5 h-3.5" />
+                  Credential Access
+                </h4>
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Globe className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                    <div>
+                      <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">Check AI Studio</span>
+                      <p className="text-[10px] text-slate-500 mt-1">Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-indigo-500 underline font-bold">Google AI Studio</a> to verify your API Key is active and has 0 restrictions.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <ShieldAlert className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                    <div>
+                      <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">Billing Profile</span>
+                      <p className="text-[10px] text-slate-500 mt-1">Ensure the GCP project associated with the key has billing enabled for GenAI models.</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 flex justify-end">
+            {/* Footer Buttons */}
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-4">
+               <button 
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black rounded-xl transition-all text-[10px] uppercase tracking-widest"
+              >
+                Reload Application
+              </button>
               <button 
                 onClick={() => setAnalysis({ ...analysis, error: null })}
-                className="flex items-center gap-3 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl transition-all shadow-xl shadow-red-500/20 text-xs uppercase tracking-widest"
+                className="flex items-center gap-3 px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl transition-all shadow-xl shadow-red-500/20 text-[10px] uppercase tracking-widest"
               >
                 <RefreshCw className="w-4 h-4" />
-                Reset System State
+                Retry Diagnostic
               </button>
             </div>
           </div>

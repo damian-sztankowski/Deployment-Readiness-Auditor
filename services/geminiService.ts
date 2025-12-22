@@ -69,7 +69,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
   const apiKey = process.env.API_KEY;
 
   if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
-    throw new Error("CONFIG_ERROR: The API_KEY environment variable is missing or invalid. Deployment failed to bind a valid credential.");
+    throw new Error("CONFIG_ERROR: The API_KEY environment variable is missing or failed to bind during deployment. Ensure --set-env-vars API_KEY=... was correctly applied in gcloud.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -154,7 +154,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     const msg = error.message?.toLowerCase() || "";
     
     if (msg.includes('403') || msg.includes('permission_denied')) {
-        throw new Error("AUTH_ERROR: API Key lacks permission. Check Google AI Studio restrictions.");
+        throw new Error("AUTH_ERROR: API Key lacks permission. Check Google AI Studio restrictions or project billing.");
     } else if (msg.includes('401') || msg.includes('invalid api key')) {
         throw new Error("AUTH_ERROR: Provided API Key is invalid or expired.");
     } else if (msg.includes('429') || msg.includes('quota')) {
