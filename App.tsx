@@ -13,6 +13,7 @@ import { Footer } from './components/Footer';
 import { analyzeInfrastructure } from './services/geminiService';
 import { MOCK_AUDIT_RESULT } from './services/mockData';
 import { AnalysisState, AuditResult, HistoryItem } from './types';
+import { AlertOctagon, ShieldAlert, Terminal, RefreshCw, ChevronRight } from 'lucide-react';
 
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -121,6 +122,64 @@ const App: React.FC = () => {
   
   const handleNavigate = (view: ViewType) => setCurrentView(view);
 
+  const renderError = (error: string) => {
+    const isAuthError = error.includes('AUTH_ERROR') || error.includes('CONFIG_ERROR');
+    
+    return (
+      <div className="max-w-5xl mx-auto mb-12 animate-enter">
+        <div className="bg-white dark:bg-[#0a0f1e] rounded-[2.5rem] border border-red-200 dark:border-red-900/50 shadow-3xl overflow-hidden">
+          <div className="px-10 py-8 bg-red-50 dark:bg-red-950/20 border-b border-red-100 dark:border-red-900/30 flex items-center gap-6">
+            <div className="p-4 bg-white dark:bg-red-900/40 rounded-3xl shadow-lg">
+              <AlertOctagon className="w-10 h-10 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black text-red-700 dark:text-red-300 tracking-tight">Deployment Readiness Check Failed</h3>
+              <p className="text-red-600/80 dark:text-red-400/60 font-mono text-xs uppercase tracking-widest mt-1">Error Code: {error.split(':')[0] || 'SYSTEM_FAILURE'}</p>
+            </div>
+          </div>
+          
+          <div className="p-10 space-y-8">
+            <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <p className="text-lg text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
+                {error.split(':').slice(1).join(':').trim() || error}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Troubleshooting Protocols</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-start gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
+                  <Terminal className="w-5 h-5 text-indigo-500 mt-1" />
+                  <div>
+                    <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">Verify Environment</span>
+                    <span className="text-xs text-slate-500">Ensure the --set-env-vars API_KEY= flag was used in your gcloud command.</span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
+                  <ShieldAlert className="w-5 h-5 text-amber-500 mt-1" />
+                  <div>
+                    <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">Credential Validity</span>
+                    <span className="text-xs text-slate-500">Check if your key is active in <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-indigo-500 underline">Google AI Studio</a>.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-end">
+              <button 
+                onClick={() => setAnalysis({ ...analysis, error: null })}
+                className="flex items-center gap-3 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl transition-all shadow-xl shadow-red-500/20 text-xs uppercase tracking-widest"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Reset System State
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex-1 flex flex-col w-full bg-[#020617] transition-colors duration-500 relative font-sans text-slate-900 dark:text-slate-100">
       
@@ -215,16 +274,7 @@ const App: React.FC = () => {
                   </div>
                   )}
 
-                  {analysis.error && (
-                  <div className="mb-12 max-w-5xl mx-auto bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-3xl p-8 flex items-center gap-6 text-red-700 dark:text-red-300">
-                      <div className="p-4 bg-red-100 dark:bg-red-900/40 rounded-2xl shadow-sm">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                      </div>
-                      <span className="font-bold text-xl">{analysis.error}</span>
-                  </div>
-                  )}
+                  {analysis.error && renderError(analysis.error)}
 
                   {analysis.result && (
                   <div className="mb-24 mt-16">
