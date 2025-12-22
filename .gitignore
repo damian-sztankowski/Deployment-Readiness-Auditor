@@ -26,4 +26,4 @@ dist-ssr
 examples/reports
 examples
 
-images
+images/*

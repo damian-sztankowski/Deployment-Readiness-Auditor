@@ -16,15 +16,6 @@ const PORT = process.env.PORT || 8080;
  * into the index.html served to the client.
  */
 
-// Serve static assets first (js, css, etc.)
-app.use(express.static(__dirname));
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
-
-// Primary route handler for index.html with injection
 app.get('/', (req, res) => {
   const filePath = path.join(__dirname, 'index.html');
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -37,29 +28,25 @@ app.get('/', (req, res) => {
     const apiKey = process.env.API_KEY || '';
     const result = data.replace('__DRA_API_KEY_PLACEHOLDER__', apiKey);
     
-    res.setHeader('Content-Type', 'text/html');
     res.send(result);
   });
 });
 
-// Fallback for SPA-like behavior (Wildcard)
-app.get('*', (req, res) => {
-  // If it's a request for a static file that wasn't found, 404
-  if (req.path.includes('.')) {
-    return res.status(404).send('Not Found');
-  }
+// Serve static assets (js, css, etc.)
+app.use(express.static(__dirname));
 
+// Fallback for SPA-like behavior
+app.get('*', (req, res) => {
   const filePath = path.join(__dirname, 'index.html');
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) return res.status(500).send('Internal Server Error');
     const apiKey = process.env.API_KEY || '';
     const result = data.replace('__DRA_API_KEY_PLACEHOLDER__', apiKey);
-    res.setHeader('Content-Type', 'text/html');
     res.send(result);
   });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`🚀 DRA Deployment active on port ${PORT}`);
   console.log(`🛡️ Environment: Cloud Run Native (API_KEY bound)`);
 });
