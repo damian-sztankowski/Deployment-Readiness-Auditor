@@ -1,9 +1,9 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Play, Upload, RefreshCw, Terminal, ChevronUp, Edit2, 
-  FileCode, FolderUp, Key, X, Save, ShieldCheck, Globe, 
-  Lock, Zap, Cpu, Fingerprint, ChevronRight, AlertCircle, 
-  Database, Sparkles
+  FileCode, FolderUp, Key, X, Save, ShieldCheck, 
+  Lock, Zap, ChevronRight, Database, Sparkles
 } from 'lucide-react';
 
 interface InputSectionProps {
@@ -158,9 +158,9 @@ resource "google_compute_disk" "unattached_disk" {
 
   if (minimized) {
     return (
-      <div className="w-full bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 p-8 flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="w-full max-w-[1400px] mx-auto bg-white dark:bg-[#0a0f1e] rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-800/60 p-8 flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
         <div className="flex items-center gap-8">
-            <div className="p-5 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl text-indigo-600 dark:text-indigo-400">
+            <div className="p-5 bg-indigo-50 dark:bg-indigo-950/40 rounded-3xl text-indigo-600 dark:text-indigo-400">
                 <FileCode className="w-10 h-10" />
             </div>
             <div>
@@ -170,7 +170,7 @@ resource "google_compute_disk" "unattached_disk" {
         </div>
         <button 
             onClick={onToggleMinimize}
-            className="flex items-center gap-3 text-lg font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 px-10 py-5 rounded-[1.5rem] transition-all"
+            className="flex items-center gap-3 text-lg font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 px-10 py-5 rounded-[1.5rem] transition-all"
         >
             <Edit2 className="w-5 h-5" />
             Modify Infrastructure
@@ -180,24 +180,25 @@ resource "google_compute_disk" "unattached_disk" {
   }
 
   return (
-    <div id="input-section-container" className="relative group max-w-7xl mx-auto">
-       <div className="absolute -inset-1 rounded-[3rem] bg-gradient-to-r from-indigo-500 via-violet-500 to-cyan-500 opacity-30 blur-2xl animate-gradient bg-300%"></div>
+    <div id="input-section-container" className="relative group w-full max-w-[1400px] mx-auto">
+       {/* Background Glow matching the screenshot's depth */}
+       <div className="absolute -inset-1 rounded-[2.2rem] bg-indigo-500/10 blur-2xl pointer-events-none"></div>
 
-      <div className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-3xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-500">
-        <div className="px-10 py-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex justify-between items-center">
-          <div className="flex items-center gap-4 text-slate-900 dark:text-white font-black">
-            <Terminal className="w-6 h-6 text-indigo-500" strokeWidth={3} />
-            <h3 className="text-xl tracking-tight uppercase tracking-widest font-black opacity-80">Deployment Specification</h3>
+      <div className="relative bg-white dark:bg-[#0a0f1e] rounded-[2rem] shadow-3xl overflow-hidden border border-slate-200 dark:border-slate-800/80 transition-all duration-500">
+        <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-[#111827]/40 flex justify-between items-center">
+          <div className="flex items-center gap-3 text-slate-900 dark:text-white font-black">
+            <Terminal className="w-5 h-5 text-indigo-500" strokeWidth={3} />
+            <h3 className="text-base tracking-tight font-black uppercase tracking-widest opacity-90">Deployment Specification</h3>
           </div>
-          <div className="flex items-center gap-4" id="action-buttons-group">
-              <label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
-                  <Upload className="w-4 h-4" />
+          <div className="flex items-center gap-3" id="action-buttons-group">
+              <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
+                  <Upload className="w-3.5 h-3.5" />
                   Upload File
                   <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".tf,.json,.yaml,.yml" />
               </label>
 
-              <label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
-                  <FolderUp className="w-4 h-4" />
+              <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
+                  <FolderUp className="w-3.5 h-3.5" />
                   Upload Project
                   <input 
                     ref={folderInputRef} 
@@ -209,12 +210,12 @@ resource "google_compute_disk" "unattached_disk" {
                   />
               </label>
               
-              <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
+              <div className="h-5 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
-              <button onClick={loadExample} className="text-[11px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-500 px-4 py-2.5 transition-colors">Example</button>
+              <button onClick={loadExample} className="text-[10px] font-black uppercase tracking-widest text-indigo-500 hover:text-indigo-400 px-3 py-2 transition-colors">Example</button>
               
               {onToggleMinimize && inputCode.trim() && (
-                  <button onClick={onToggleMinimize} className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-900 transition-colors"><ChevronUp className="w-5 h-5" /></button>
+                  <button onClick={onToggleMinimize} className="p-2 bg-slate-100 dark:bg-[#1e293b]/60 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"><ChevronUp className="w-4 h-4" /></button>
               )}
           </div>
         </div>
@@ -225,14 +226,14 @@ resource "google_compute_disk" "unattached_disk" {
             value={inputCode}
             onChange={(e) => setInputCode(e.target.value)}
             placeholder={isReadingFiles ? "Reading files..." : "Paste HCL here..."}
-            className="w-full h-[60vh] min-h-[500px] p-12 font-mono text-lg text-slate-900 dark:text-slate-100 bg-transparent outline-none resize-none leading-relaxed placeholder:text-slate-300 dark:placeholder:text-slate-700"
+            className="w-full h-[540px] p-10 font-mono text-base text-slate-900 dark:text-slate-100 bg-transparent outline-none resize-none leading-relaxed placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-colors"
             spellCheck={false}
           />
           
-          {/* THE SOVEREIGN KEY BOX - CENTERED IN THE EDITOR AREA (RED SQUARE LOCATION) */}
+          {/* THE SOVEREIGN KEY BOX - CENTERED IN THE EDITOR AREA */}
           {showKeyInfo && (
             <div className="absolute inset-0 z-40 flex items-center justify-center p-6 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-300">
-               <div className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-[0_32px_128px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+               <div className="bg-white dark:bg-[#0a0f1e] w-full max-w-xl rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-[0_32px_128px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
                   {/* Internal Modal Header */}
                   <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 flex justify-between items-center">
                     <div className="flex items-center gap-5">
@@ -333,13 +334,13 @@ resource "google_compute_disk" "unattached_disk" {
             </div>
           )}
           
-          <div className="absolute bottom-12 right-12 z-30 flex flex-col items-end gap-5">
+          <div className="absolute bottom-10 right-10 z-30 flex flex-col items-end gap-5">
             {!inputCode.trim() && !isAnalyzing && (
               <button 
                 onClick={onRunDemo}
-                className="group flex items-center gap-3 px-10 py-5 bg-white/10 dark:bg-white/5 backdrop-blur-2xl border border-indigo-500/20 hover:border-indigo-500 rounded-2xl text-base font-black text-indigo-600 dark:text-indigo-400 shadow-2xl transition-all animate-in slide-in-from-bottom-4 duration-700"
+                className="group flex items-center gap-3 px-8 py-4 bg-white/5 dark:bg-white/[0.03] backdrop-blur-3xl border border-indigo-500/20 hover:border-indigo-500 rounded-2xl text-sm font-black text-indigo-500 dark:text-indigo-400 shadow-2xl transition-all animate-in slide-in-from-bottom-4 duration-700"
               >
-                <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                 No Key? Try Interactive Showcase
               </button>
             )}
@@ -347,12 +348,12 @@ resource "google_compute_disk" "unattached_disk" {
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing || !inputCode.trim() || isReadingFiles}
-              className={`flex items-center gap-5 px-16 py-8 rounded-[2.5rem] font-black text-2xl shadow-3xl transition-all duration-300 
+              className={`flex items-center gap-5 px-12 py-6 rounded-[2rem] font-black text-xl shadow-3xl transition-all duration-300 
                 ${isAnalyzing || !inputCode.trim() || isReadingFiles
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
-                  : 'bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-105 active:scale-95 shadow-indigo-500/30'}`}
+                  ? 'bg-slate-200 text-slate-400 dark:bg-[#1e293b] dark:text-slate-600 cursor-not-allowed' 
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-white hover:scale-105 active:scale-95 shadow-indigo-500/30 border border-indigo-400/20'}`}
             >
-              {isAnalyzing ? <RefreshCw className="w-8 h-8 animate-spin" /> : <Play className="w-8 h-8 fill-current" />}
+              {isAnalyzing ? <RefreshCw className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6 fill-current" />}
               {isAnalyzing ? "Auditing Intelligence..." : "Run Global Audit"}
             </button>
           </div>

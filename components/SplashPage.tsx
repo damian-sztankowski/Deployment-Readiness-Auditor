@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ShieldCheck, ArrowRight, Lock, Activity, X, Brain, Wand2, ChevronRight, CheckCircle2, Sparkles, HelpCircle, BarChart3 } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Lock, Activity, X, Brain, Wand2, ChevronRight, CheckCircle2, Sparkles, HelpCircle } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface SplashPageProps {
