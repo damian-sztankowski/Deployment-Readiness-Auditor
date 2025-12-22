@@ -17,6 +17,7 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('assessment');
   const [isInputMinimized, setIsInputMinimized] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showKeyInfo, setShowKeyInfo] = useState(false);
   
   const [history, setHistory] = useState<HistoryItem[]>(() => {
     if (typeof window !== 'undefined') {
@@ -122,6 +123,8 @@ const App: React.FC = () => {
               isDarkMode={isDarkMode}
               toggleTheme={() => setIsDarkMode(!isDarkMode)}
               onToggleHistory={() => setShowHistory(true)}
+              onToggleKeyInfo={() => setShowKeyInfo(!showKeyInfo)}
+              isKeyInfoVisible={showKeyInfo}
             />
             
             <HistorySidebar 
@@ -149,7 +152,7 @@ const App: React.FC = () => {
                           Architect with <span className="bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">Confidence.</span>
                       </h2>
                       <p className="text-slate-500 dark:text-slate-400 text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto font-medium">
-                          Evaluate infrastructure in real-time against the <span className="text-indigo-600 dark:text-indigo-400 font-bold">Google Cloud Architecture Framework</span> and international compliance benchmarks.
+                          Evaluate infrastructure in real-time against the <span className="text-indigo-600 dark:text-indigo-400 font-bold mx-2">Google Cloud Architecture Framework</span> and international compliance benchmarks.
                       </p>
                   </div>
                   )}
@@ -160,6 +163,8 @@ const App: React.FC = () => {
                         isAnalyzing={analysis.isLoading} 
                         minimized={isInputMinimized}
                         onToggleMinimize={() => setIsInputMinimized(!isInputMinimized)}
+                        showKeyInfo={showKeyInfo}
+                        onCloseKeyInfo={() => setShowKeyInfo(false)}
                       />
                   </div>
 

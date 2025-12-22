@@ -4,7 +4,7 @@ import {
   TrendingDown, ChevronDown, HelpCircle, Brain, FolderSearch, 
   Code2, Gauge, ShieldCheck, Globe, FileCheck, Lock, Scale, 
   BarChart3, Activity, Cpu, Layers, BookOpen, Landmark,
-  CheckCircle, MessageSquare, EyeOff, ServerOff, Key
+  CheckCircle, MessageSquare, EyeOff, ServerOff, Key, Target
 } from 'lucide-react';
 
 interface AboutProps {
@@ -102,12 +102,12 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         </div>
       </section>
 
-      {/* SOVEREIGNTY & PRIVACY - ADDED FOR MVP PUBLIC TRUST */}
+      {/* SOVEREIGNTY & PRIVACY CENTER */}
       <section className="space-y-12">
         <div className="max-w-3xl mx-auto text-center space-y-4">
             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600 dark:text-emerald-400">Security Sovereignty</h3>
-            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">Your Code, Your Quota</h2>
-            <p className="text-slate-600 dark:text-slate-400">Building trust in a public ecosystem through transparency and sovereign architecture.</p>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">Your Architecture, Your Sovereignty</h2>
+            <p className="text-slate-600 dark:text-slate-400">DRA is built on the principle of sovereign intelligence. Here is how we protect your proprietary infrastructure.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -117,16 +117,16 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 </div>
                 <h4 className="text-xl font-black">Zero Code Retention</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    DRA processes infrastructure code ephemerally. Your HCL or JSON snippets are sent via encrypted TLS to the Gemini API and purged immediately after the audit cycle is complete.
+                    DRA processes infrastructure code ephemerally. Your snippets are sent via encrypted TLS to the Gemini API and purged immediately after analysis. We maintain no backend database for your code.
                 </p>
             </div>
             <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-emerald-500 transition-colors shadow-sm">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
                     <Key className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-black">Bring Your Own Key</h4>
+                <h4 className="text-xl font-black">Sovereign Keys (BYOK)</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    Avoid public rate limits by bringing your own Gemini API Key. This ensures your data remains within your own organizational cloud billing and security parameters.
+                    Bypass public rate limits by providing your own Professional Gemini API Key. This ensures your data remains within your organizational cloud quota and security parameters.
                 </p>
             </div>
             <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-amber-500 transition-colors shadow-sm">
@@ -135,7 +135,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 </div>
                 <h4 className="text-xl font-black">Local-Only History</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    We never save your audit reports on our servers. History is stored exclusively in your browser's LocalStorage, putting data ownership entirely in your hands.
+                    Your audit reports are never saved to our servers. History is stored exclusively in your browser's <span className="text-indigo-500 font-bold">LocalStorage</span>, keeping you in full control of your audit trails.
                 </p>
             </div>
         </div>
@@ -278,6 +278,10 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
              <FAQItem
                 question="Is my code used to train models?"
                 answer="When using your own Professional Gemini API Key, Google Cloud Vertex/GenAI standard terms apply: your data is NOT used for model training. DRA is designed for zero-retention ephemeral processing. No code is stored on our servers."
+             />
+             <FAQItem
+                question="Why should I use a Professional API Key?"
+                answer="While DRA provides a public trial key, it is shared across all users and strictly rate-limited. Using your own key grants you dedicated quotas, higher throughput for large projects, and ensures your analysis never fails due to global volume. You can add your key in the 'Sovereign Key' settings (Key icon in the header)."
              />
              <FAQItem
                 question="Does it support high-level designs or only Terraform/HCL?"
