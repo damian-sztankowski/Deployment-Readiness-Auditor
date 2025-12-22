@@ -129,16 +129,17 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
 4.  **Remediate**: Expand findings to see the **Terraform Change** and copy the fix directly into your source code.
 5.  **Report**: Click **Export Professional Audit** to generate a PDF for your compliance record.
 
-
-## 🖼️ Screenshots
+## 📸 Gallery
+<p align="center">
+  <img src="images/splash-page.png" width="40%" />
+  <img src="images/scan-infra.png" width="40%" />
+  <img src="images/running-analysis.png" width="40%" />
+  <img src="images/summary.png" width="40%" />
+</p>
 
 <p align="center">
-  <img src="images/splash-page.png" width="30%" />
-  <img src="images/scan-infra.png" width="30%" />
-  <img src="images/running-analysis.png" width="30%" />
-  <img src="images/summary.png" width="30%" />
-  <img src="images/key-findings.png" width="30%" />
-  <img src="images/model-info.png" width="30%" />
+  <img src="images/key-findings.png" width="40%" />
+  <img src="images/model-info.png" width="40%" />
 </p>
 
 ## 📄 Project Report
