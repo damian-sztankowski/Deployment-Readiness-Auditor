@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import { AuditResult, Severity } from '../types';
 import { ScoreCard } from './ScoreCard';
@@ -19,31 +18,43 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [loadingText, setLoadingText] = useState("Generating Report...");
 
+  // Draw a professional representation of the hexagon logo in PDF
   const drawLogo = (doc: jsPDF, x: number, y: number, size: number) => {
     const r = size / 2;
     const angles = [0, 60, 120, 180, 240, 300];
     const pts = angles.map(a => {
-      const rad = (a * Math.PI) / 180;
+      const rad = ((a - 90) * Math.PI) / 180;
       return [x + r * Math.cos(rad), y + r * Math.sin(rad)];
     });
+
+    // Outer Hexagon
+    doc.setFillColor(79, 70, 229); // Indigo 600
     doc.setDrawColor(255, 255, 255);
     doc.setLineWidth(0.5);
-    doc.setFillColor(79, 70, 229);
-    const relativeLines: [number, number][] = pts.map((p, i) => {
-      const next = pts[(i + 1) % pts.length];
-      return [next[0] - p[0], next[1] - p[1]];
+    
+    // Draw polygon
+    pts.forEach((p, i) => {
+      if (i === 0) doc.moveTo(p[0], p[1]);
+      else doc.lineTo(p[0], p[1]);
     });
-    doc.lines(relativeLines, pts[0][0], pts[0][1], [1, 1], 'FD', true);
+    // Fix: jsPDF uses fillStroke instead of fillAndStroke
+    doc.fillStroke();
+
+    // Inner details (Shield silhouette)
     doc.setDrawColor(255, 255, 255);
     doc.setLineWidth(0.8);
-    doc.line(x - r / 2.5, y - r / 4, x, y + r / 2);
-    doc.line(x, y + r / 2, x + r / 2.5, y - r / 4);
+    doc.line(x - r/2.5, y - r/4, x, y + r/2);
+    doc.line(x, y + r/2, x + r/2.5, y - r/4);
+    doc.line(x - r/2.5, y - r/4, x, y - r/2);
+    doc.line(x, y - r/2, x + r/2.5, y - r/4);
   };
 
   const handleExportPDF = async () => {
-    setLoadingText("Compiling Professional Audit Brief...");
+    setLoadingText("Compiling Enterprise Audit Brief...");
     setIsExporting(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Give time for UI to reflect loading state
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
       const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
@@ -54,82 +65,170 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
 
       const theme = {
         primary: [79, 70, 229] as [number, number, number],
-        dark: [15, 23, 42] as [number, number, number],
-        muted: [100, 116, 139] as [number, number, number],
+        indigoDark: [49, 46, 129] as [number, number, number],
+        slateDark: [15, 23, 42] as [number, number, number],
+        slateMuted: [100, 116, 139] as [number, number, number],
+        slateLight: [241, 245, 249] as [number, number, number],
         danger: [220, 38, 38] as [number, number, number],
         warning: [217, 119, 6] as [number, number, number],
-        bg: [248, 250, 252] as [number, number, number],
+        safe: [16, 185, 129] as [number, number, number],
       };
 
       const capture = async (id: string): Promise<string | null> => {
         const el = document.getElementById(id);
         if (!el) return null;
-        const canvas = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+        const canvas = await html2canvas(el, { 
+          scale: 3, 
+          useCORS: true, 
+          backgroundColor: '#ffffff',
+          logging: false 
+        });
         return canvas.toDataURL('image/png');
       };
 
-      // Header
-      doc.setFillColor(...theme.primary);
-      doc.rect(0, 0, pageWidth, 55, 'F');
-      drawLogo(doc, margin + 8, 25, 16);
-      doc.setFont("helvetica", "bold").setFontSize(28).setTextColor(255, 255, 255);
-      doc.text("Readiness Audit Report", margin + 22, 28);
-      doc.setFontSize(10).setFont("helvetica", "normal").setTextColor(218, 218, 255);
-      const dateStr = new Date().toLocaleString();
-      doc.text(`GENERATED: ${dateStr.toUpperCase()} | GCP ARCHITECTURE FRAMEWORK AUDIT`, margin + 22, 35);
+      // --- PAGE 1: COVER & EXECUTIVE SUMMARY ---
       
-      let currentY = 70;
-      doc.setFontSize(16).setTextColor(...theme.dark).setFont("helvetica", "bold").text("Executive Summary", margin, currentY);
-      currentY += 10;
-      doc.setFillColor(...theme.bg);
-      const summaryLines = doc.splitTextToSize(result.summary, contentWidth - 10);
-      const boxHeight = (summaryLines.length * 6) + 12;
-      doc.roundedRect(margin - 2, currentY - 5, contentWidth + 4, boxHeight, 3, 3, 'F');
-      doc.setFontSize(11).setTextColor(51, 65, 85).text(summaryLines, margin + 3, currentY + 3);
-      currentY += boxHeight + 15;
+      // Indigo Header Block
+      doc.setFillColor(...theme.primary);
+      doc.rect(0, 0, pageWidth, 60, 'F');
+      
+      // Branding
+      drawLogo(doc, margin + 10, 30, 18);
+      doc.setFont("helvetica", "bold").setFontSize(26).setTextColor(255, 255, 255);
+      doc.text("Deployment Readiness Audit", margin + 26, 32);
+      
+      doc.setFontSize(10).setFont("helvetica", "normal").setTextColor(200, 200, 255);
+      const timestamp = new Date().toLocaleString('en-US', { 
+        dateStyle: 'full', 
+        timeStyle: 'short' 
+      });
+      doc.text(`REPORT ID: DRA-${Date.now().toString().slice(-6)} | GENERATED: ${timestamp.toUpperCase()}`, margin + 26, 39);
 
-      const [pieImg, radarImg] = await Promise.all([capture('score-pie-chart'), capture('risk-radar-chart')]);
+      let currentY = 75;
+
+      // Executive Summary
+      doc.setFontSize(14).setTextColor(...theme.slateDark).setFont("helvetica", "bold").text("Executive Summary", margin, currentY);
+      currentY += 8;
+      
+      doc.setFillColor(...theme.slateLight);
+      const summaryLines = doc.splitTextToSize(result.summary, contentWidth - 10);
+      const summaryBoxHeight = (summaryLines.length * 5) + 12;
+      doc.roundedRect(margin - 2, currentY - 4, contentWidth + 4, summaryBoxHeight, 2, 2, 'F');
+      doc.setFontSize(10).setTextColor(51, 65, 85).setFont("helvetica", "normal");
+      doc.text(summaryLines, margin + 3, currentY + 4);
+      
+      currentY += summaryBoxHeight + 15;
+
+      // Charts Visual Section
+      doc.setFontSize(14).setTextColor(...theme.slateDark).setFont("helvetica", "bold").text("Pillar Performance & Risk Distribution", margin, currentY);
+      currentY += 5;
+
+      const [pieImg, radarImg] = await Promise.all([
+        capture('score-pie-chart'), 
+        capture('risk-radar-chart')
+      ]);
+
       if (pieImg && radarImg) {
-        doc.addImage(pieImg, 'PNG', margin, currentY, 80, 60);
-        doc.addImage(radarImg, 'PNG', margin + 90, currentY, 80, 60);
-        currentY += 80;
+        // Place side by side
+        const imgWidth = contentWidth / 2 - 5;
+        doc.addImage(pieImg, 'PNG', margin, currentY, imgWidth, 60);
+        doc.addImage(radarImg, 'PNG', margin + imgWidth + 10, currentY, imgWidth, 60);
+        currentY += 70;
       }
 
-      doc.addPage();
-      currentY = 25;
-      doc.setFont("helvetica", "bold").setFontSize(18).setTextColor(...theme.dark).text("Detailed Infrastructure Assessment", margin, currentY);
-      
-      // Fix: Use explicit any[][] type for findingsRows to bypass FontStyle union type mismatch in jspdf-autotable
-      const findingsRows: any[][] = result.findings.map(f => [
-        `${f.severity.toUpperCase()}\n\n${f.category}`,
-        `${f.fileName || 'Global'}\nLine ${f.lineNumber || 'N/A'}${f.costSavings ? '\n\n' + f.costSavings : ''}`,
-        {
-          content: `${f.title.toUpperCase()}\n\n${f.description}\n\nACTION: ${f.remediation}`,
-          styles: { fontStyle: 'normal' }
-        }
+      // Pillar Table (Quick Overview)
+      const pillarRows = result.categories.map(c => [
+        c.name.toUpperCase(),
+        `${c.score}/100`,
+        c.status.toUpperCase(),
+        { content: c.explanation || "No explanation provided.", styles: { fontSize: 8 } }
       ]);
 
       autoTable(doc, {
-        startY: currentY + 10,
+        startY: currentY,
         margin: { left: margin, right: margin },
-        head: [['Severity / Pillar', 'Context', 'Finding Details']],
+        head: [['ARCHITECTURE PILLAR', 'SCORE', 'STATUS', 'BRIEF LOGIC']],
+        body: pillarRows,
+        theme: 'grid',
+        headStyles: { fillColor: theme.indigoDark, fontSize: 9, fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 4 },
+        columnStyles: { 
+          0: { cellWidth: 40, fontStyle: 'bold' }, 
+          1: { cellWidth: 20, halign: 'center' }, 
+          2: { cellWidth: 30, halign: 'center' }, 
+          3: { cellWidth: 'auto' } 
+        },
+        didParseCell: (data) => {
+          if (data.section === 'body' && data.column.index === 2) {
+            const val = data.cell.raw as string;
+            if (val === 'CRITICAL') data.cell.styles.textColor = theme.danger;
+            if (val === 'WARNING') data.cell.styles.textColor = theme.warning;
+            if (val === 'SAFE') data.cell.styles.textColor = theme.safe;
+          }
+        }
+      });
+
+      // --- PAGE 2+: DETAILED FINDINGS ---
+      doc.addPage();
+      currentY = 25;
+      
+      doc.setFont("helvetica", "bold").setFontSize(18).setTextColor(...theme.slateDark);
+      doc.text("Infrastructure Findings & Compliance Mapping", margin, currentY);
+      
+      currentY += 10;
+      
+      // Fix: Use 'as const' to ensure string literals match 'FontStyle' and 'HAlign' types in autoTable
+      const findingsRows = result.findings.map(f => {
+        const complianceStr = f.compliance?.map(c => `[${c.standard}: ${c.controlId}]`).join('\n') || 'N/A';
+        const contextStr = `${f.fileName || 'Global'}\nLine ${f.lineNumber || 'N/A'}${f.costSavings ? '\nSAVINGS: ' + f.costSavings : ''}`;
+        
+        return [
+          { content: `${f.severity.toUpperCase()}\n\n${f.category}`, styles: { fontStyle: 'bold' as const, halign: 'center' as const } },
+          { content: contextStr, styles: { fontSize: 8, fontStyle: 'italic' as const } },
+          { 
+            content: `${f.title.toUpperCase()}\n\n${f.description}\n\nREMEDIATION: ${f.remediation}\n\nCOMPLIANCE:\n${complianceStr}`,
+            styles: { fontSize: 8.5 }
+          }
+        ];
+      });
+
+      autoTable(doc, {
+        startY: currentY,
+        margin: { left: margin, right: margin, bottom: 20 },
+        head: [['SEVERITY / PILLAR', 'SOURCE CONTEXT', 'FINDING DETAIL & ACTIONABLE REMEDIATION']],
         body: findingsRows,
         theme: 'striped',
         headStyles: { fillColor: theme.primary, fontSize: 10, cellPadding: 5 },
-        styles: { fontSize: 8, cellPadding: 6, overflow: 'linebreak' },
-        columnStyles: { 0: { cellWidth: 35 }, 1: { cellWidth: 30 }, 2: { cellWidth: 105 } }
+        styles: { fontSize: 9, cellPadding: 6, overflow: 'linebreak' },
+        columnStyles: { 
+          0: { cellWidth: 35 }, 
+          1: { cellWidth: 35 }, 
+          2: { cellWidth: 'auto' } 
+        },
+        didParseCell: (data) => {
+          if (data.section === 'body' && data.column.index === 0) {
+            const val = data.cell.text[0];
+            if (val.includes('CRITICAL')) data.cell.styles.textColor = theme.danger;
+            else if (val.includes('HIGH')) data.cell.styles.textColor = theme.warning;
+            else if (val.includes('MEDIUM')) data.cell.styles.textColor = [180, 150, 0];
+          }
+        }
       });
 
-      const pageCount = doc.internal.pages.length - 1;
-      for (let i = 1; i <= pageCount; i++) {
+      // Footer with Page Numbers
+      const totalPages = doc.internal.pages.length - 1;
+      for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        doc.setFontSize(8).setTextColor(...theme.muted);
-        doc.text(`DRA Audit Report | CONFIDENTIAL | Page ${i} of ${pageCount}`, margin, pageHeight - 12);
+        doc.setFontSize(8).setTextColor(...theme.slateMuted);
+        doc.setDrawColor(...theme.slateLight);
+        doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+        doc.text(`Deployment Readiness Auditor | CONFIDENTIAL AUDIT REPORT | v2.5`, margin, pageHeight - 10);
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 20, pageHeight - 10);
       }
 
       doc.save(`DRA_Audit_Report_${Date.now()}.pdf`);
     } catch (error) {
-      console.error("PDF Export Failed:", error);
+      console.error("Professional PDF Export Failed:", error);
     } finally {
       setIsExporting(false);
     }
@@ -149,11 +248,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
             </div>
         </div>
         <div className="flex items-center gap-3">
-            <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-base font-black shadow-xl transition-all shadow-indigo-500/20">
-                {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+            <button 
+              onClick={handleExportPDF} 
+              disabled={isExporting} 
+              className="group relative flex items-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-base font-black shadow-xl transition-all shadow-indigo-500/20 active:scale-95 disabled:opacity-70"
+            >
+                {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5 group-hover:-translate-y-1 transition-transform" />}
                 {isExporting ? loadingText : "Export Professional Audit"}
             </button>
-            <button className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-500"><Share2 className="w-5 h-5" /></button>
+            <button className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition-all shadow-sm">
+              <Share2 className="w-5 h-5" />
+            </button>
         </div>
       </div>
 
