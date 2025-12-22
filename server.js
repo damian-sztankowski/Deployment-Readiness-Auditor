@@ -21,10 +21,8 @@ app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
-// Middleware for static files (index.js, images, etc.)
-app.use(express.static(__dirname));
-
-// Route handler for index.html with injection
+// Primary route handler for index.html with injection
+// We put this BEFORE express.static to ensure injection happens for the root path
 app.get('/', (req, res) => {
   const filePath = path.join(__dirname, 'index.html');
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -38,9 +36,14 @@ app.get('/', (req, res) => {
     const result = data.replace('__DRA_API_KEY_PLACEHOLDER__', apiKey);
     
     res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.send(result);
   });
 });
+
+// Middleware for other static files (index.js, images, etc.)
+// We specify index: false to prevent it from automatically serving index.html on /
+app.use(express.static(__dirname, { index: false }));
 
 // Fallback for Single Page Application behavior
 app.get('*', (req, res) => {
@@ -55,6 +58,7 @@ app.get('*', (req, res) => {
     const apiKey = process.env.API_KEY || '';
     const result = data.replace('__DRA_API_KEY_PLACEHOLDER__', apiKey);
     res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.send(result);
   });
 });

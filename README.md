@@ -58,8 +58,10 @@ Follow these exact steps to get the app running on your laptop:
 git clone https://github.com/your-username/deployment-readiness-auditor.git
 cd deployment-readiness-auditor
 ```
+> [!IMPORTANT]
+> *Note: In a production environment, you should use **environment variables**. For local testing, this is the fastest way.*
 
-### 2. Install and Build
+### 32. Install and Build
 ```bash
 npm install
 npm run build
@@ -67,9 +69,8 @@ npm run build
 This converts the `index.tsx` file into a browser-readable `index.js` file using **esbuild**.
 
 ### 3. Start the Development Server
-
 ```bash
-API_KEY=KEY npm run start
+API_KEY=KEY npm start
 ```
 The terminal will provide a URL (usually `http://localhost:8080`). Open it in your browser!
 
