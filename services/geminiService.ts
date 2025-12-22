@@ -1,8 +1,19 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 
-// Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+/**
+ * PRODUCTION MVP KEY STRATEGY:
+ * 1. Check for user-provided key in localStorage (BYOK) - Priority.
+ * 2. Fallback to injected process.env.API_KEY (Global MVP Key).
+ */
+const getActiveApiKey = () => {
+  if (typeof window !== 'undefined') {
+    const userKey = localStorage.getItem('dra-custom-api-key');
+    if (userKey) return userKey;
+  }
+  // This is shimmed in index.html and replaced by server.js at runtime
+  return (window as any).process?.env?.API_KEY || "";
+};
 
 export const GEMINI_MODEL = "gemini-3-pro-preview";
 
@@ -50,6 +61,7 @@ You MUST iterate through EVERY resource block defined in the code and perform th
 - Do NOT assess other hyperscalers terraform code. If you find different hyperscaler, return *CRITICAL** with proper info.
 `;
 
+
 const addLineNumbers = (code: string): string => {
   const lines = code.split('\n');
   let currentLine = 1;
@@ -63,16 +75,22 @@ const addLineNumbers = (code: string): string => {
 };
 
 export const analyzeInfrastructure = async (inputCode: string): Promise<AuditResult> => {
+  const apiKey = getActiveApiKey();
+  
+  if (!apiKey) {
+    throw new Error("No API Key detected. Please provide your own Gemini API Key in the Settings (Key icon) to proceed.");
+  }
+
   if (!inputCode.trim()) {
     throw new Error("Input cannot be empty.");
   }
 
   try {
-    const model = GEMINI_MODEL;
+    const ai = new GoogleGenAI({ apiKey });
     const numberedCode = addLineNumbers(inputCode);
 
     const response = await ai.models.generateContent({
-      model,
+      model: GEMINI_MODEL,
       contents: `Perform a deep audit. You MUST provide structured 'compliance' info for every finding. Provide a 'fix' code snippet for every finding. Identify exact file names and line numbers.\n\nInput Code:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
@@ -145,8 +163,16 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     }
 
     return result;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Analysis failed:", error);
+    
+    if (error.message?.includes('429')) {
+      throw new Error("Public Quota Exceeded. The global trial key is rate-limited. To continue immediately, please add your own API Key in Settings.");
+    }
+    if (error.message?.includes('403')) {
+      throw new Error("Invalid API Key or Restriction Error. Please verify your settings or provide a valid Gemini key.");
+    }
+    
     throw error;
   }
 };
