@@ -23,11 +23,19 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleKeyInfo,
   isKeyInfoVisible
 }) => {
-  const [hasUserKey, setHasUserKey] = useState(false);
+  const [keyState, setKeyState] = useState<'private' | 'public' | 'none'>('none');
 
   useEffect(() => {
-    const key = localStorage.getItem('dra-custom-api-key');
-    setHasUserKey(!!key);
+    const userKey = localStorage.getItem('dra-custom-api-key');
+    const globalKey = process.env.API_KEY;
+
+    if (userKey) {
+      setKeyState('private');
+    } else if (globalKey && globalKey.trim() !== "") {
+      setKeyState('public');
+    } else {
+      setKeyState('none');
+    }
   }, []);
 
   return (
@@ -50,8 +58,16 @@ export const Header: React.FC<HeaderProps> = ({
                 <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tighter leading-none group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 DRA<span className="text-indigo-600 dark:text-indigo-400">.</span>
                 </h1>
-                <div className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border ${hasUserKey ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}>
-                    {hasUserKey ? 'Professional' : 'Public MVP'}
+                <div className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border transition-colors ${
+                  keyState === 'private' 
+                    ? 'bg-indigo-500 text-white border-indigo-400' 
+                    : keyState === 'public'
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
+                      : 'bg-red-500/10 text-red-500 border-red-500/20 animate-pulse'
+                }`}>
+                    {keyState === 'private' && 'Private Key : ON '}
+                    {keyState === 'public' && 'Public MVP. No private keys'}
+                    {keyState === 'none' && 'No key provided.'}
                 </div>
             </div>
             <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 transition-all duration-300">
@@ -110,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
                 <button 
                     onClick={onToggleKeyInfo}
-                    className={`p-3 rounded-2xl transition-all hover:scale-110 active:scale-95 ${isKeyInfoVisible || hasUserKey ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg shadow-indigo-500/10' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                    className={`p-3 rounded-2xl transition-all hover:scale-110 active:scale-95 ${isKeyInfoVisible || keyState === 'private' ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg shadow-indigo-500/10' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                     title="API Sovereignty Settings"
                 >
                     <Key className="w-5 h-5" />

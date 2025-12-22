@@ -4,16 +4,17 @@ import { ScoreCard } from './ScoreCard';
 import { RiskCharts } from './RiskCharts';
 import { FindingsList } from './FindingsList';
 import { CostImpact } from './CostImpact';
-import { Download, Calendar, Loader2, ShieldCheck, Share2, FileText } from 'lucide-react';
+import { Download, Calendar, Loader2, ShieldCheck, Share2, FileText, Sparkles } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 interface DashboardProps {
   result: AuditResult;
+  isDemo?: boolean;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ result, isDemo = false }) => {
   const dashboardRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [loadingText, setLoadingText] = useState("Generating Report...");
@@ -277,15 +278,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
   return (
     <div ref={dashboardRef} className="space-y-8 animate-enter bg-slate-50 dark:bg-slate-950/20 p-6 md:p-12 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-2xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 dark:border-slate-800 pb-8">
-        <div>
-            <div className="flex items-center gap-3 mb-2">
-                <ShieldCheck className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">Audit Summary Report</h2>
+        <div className="flex items-center gap-6">
+            <div>
+                <div className="flex items-center gap-3 mb-2">
+                    <ShieldCheck className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">Audit Summary Report</h2>
+                </div>
+                <div className="flex items-center gap-6 text-sm text-slate-500 font-medium">
+                    <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-indigo-500" /> {new Date().toLocaleDateString()}</span>
+                    <span className="text-indigo-600 font-bold uppercase tracking-widest text-[10px]">Architecture Integrity Verified</span>
+                </div>
             </div>
-            <div className="flex items-center gap-6 text-sm text-slate-500 font-medium">
-                <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-indigo-500" /> {new Date().toLocaleDateString()}</span>
-                <span className="text-indigo-600 font-bold uppercase tracking-widest text-[10px]">Architecture Integrity Verified</span>
-            </div>
+            {isDemo && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 animate-pulse">
+                <Sparkles className="w-3.5 h-3.5" />
+                Showcase Mockup
+              </div>
+            )}
         </div>
         <div className="flex items-center gap-3">
             <button 

@@ -10,6 +10,7 @@ import { HistorySidebar } from './components/HistorySidebar';
 import { OnboardingTour } from './components/OnboardingTour';
 import { Footer } from './components/Footer';
 import { analyzeInfrastructure } from './services/geminiService';
+import { MOCK_AUDIT_RESULT } from './services/mockData';
 import { AnalysisState, AuditResult, HistoryItem } from './types';
 
 const App: React.FC = () => {
@@ -18,6 +19,7 @@ const App: React.FC = () => {
   const [isInputMinimized, setIsInputMinimized] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showKeyInfo, setShowKeyInfo] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   
   const [history, setHistory] = useState<HistoryItem[]>(() => {
     if (typeof window !== 'undefined') {
@@ -71,12 +73,27 @@ const App: React.FC = () => {
   };
 
   const restoreHistoryItem = (item: HistoryItem) => {
+    setIsDemoMode(false);
     setAnalysis({ isLoading: false, error: null, result: item.result });
     setIsInputMinimized(true);
     setCurrentView('assessment');
   };
 
+  const handleRunDemo = async () => {
+    setShowSplash(false);
+    setIsDemoMode(true);
+    setIsInputMinimized(true);
+    setCurrentView('assessment');
+    setAnalysis({ isLoading: true, error: null, result: null });
+    
+    // Simulate thinking/loading for the showcase
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    setAnalysis({ isLoading: false, error: null, result: MOCK_AUDIT_RESULT });
+  };
+
   const handleAnalyze = async (code: string) => {
+    setIsDemoMode(false);
     setIsInputMinimized(true);
     setAnalysis({ isLoading: true, error: null, result: null });
     
@@ -94,7 +111,15 @@ const App: React.FC = () => {
     }
   };
 
-  const handleStart = () => setShowSplash(false);
+  const handleStart = () => {
+    if (isDemoMode) {
+      setIsDemoMode(false);
+      setAnalysis({ isLoading: false, error: null, result: null });
+      setIsInputMinimized(false);
+    }
+    setShowSplash(false);
+  };
+  
   const handleNavigate = (view: ViewType) => setCurrentView(view);
 
   return (
@@ -114,7 +139,7 @@ const App: React.FC = () => {
       {/* --- CONTENT LAYER --- */}
       <div className="relative z-10 flex flex-col flex-grow w-full">
         {showSplash ? (
-          <SplashPage onStart={handleStart} />
+          <SplashPage onStart={handleStart} onRunDemo={handleRunDemo} />
         ) : (
           <>
             <Header 
@@ -135,7 +160,7 @@ const App: React.FC = () => {
                 onDelete={deleteHistoryItem}
             />
             
-            <main className="flex-1 w-full max-w-[2200px] mx-auto px-6 sm:px-10 lg:px-16 2xl:px-24 py-12 md:py-20">
+            <main className="flex-1 w-full max-w-[2200px] mx-auto px-6 sm:px-10 lg:px-16 2xl:px-24 py-12 md:py-16">
               
               {currentView === 'about' && (
                   <About onStartAssessment={() => setCurrentView('assessment')} />
@@ -146,13 +171,29 @@ const App: React.FC = () => {
               )}
 
               <div className={currentView === 'assessment' ? 'block animate-enter' : 'hidden'}>
+                  {isDemoMode && (
+                    <div className="max-w-5xl mx-auto mb-8 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-4 flex items-center justify-between text-indigo-600 dark:text-indigo-400 backdrop-blur-md">
+                        <div className="flex items-center gap-3">
+                            <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-ping" />
+                            <span className="text-sm font-black uppercase tracking-widest">Interactive Showcase Mode Active</span>
+                        </div>
+                        <button 
+                            onClick={() => { setIsDemoMode(false); setAnalysis({ ...analysis, result: null }); setIsInputMinimized(false); }}
+                            className="text-xs font-bold underline underline-offset-4 hover:text-indigo-800"
+                        >
+                            Exit Showcase & Run Live Audit
+                        </button>
+                    </div>
+                  )}
+
                   {!analysis.result && !analysis.isLoading && (
                   <div className="max-w-5xl mx-auto mb-16 text-center">
-                      <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 dark:text-white mb-8 tracking-tighter leading-none">
-                          Architect with <span className="bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">Confidence.</span>
+                      <h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-slate-900 dark:text-white mb-8 tracking-tighter leading-[0.85]">
+                          Architect with<br/>
+                          <span className="bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent inline-block pb-2">Confidence.</span>
                       </h2>
-                      <p className="text-slate-500 dark:text-slate-400 text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto font-medium">
-                          Evaluate infrastructure in real-time against the <span className="text-indigo-600 dark:text-indigo-400 font-bold mx-2">Google Cloud Architecture Framework</span> and international compliance benchmarks.
+                      <p className="text-slate-500 dark:text-slate-400 text-xl md:text-2xl leading-relaxed max-w-4xl mx-auto font-medium">
+                          Evaluate infrastructure in real-time against the <span className="text-indigo-600 dark:text-indigo-400 font-bold">Google Cloud Architecture Framework</span> and international compliance benchmarks.
                       </p>
                   </div>
                   )}
@@ -165,6 +206,7 @@ const App: React.FC = () => {
                         onToggleMinimize={() => setIsInputMinimized(!isInputMinimized)}
                         showKeyInfo={showKeyInfo}
                         onCloseKeyInfo={() => setShowKeyInfo(false)}
+                        onRunDemo={handleRunDemo}
                       />
                   </div>
 
@@ -187,7 +229,7 @@ const App: React.FC = () => {
 
                   {analysis.result && (
                   <div className="mb-24 mt-16">
-                      <Dashboard result={analysis.result} />
+                      <Dashboard result={analysis.result} isDemo={isDemoMode} />
                   </div>
                   )}
               </div>
