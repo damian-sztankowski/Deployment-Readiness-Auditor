@@ -1,10 +1,12 @@
 import React from 'react';
-import { LayoutGrid, Info, Moon, Sun, History } from 'lucide-react';
+import { LayoutGrid, Info, Moon, Sun, History, Sparkles } from 'lucide-react';
 import { Logo } from './Logo';
 
+export type ViewType = 'about' | 'features' | 'assessment';
+
 interface HeaderProps {
-  currentView: 'about' | 'assessment';
-  onNavigate: (view: 'about' | 'assessment') => void;
+  currentView: ViewType;
+  onNavigate: (view: ViewType) => void;
   isDarkMode: boolean;
   toggleTheme: () => void;
   onToggleHistory: () => void;
@@ -19,7 +21,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
           className="flex items-center gap-10 cursor-pointer group pr-4" 
           onClick={() => onNavigate('about')}
         >
-          {/* Added extra horizontal padding to the logo container to handle badge overflows */}
           <div className="relative py-2 px-3">
             <Logo 
                 size="md" 
@@ -39,37 +40,47 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, isDarkM
 
         <div className="flex items-center gap-4">
             <nav className="hidden lg:flex items-center gap-6">
-              <div className="flex items-center gap-2 bg-slate-100/40 dark:bg-slate-800/40 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+              <div className="flex items-center gap-1 bg-slate-100/40 dark:bg-slate-800/40 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
                 <button 
                     onClick={() => onNavigate('about')}
                     className={`
-                        flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-black transition-all duration-300
+                        flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all duration-300
                         ${currentView === 'about' 
                         ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-md' 
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                         }
                     `}
                 >
-                    <span className="flex items-center gap-2">
-                        <Info className="w-4 h-4" />
-                        About
-                    </span>
+                    <Info className="w-3.5 h-3.5" />
+                    About
+                </button>
+
+                <button 
+                    onClick={() => onNavigate('features')}
+                    className={`
+                        flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all duration-300
+                        ${currentView === 'features' 
+                        ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-md' 
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }
+                    `}
+                >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Features
                 </button>
 
                 <button 
                     onClick={() => onNavigate('assessment')}
                     className={`
-                        flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-black transition-all duration-300
+                        flex items-center gap-2 px-6 py-2 rounded-full text-xs font-black transition-all duration-300
                         ${currentView === 'assessment' 
                         ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20' 
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                         }
                     `}
                 >
-                    <span className="flex items-center gap-2">
-                        <LayoutGrid className="w-4 h-4" />
-                        Audit Engine
-                    </span>
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    Audit Engine
                 </button>
               </div>
             </nav>

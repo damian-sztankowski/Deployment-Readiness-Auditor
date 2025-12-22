@@ -4,7 +4,7 @@ import {
   TrendingDown, ChevronDown, HelpCircle, Brain, FolderSearch, 
   Code2, Gauge, ShieldCheck, Globe, FileCheck, Lock, Scale, 
   BarChart3, Activity, Cpu, Layers, BookOpen, Landmark,
-  CheckCircle
+  CheckCircle, MessageSquare
 } from 'lucide-react';
 
 interface AboutProps {
@@ -18,22 +18,22 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
     <div className="border-b border-slate-200 dark:border-slate-800 last:border-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-5 flex items-start md:items-center justify-between text-left focus:outline-none group"
+        className="w-full py-6 flex items-start md:items-center justify-between text-left focus:outline-none group transition-all"
       >
-        <span className="text-base font-semibold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pr-4">
+        <span className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pr-4">
           {question}
         </span>
-        <div className={`mt-1 md:mt-0 p-1 rounded-full transition-all duration-200 ${isOpen ? 'bg-indigo-50 dark:bg-indigo-900/30 rotate-180' : 'bg-transparent'}`}>
-             <ChevronDown className={`w-5 h-5 transition-colors ${isOpen ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-50'}`} />
+        <div className={`mt-1 md:mt-0 p-1.5 rounded-xl transition-all duration-300 ${isOpen ? 'bg-indigo-600 text-white rotate-180 shadow-lg shadow-indigo-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-500'}`}>
+             <ChevronDown className="w-5 h-5" />
         </div>
       </button>
       <div
         className={`grid transition-all duration-300 ease-in-out ${
-          isOpen ? 'grid-rows-[1fr] opacity-100 pb-5' : 'grid-rows-[0fr] opacity-0'
+          isOpen ? 'grid-rows-[1fr] opacity-100 pb-8' : 'grid-rows-[0fr] opacity-0'
         }`}
       >
         <div className="overflow-hidden">
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed max-w-4xl border-l-2 border-indigo-500/20 pl-6 ml-1">
             {answer}
             </p>
         </div>
@@ -214,33 +214,69 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
             </div>
       </section>
 
-      {/* FAQ Section updated */}
-      <section className="max-w-4xl mx-auto w-full">
-        <div className="text-center mb-12">
-          <div className="inline-flex p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400 mb-4">
-             <HelpCircle className="w-6 h-6" />
+      {/* Enhanced FAQ Section */}
+      <section id="faq-section" className="max-w-5xl mx-auto w-full space-y-12">
+        <div className="text-center space-y-4">
+          <div className="inline-flex p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl text-indigo-600 dark:text-indigo-400 mb-2">
+             <HelpCircle className="w-7 h-7" />
           </div>
-          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Deployment Readiness Auditor FAQ</h3>
-          <p className="text-slate-600 dark:text-slate-400">Common questions regarding our auditing methodology and coverage.</p>
+          <h3 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">Readiness & Security FAQ</h3>
+          <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
+            Everything you need to know about the auditing process, data security, and compliance mapping.
+          </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 p-8 md:p-12 shadow-sm transition-all">
              <FAQItem
-                question="What makes this different from tools like Checkov or TFLint?"
-                answer="While Checkov uses regex or YAML policies, DRA uses LLM-based semantic analysis. This allows DRA to understand the 'why' behind your architecture. It can detect complex issues like poor HA configuration or misaligned storage classes based on the intended workload context."
+                question="What makes this different from tools like Checkov, Terrascan, or TFLint?"
+                answer="Traditional static analysis tools rely on hardcoded regex or YAML-based policies that check for specific key-value pairs. DRA utilizes LLM-based semantic analysis via Gemini 3 Pro. This allows the auditor to understand the 'intent' and 'context' of your architecture. For example, DRA can identify that a specific load balancer configuration is under-provisioned for a production workload, or that an IAM role is too broad for the specific service accounts it interacts with, even if the HCL syntax itself is valid."
              />
              <FAQItem
-                question="Does it strictly follow the Google Cloud Architecture Framework?"
-                answer="Yes. The audit is structured around the five pillars: Operational Excellence, Security, Reliability, Performance, and Cost. Every finding is weighted based on these official GCP best practices."
+                question="How accurate are the FinOps cost savings estimates?"
+                answer="The cost savings provided are heuristic estimates based on current Google Cloud pricing benchmarks known to the underlying Gemini model. While they are highly accurate for identifying 'waste' (like unattached PD-SSD disks or over-provisioned machine types), they should be treated as quantifiable targets rather than absolute billing projections. We recommend validating these findings with the official Google Cloud Pricing Calculator."
              />
              <FAQItem
-                question="Can I use this for AWS or Azure infrastructure?"
-                answer="No. Deployment Readiness Auditor is purpose-built for Google Cloud. It utilizes specific GCP unit pricing benchmarks and is fine-tuned on GCP-specific service behaviors and resource limits."
+                question="Is my infrastructure code stored or used for model training?"
+                answer="No. Your infrastructure code is processed ephemerally. The Deployment Readiness Auditor is built as a zero-knowledge analysis platform. Your input is sent securely to the Gemini API for analysis and the resulting audit is stored only in your browser's local storage. This project does not maintain a backend database for user-submitted code."
              />
              <FAQItem
-                question="How secure is my infrastructure code?"
-                answer="Your code is never stored. Analysis is performed ephemerally in your browser session and through the Gemini API. No data persistence occurs on our side, making it suitable for pre-deployment reviews of sensitive projects."
+                question="Does it support high-level designs or only Terraform/HCL?"
+                answer="While DRA is optimized for HCL (Terraform), its semantic engine is flexible. You can paste JSON export from GCP asset inventory, YAML configuration files, or even high-level technical descriptions of a planned architecture. The AI will attempt to infer the resource relationships and apply the Well-Architected Framework regardless of the input format."
              />
+             <FAQItem
+                question="Can I audit multi-file projects or entire folders?"
+                answer="Yes. The 'Upload Project' feature allows you to select a directory. DRA will parse and concatenate valid infrastructure files (.tf, .tfvars, .json) into a single context-aware specification for the auditor. This is critical for detecting cross-file dependencies and remote state risks."
+             />
+             <FAQItem
+                question="Which regulatory standards are covered in the mapping?"
+                answer="DRA covers a broad spectrum of international and industry-specific frameworks, including the CIS Google Cloud Computing Foundation Benchmark, NIST 800-53 (Security and Privacy Controls), GDPR (General Data Protection Regulation), HIPAA (Health Insurance Portability and Accountability Act), and PCI DSS (Payment Card Industry Data Security Standard). Every finding identifies the specific control ID (e.g., CIS 1.2) to simplify compliance reporting."
+             />
+             <FAQItem
+                question="How does the 'Auto-Remediation' feature work?"
+                answer="For every identified risk, the auditor generates a corresponding HCL/Terraform code block that resolves the issue while adhering to best practices. This code is synthesized based on your existing resource definitions, meaning it includes your specific naming conventions and variable structures where possible."
+             />
+        </div>
+
+        <div className="bg-slate-50 dark:bg-slate-950/40 rounded-[2.5rem] border border-slate-200/60 dark:border-slate-800/60 p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-6">
+                <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm">
+                    <MessageSquare className="w-8 h-8 text-indigo-500" />
+                </div>
+                <div>
+                    <h4 className="text-xl font-bold text-slate-900 dark:text-white">Have more technical questions?</h4>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Our community-driven support is available via GitHub and LinkedIn.</p>
+                </div>
+            </div>
+            <div className="flex gap-4">
+                <a 
+                    href="https://github.com/damian-sztankowski/Deployment-Readiness-Auditor" 
+                    target="_blank"
+                    className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-black hover:border-indigo-500 transition-all flex items-center gap-2"
+                >
+                    View Source
+                    <ArrowRight className="w-4 h-4" />
+                </a>
+            </div>
         </div>
       </section>
       

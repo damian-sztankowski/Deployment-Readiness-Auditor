@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from './components/Header';
+import { Header, ViewType } from './components/Header';
 import { InputSection } from './components/InputSection';
 import { Dashboard } from './components/Dashboard';
 import { LoadingAnimation } from './components/LoadingAnimation';
 import { SplashPage } from './components/SplashPage';
 import { About } from './components/About';
+import { Features } from './components/Features';
 import { HistorySidebar } from './components/HistorySidebar';
 import { OnboardingTour } from './components/OnboardingTour';
 import { Footer } from './components/Footer';
@@ -13,7 +14,7 @@ import { AnalysisState, AuditResult, HistoryItem } from './types';
 
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
-  const [currentView, setCurrentView] = useState<'about' | 'assessment'>('assessment');
+  const [currentView, setCurrentView] = useState<ViewType>('assessment');
   const [isInputMinimized, setIsInputMinimized] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   
@@ -75,7 +76,6 @@ const App: React.FC = () => {
   };
 
   const handleAnalyze = async (code: string) => {
-    // Minimize immediately when starting assessment as requested
     setIsInputMinimized(true);
     setAnalysis({ isLoading: true, error: null, result: null });
     
@@ -89,13 +89,12 @@ const App: React.FC = () => {
         error: error.message || "An unexpected error occurred during analysis.", 
         result: null 
       });
-      // Expand back if there's an error so user can fix their code
       setIsInputMinimized(false);
     }
   };
 
   const handleStart = () => setShowSplash(false);
-  const handleNavigate = (view: 'about' | 'assessment') => setCurrentView(view);
+  const handleNavigate = (view: ViewType) => setCurrentView(view);
 
   return (
     <div className="flex-1 flex flex-col w-full bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative font-sans text-slate-900 dark:text-slate-100">
@@ -133,11 +132,14 @@ const App: React.FC = () => {
                 onDelete={deleteHistoryItem}
             />
             
-            {/* Wider Container for Content */}
             <main className="flex-1 w-full max-w-[2200px] mx-auto px-6 sm:px-10 lg:px-16 2xl:px-24 py-12 md:py-20">
               
               {currentView === 'about' && (
                   <About onStartAssessment={() => setCurrentView('assessment')} />
+              )}
+
+              {currentView === 'features' && (
+                  <Features />
               )}
 
               <div className={currentView === 'assessment' ? 'block animate-enter' : 'hidden'}>
@@ -186,7 +188,6 @@ const App: React.FC = () => {
               </div>
             </main>
             
-            {/* Footer receives latest analysis usage metadata */}
             <Footer lastResult={analysis.result} />
           </>
         )}
