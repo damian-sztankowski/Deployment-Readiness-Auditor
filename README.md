@@ -1,4 +1,27 @@
-# 🛡️ Deployment Readiness Auditor (DRA) v2.5
+# 🛡️ Deployment Readiness Auditor (DRA)
+
+<p align="left">
+  <img src="https://img.shields.io/badge/Google%20Cloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white" />
+  <img src="https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white" />
+  <img src="https://img.shields.io/badge/AI-Powered%20by%20Gemini-blue?style=for-the-badge&logo=google-gemini&logoColor=white" />
+  <img src="https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F%20%26%20AI-red?style=for-the-badge" />
+</p>
+
+---
+
+## 📖 Table of Contents
+* [🌟 Key Features](#-key-features)
+* [📋 Prerequisites](#-prerequisites)
+* [💻 Local Development](#-local-development-idiot-proof-guide)
+    * [1. Clone Repository](#1-clone-the-repository)
+    * [2. Configure API Key](#2-configure-your-api-key)
+    * [3. Install and Build](#3-install-and-build)
+* [☁️ Deployment to Google Cloud Run](#️-deployment-to-google-cloud-run)
+* [🛠️ How to Use](#️-how-to-use)
+* [🔒 Security & Privacy](#-security--privacy)
+* [📄 License](#-license)
+
+---
 
 **Architect with Confidence. Audit with Intelligence.**
 
@@ -46,7 +69,8 @@ window.process = {
   }
 };
 ```
-*Note: In a production environment, you should use environment variables. For local testing, this is the fastest way.*
+> [!IMPORTANT]
+> *Note: In a production environment, you should use **environment variables**. For local testing, this is the fastest way.*
 
 ### 3. Install and Build
 ```bash
@@ -59,24 +83,34 @@ This converts the `index.tsx` file into a browser-readable `index.js` file using
 ```bash
 npm start
 ```
-The terminal will provide a URL (usually `http://localhost:3000`). Open it in your browser!
+The terminal will provide a URL (usually `http://localhost:8080`). Open it in your browser!
 
 ---
 
 ## ☁️ Deployment to Google Cloud Run
 
-Cloud Run is the best way to host DRA. It's serverless, scales to zero, and highly secure.
+> [!TIP]
+> Cloud Run is the best way to host DRA. It's serverless, scales to zero, and highly secure.
 
 ### 1. Build and Deploy in One Command
 Replace `[PROJECT_ID]` with your actual Google Cloud Project ID. This command uses the provided `Dockerfile` to bundle and serve your app automatically.
+
+Open the `index.html` file in the root directory. Look for this block:
+```javascript
+// Shim for process.env used by @google/genai
+window.process = {
+  env: {
+    API_KEY: "PASTE_YOUR_GEMINI_API_KEY_HERE" 
+  }
+};
+```
 
 ```bash
 gcloud run deploy dra-app \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars API_KEY=your_actual_gemini_key_here \
-  --port 3000
+  --port 8080
 ```
 
 ### 2. Access the App
@@ -86,7 +120,7 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
 
 ## 🛠️ How to Use
 
-1.  **Input**: Paste your `.tf` or `.tfvars` code into the "Deployment Specification" editor.
+1.  **Input**: Paste your `.tf` or `.tfvars` code into the "Deployment Specification" editor. You can also update entire directory.
 2.  **Analyze**: Click **Run Global Audit**.
 3.  **Review**: 
     - Use the **Pillar Matrix** to see which area needs most attention.
@@ -94,6 +128,23 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
     - Click any **Standard Tag** (e.g., NIST 800-53 AC-3) to see the formal regulatory requirement and business impact.
 4.  **Remediate**: Expand findings to see the **Terraform Change** and copy the fix directly into your source code.
 5.  **Report**: Click **Export Professional Audit** to generate a PDF for your compliance record.
+
+## 📸 Gallery
+<p align="center">
+  <img src="images/splash-page.png" width="40%" />
+  <img src="images/scan-infra.png" width="40%" />
+  <img src="images/running-analysis.png" width="40%" />
+  <img src="images/summary.png" width="40%" />
+</p>
+
+<p align="center">
+  <img src="images/key-findings.png" width="40%" />
+  <img src="images/model-info.png" width="40%" />
+</p>
+
+## 📄 Project Report
+Report example and analysis can be found here:
+[**Download / View Project Report (PDF)**](./examples/reports/DRA_Audit_Report_1766383676416.pdf)
 
 ---
 
@@ -109,4 +160,4 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
 
 Distributed under the MIT License. See `LICENSE.md` for more information.
 
-**Disclaimer**: *This tool provides AI-generated architectural advice. Always perform a manual review of infrastructure changes before applying them to production environments.*
+**Disclaimer**: *This tool provides AI-generated architectural advice. **Always perform a manual review** of infrastructure changes before applying them to production environments.*

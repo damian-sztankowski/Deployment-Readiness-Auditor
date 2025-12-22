@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Serve static files from the root directory
 app.use(express.static(__dirname));
@@ -22,10 +22,11 @@ app.get('/', (req, res) => {
       return;
     }
 
-    // Inject the API key from environment variable into the HTML
     const apiKey = process.env.API_KEY || '';
+    
+
     const result = data.replace(
-      'API_KEY: ""',
+      /API_KEY:\s*["'][^"']*["']/g,
       `API_KEY: "${apiKey}"`
     );
 

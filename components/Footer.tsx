@@ -76,14 +76,12 @@ export const Footer: React.FC<FooterProps> = ({ lastResult }) => {
               )}
             </div>
             
-            <div className="space-y-4">
-              <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
-                Providing deep architectural insights and risk mitigation protocols for the next generation of Google Cloud infrastructure.
-              </p>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed max-w-sm italic">
-                <strong>This is not an official Google or Google Cloud product.</strong> This project has been built and is maintained by the <strong>community</strong>. It is provided "as-is" without any official support or warranties from Google.
-              </p>
-            </div>
+            <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
+              Providing deep architectural insights and risk mitigation protocols for the next generation of Google Cloud infrastructure.
+            </p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed max-w-sm italic">
+              <strong>This is not an official Google or Google Cloud product.</strong> This project has been built and is maintained by the <strong>community</strong>. It is provided "as-is" without any official support or warranties from Google.
+            </p>
           </div>
 
           <div className="flex flex-col items-center justify-center space-y-8">
@@ -114,14 +112,13 @@ export const Footer: React.FC<FooterProps> = ({ lastResult }) => {
 
           <div className="flex flex-col items-start md:items-end space-y-10">
             <div className="flex items-center gap-6">
-               <a href="#" className="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-indigo-600 hover:border-indigo-300 transition-all duration-300 shadow-sm hover:scale-110">
+               <a href="https://github.com/damian-sztankowski/Deployment-Readiness-Auditor" className="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-indigo-600 hover:border-indigo-300 transition-all duration-300 shadow-sm hover:scale-110">
                   <Github className="w-7 h-7" />
                </a>
-               <a href="#" className="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-blue-600 hover:border-blue-300 transition-all duration-300 shadow-sm hover:scale-110">
+               <a href="https://www.linkedin.com/in/damian-sztankowski/" className="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-blue-600 hover:border-blue-300 transition-all duration-300 shadow-sm hover:scale-110">
                   <Linkedin className="w-7 h-7" />
                </a>
             </div>
-
             <nav className="flex flex-col items-start md:items-end gap-5">
                <a href="https://docs.cloud.google.com/architecture/framework" target="_blank" className="flex items-center gap-3 text-sm font-black text-slate-500 hover:text-indigo-600 transition-colors group">
                  Cloud Architecture Framework
