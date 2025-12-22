@@ -4,7 +4,7 @@ import {
   TrendingDown, ChevronDown, HelpCircle, Brain, FolderSearch, 
   Code2, Gauge, ShieldCheck, Globe, FileCheck, Lock, Scale, 
   BarChart3, Activity, Cpu, Layers, BookOpen, Landmark,
-  CheckCircle, MessageSquare
+  CheckCircle, MessageSquare, EyeOff, ServerOff, Key, Target
 } from 'lucide-react';
 
 interface AboutProps {
@@ -20,7 +20,7 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
         onClick={() => setIsOpen(!isOpen)}
         className="w-full py-6 flex items-start md:items-center justify-between text-left focus:outline-none group transition-all"
       >
-        <span className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pr-4">
+        <span className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors pr-4">
           {question}
         </span>
         <div className={`mt-1 md:mt-0 p-1.5 rounded-xl transition-all duration-300 ${isOpen ? 'bg-indigo-600 text-white rotate-180 shadow-lg shadow-indigo-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-500'}`}>
@@ -98,6 +98,45 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                          </div>
                     </div>
                 </div>
+            </div>
+        </div>
+      </section>
+
+      {/* SOVEREIGNTY & PRIVACY CENTER */}
+      <section className="space-y-12">
+        <div className="max-w-3xl mx-auto text-center space-y-4">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600 dark:text-emerald-400">Security Sovereignty</h3>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">Your Architecture, Your Sovereignty</h2>
+            <p className="text-slate-600 dark:text-slate-400">DRA is built on the principle of sovereign intelligence. Here is how we protect your proprietary infrastructure.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-indigo-500 transition-colors shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                    <EyeOff className="w-7 h-7" />
+                </div>
+                <h4 className="text-xl font-black">Zero Code Retention</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    DRA processes infrastructure code ephemerally. Your snippets are sent via encrypted TLS to the Gemini API and purged immediately after analysis. We maintain no backend database for your code.
+                </p>
+            </div>
+            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-emerald-500 transition-colors shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                    <Key className="w-7 h-7" />
+                </div>
+                <h4 className="text-xl font-black">Sovereign Keys (BYOK)</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    Bypass public rate limits by providing your own Professional Gemini API Key. This ensures your data remains within your organizational cloud quota and security parameters.
+                </p>
+            </div>
+            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-amber-500 transition-colors shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all">
+                    <ServerOff className="w-7 h-7" />
+                </div>
+                <h4 className="text-xl font-black">Local-Only History</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    Your audit reports are never saved to our servers. History is stored exclusively in your browser's <span className="text-indigo-500 font-bold">LocalStorage</span>, keeping you in full control of your audit trails.
+                </p>
             </div>
         </div>
       </section>
@@ -230,15 +269,19 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 p-8 md:p-12 shadow-sm transition-all">
              <FAQItem
                 question="What makes this different from tools like Checkov, Terrascan, or TFLint?"
-                answer="Traditional static analysis tools rely on hardcoded regex or YAML-based policies that check for specific key-value pairs. DRA utilizes LLM-based semantic analysis via the selected Gemini model. This allows the auditor This allows the auditor to understand the 'intent' and 'context' of your architecture. For example, DRA can identify that a specific load balancer configuration is under-provisioned for a production workload, or that an IAM role is too broad for the specific service accounts it interacts with, even if the HCL syntax itself is valid."
+                answer="Traditional static analysis tools rely on hardcoded regex or YAML-based policies that check for specific key-value pairs. DRA utilizes LLM-based semantic analysis via the selected Gemini model. This allows the auditor to understand the 'intent' and 'context' of your architecture. For example, DRA can identify that a specific load balancer configuration is under-provisioned for a production workload, or that an IAM role is too broad for the specific service accounts it interacts with, even if the HCL syntax itself is valid."
              />
              <FAQItem
                 question="How accurate are the FinOps cost savings estimates?"
                 answer="The cost savings provided are heuristic estimates based on current Google Cloud pricing benchmarks known to the underlying Gemini model. While they are highly accurate for identifying 'waste' (like unattached PD-SSD disks or over-provisioned machine types), they should be treated as quantifiable targets rather than absolute billing projections. We recommend validating these findings with the official Google Cloud Pricing Calculator."
              />
              <FAQItem
-                question="Is my infrastructure code stored or used for model training?"
-                answer="No. Your infrastructure code is processed ephemerally. The Deployment Readiness Auditor is built as a zero-knowledge analysis platform. Your input is sent securely to the Gemini API for analysis and the resulting audit is stored only in your browser's local storage. This project does not maintain a backend database for user-submitted code."
+                question="Is my code used to train models?"
+                answer="When using your own Professional Gemini API Key, Google Cloud Vertex/GenAI standard terms apply: your data is NOT used for model training. DRA is designed for zero-retention ephemeral processing. No code is stored on our servers."
+             />
+             <FAQItem
+                question="Why should I use a Professional API Key?"
+                answer="While DRA provides a public trial key, it is shared across all users and strictly rate-limited. Using your own key grants you dedicated quotas, higher throughput for large projects, and ensures your analysis never fails due to global volume. You can add your key in the 'Sovereign Key' settings (Key icon in the header)."
              />
              <FAQItem
                 question="Does it support high-level designs or only Terraform/HCL?"
