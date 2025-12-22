@@ -76,12 +76,14 @@ export const Footer: React.FC<FooterProps> = ({ lastResult }) => {
               )}
             </div>
             
-            <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
-              Providing deep architectural insights and risk mitigation protocols for the next generation of Google Cloud infrastructure.
-            </p>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed max-w-sm italic">
-              <strong>This is not an official Google or Google Cloud product.</strong> This project has been built and is maintained by the <strong>community</strong>. It is provided "as-is" without any official support or warranties from Google.
-            </p>
+            <div className="space-y-4">
+              <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
+                Providing deep architectural insights and risk mitigation protocols for the next generation of Google Cloud infrastructure.
+              </p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed max-w-sm italic">
+                <strong>This is not an official Google or Google Cloud product.</strong> This project has been built and is maintained by the <strong>community</strong>. It is provided "as-is" without any official support or warranties from Google.
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-col items-center justify-center space-y-8">
