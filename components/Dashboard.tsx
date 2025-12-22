@@ -18,15 +18,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [loadingText, setLoadingText] = useState("Generating Report...");
 
-  // High-fidelity Logo recreation for PDF (replicates the liquid logo appearance)
+  // High-fidelity Logo recreation for PDF (exactly replicates the liquid logo appearance)
   const drawEnterpriseLogo = (doc: jsPDF, x: number, y: number, size: number) => {
     const r = size / 2;
     
-    // 1. Shadow/Glow Base
-    doc.setFillColor(79, 70, 229, 0.1); 
-    doc.circle(x, y, r * 1.2, 'F');
+    // 1. Soft Shadow Glow
+    doc.setFillColor(79, 70, 229, 0.08); 
+    doc.circle(x, y, r * 1.3, 'F');
 
-    // 2. Liquid Morphing Layers (Outer Hexagon)
+    // 2. Liquid Morphing Layers
     const drawHex = (cx: number, cy: number, radius: number, fillColor: [number, number, number], opacity: number = 1) => {
       const angles = [0, 60, 120, 180, 240, 300];
       const pts = angles.map(a => {
@@ -38,34 +38,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
         if (i === 0) doc.moveTo(p[0], p[1]);
         else doc.lineTo(p[0], p[1]);
       });
-      doc.lineTo(pts[0][0], pts[0][1]);
+      doc.lineTo(pts[0][0], pts[0][1]); // Close path manually
       doc.fill();
     };
 
-    // Background Hex (Soft)
-    drawHex(x, y, r, [79, 70, 229], 0.2);
-    // Primary Hex
+    // Deep layer
+    drawHex(x, y, r, [79, 70, 229], 0.15);
+    // Core layer
     drawHex(x, y, r * 0.9, [79, 70, 229], 1);
 
-    // 3. Shield Inlay
+    // 3. Shield Icon Inlay
     doc.setDrawColor(255, 255, 255);
-    doc.setLineWidth(0.8);
-    doc.line(x - r/3, y - r/5, x, y + r/2);
-    doc.line(x, y + r/2, x + r/3, y - r/5);
-    doc.line(x - r/3, y - r/5, x, y - r/2);
-    doc.line(x, y - r/2, x + r/3, y - r/5);
+    doc.setLineWidth(1.2);
+    doc.line(x - r/3, y - r/4, x, y + r/2);
+    doc.line(x, y + r/2, x + r/3, y - r/4);
+    doc.line(x - r/3, y - r/4, x, y - r/2);
+    doc.line(x, y - r/2, x + r/3, y - r/4);
 
-    // 4. Orbiting Badge Nodes
-    doc.setFillColor(34, 211, 238); // Cyan
-    doc.circle(x + r * 0.8, y - r * 0.8, r * 0.15, 'F');
+    // 4. Accent Orb (Cyan)
+    doc.setFillColor(34, 211, 238); 
+    doc.circle(x + r * 0.75, y - r * 0.75, r * 0.18, 'F');
+    
+    // 5. Orbiting Nodes (Emerald and Amber)
     doc.setFillColor(16, 185, 129); // Emerald
-    doc.circle(x - r * 0.8, y + r * 0.5, r * 0.12, 'F');
+    doc.circle(x - r * 0.85, y + r * 0.45, r * 0.14, 'F');
     doc.setFillColor(245, 158, 11); // Amber
-    doc.circle(x + r * 0.4, y + r * 0.9, r * 0.1, 'F');
+    doc.circle(x + r * 0.4, y + r * 0.85, r * 0.12, 'F');
   };
 
   const handleExportPDF = async () => {
-    setLoadingText("Compiling Enterprise Audit Brief...");
+    setLoadingText("Synthesizing Enterprise Intelligence...");
     setIsExporting(true);
     
     await new Promise(resolve => setTimeout(resolve, 800));
@@ -79,7 +81,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
 
       const theme = {
         primary: [79, 70, 229] as [number, number, number],
-        indigoDark: [49, 46, 129] as [number, number, number],
         slate950: [2, 6, 23] as [number, number, number],
         slate900: [15, 23, 42] as [number, number, number],
         slate800: [30, 41, 59] as [number, number, number],
@@ -90,118 +91,86 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
         safe: [16, 185, 129] as [number, number, number],
       };
 
-      const capture = async (id: string): Promise<string | null> => {
-        const el = document.getElementById(id);
-        if (!el) return null;
-        const canvas = await html2canvas(el, { 
-          scale: 4, 
-          useCORS: true, 
-          backgroundColor: '#ffffff',
-          logging: false 
-        });
-        return canvas.toDataURL('image/png');
-      };
-
       // --- PAGE 1: ENTERPRISE COVER ---
       doc.setFillColor(...theme.slate950);
       doc.rect(0, 0, pageWidth, pageHeight, 'F');
       
-      // Decorative bottom block
       doc.setFillColor(...theme.slate900);
-      doc.rect(0, pageHeight - 100, pageWidth, 100, 'F');
+      doc.rect(0, pageHeight - 90, pageWidth, 90, 'F');
       
-      // Branding Header
       doc.setFillColor(...theme.primary);
-      doc.rect(0, 0, pageWidth, 5, 'F');
+      doc.rect(0, 0, pageWidth, 6, 'F');
 
-      // Main Logo
-      drawEnterpriseLogo(doc, pageWidth / 2, 80, 50);
+      drawEnterpriseLogo(doc, pageWidth / 2, 85, 55);
       
-      doc.setFont("helvetica", "bold").setFontSize(36).setTextColor(255, 255, 255);
-      doc.text("INFRASTRUCTURE", pageWidth / 2, 125, { align: 'center' });
-      doc.text("AUDIT REPORT", pageWidth / 2, 142, { align: 'center' });
+      doc.setFont("helvetica", "bold").setFontSize(38).setTextColor(255, 255, 255);
+      doc.text("INFRASTRUCTURE", pageWidth / 2, 135, { align: 'center' });
+      doc.text("AUDIT REPORT", pageWidth / 2, 152, { align: 'center' });
       
-      doc.setFont("helvetica", "normal").setFontSize(12).setTextColor(...theme.slate400);
-      doc.text("Deployment Readiness Assessment Protocol v2.5", pageWidth / 2, 155, { align: 'center' });
+      doc.setFont("helvetica", "normal").setFontSize(13).setTextColor(...theme.slate400);
+      doc.text("Deployment Readiness Assessment Protocol v2.5", pageWidth / 2, 165, { align: 'center' });
       
       doc.setDrawColor(...theme.primary);
-      doc.setLineWidth(1.5);
-      doc.line(pageWidth / 2 - 35, 168, pageWidth / 2 + 35, 168);
+      doc.setLineWidth(1.8);
+      doc.line(pageWidth / 2 - 40, 178, pageWidth / 2 + 40, 178);
 
-      // Report metadata
       doc.setFontSize(11).setTextColor(255, 255, 255);
-      doc.text(`REPORT ID: DRA-${Date.now().toString().slice(-8)}`, pageWidth / 2, 185, { align: 'center' });
-      doc.text(`DATE: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}`, pageWidth / 2, 192, { align: 'center' });
+      const reportId = `DRA-${Date.now().toString().slice(-8)}`;
+      doc.text(`REPORT ID: ${reportId}`, pageWidth / 2, 195, { align: 'center' });
+      doc.text(`DATE: ${new Date().toLocaleDateString('en-GB')}`, pageWidth / 2, 202, { align: 'center' });
 
-      // Confidentiality Section (Fixed Contrast)
-      doc.setFillColor(255, 255, 255, 0.1);
-      doc.roundedRect(margin, pageHeight - 45, contentWidth, 20, 3, 3, 'F');
+      doc.setFillColor(255, 255, 255, 0.08);
+      doc.roundedRect(margin, pageHeight - 45, contentWidth, 22, 4, 4, 'F');
       doc.setFontSize(10).setFont("helvetica", "bold").setTextColor(255, 255, 255);
-      doc.text("PROPRIETARY & CONFIDENTIAL", pageWidth / 2, pageHeight - 35, { align: 'center' });
+      doc.text("PROPRIETARY & CONFIDENTIAL", pageWidth / 2, pageHeight - 34, { align: 'center' });
       doc.setFontSize(9).setFont("helvetica", "italic").setTextColor(...theme.slate400);
-      doc.text("This document contains sensitive architectural analysis intended for authorized personnel only.", pageWidth / 2, pageHeight - 29, { align: 'center' });
+      doc.text("This document contains proprietary architectural analysis. Unauthorized distribution is prohibited.", pageWidth / 2, pageHeight - 28, { align: 'center' });
 
-      // --- PAGE 2: EXECUTIVE SUMMARY ---
+      // --- PAGE 2: EXECUTIVE SUMMARY & ASSESSMENT ---
       doc.addPage();
       let currentY = 25;
 
-      // Consistent Header for Content Pages
       doc.setFillColor(...theme.slate950);
-      doc.rect(0, 0, pageWidth, 45, 'F');
-      drawEnterpriseLogo(doc, margin + 12, 22, 16);
-      doc.setFont("helvetica", "bold").setFontSize(22).setTextColor(255, 255, 255);
-      doc.text("Executive Summary", margin + 32, 26);
+      doc.rect(0, 0, pageWidth, 48, 'F');
+      drawEnterpriseLogo(doc, margin + 12, 24, 18);
+      doc.setFont("helvetica", "bold").setFontSize(24).setTextColor(255, 255, 255);
+      doc.text("Executive Summary", margin + 35, 28);
       doc.setFontSize(10).setFont("helvetica", "normal").setTextColor(...theme.slate400);
-      doc.text("Integrity Analysis & Risk Profiling", margin + 32, 33);
+      doc.text("Architectural Integrity Analysis & Risk Profiling", margin + 35, 35);
 
-      currentY = 60;
-      doc.setFontSize(14).setTextColor(...theme.slate900).setFont("helvetica", "bold").text("1. Overall Assessment Summary", margin, currentY);
-      currentY += 10;
+      currentY = 65;
+      doc.setFontSize(15).setTextColor(...theme.slate900).setFont("helvetica", "bold").text("1. Overall Readiness Summary", margin, currentY);
+      currentY += 12;
 
-      // Summary Box (Fixed Contrast)
       doc.setFillColor(248, 250, 252); 
-      const summaryLines = doc.splitTextToSize(result.summary, contentWidth - 14);
-      const summaryBoxHeight = (summaryLines.length * 6) + 16;
-      doc.roundedRect(margin, currentY, contentWidth, summaryBoxHeight, 4, 4, 'F');
-      doc.setFontSize(10.5).setTextColor(...theme.slate900).setFont("helvetica", "normal");
+      const summaryLines = doc.splitTextToSize(result.summary, contentWidth - 16);
+      const summaryBoxHeight = (summaryLines.length * 6.5) + 16;
+      doc.roundedRect(margin, currentY, contentWidth, summaryBoxHeight, 5, 5, 'F');
+      doc.setFontSize(11).setTextColor(...theme.slate900).setFont("helvetica", "normal");
       doc.text(summaryLines, margin + 8, currentY + 12);
       
       currentY += summaryBoxHeight + 15;
 
-      // Visualized Pillars
-      doc.setFontSize(14).setTextColor(...theme.slate900).setFont("helvetica", "bold").text("2. Pillar Performance Matrix", margin, currentY);
-      currentY += 8;
+      doc.setFontSize(15).setTextColor(...theme.slate900).setFont("helvetica", "bold").text("2. Pillar Performance Assessment", margin, currentY);
+      currentY += 10;
 
-      const [pieImg, radarImg] = await Promise.all([
-        capture('score-pie-chart'), 
-        capture('risk-radar-chart')
-      ]);
-
-      if (pieImg && radarImg) {
-        const imgWidth = contentWidth / 2 - 5;
-        doc.addImage(pieImg, 'PNG', margin, currentY, imgWidth, 60);
-        doc.addImage(radarImg, 'PNG', margin + imgWidth + 10, currentY, imgWidth, 60);
-        currentY += 70;
-      }
-
-      // Pillar Table
       autoTable(doc, {
         startY: currentY,
         margin: { left: margin, right: margin },
-        head: [['ARCHITECTURE PILLAR', 'SCORE', 'STATUS', 'BRIEF ANALYSIS']],
+        head: [['ARCHITECTURE PILLAR', 'SCORE', 'STATUS', 'AUDITOR ANALYSIS']],
         body: result.categories.map(c => [
           c.name.toUpperCase(),
           `${c.score}/100`,
           c.status.toUpperCase(),
-          { content: c.explanation || "System validated.", styles: { fontSize: 8.5 } }
+          { content: c.explanation || "System validated against benchmark.", styles: { fontSize: 9 } }
         ]),
         theme: 'grid',
-        headStyles: { fillColor: theme.slate900, fontSize: 10, fontStyle: 'bold', halign: 'center' },
-        styles: { fontSize: 9.5, cellPadding: 5, valign: 'middle' },
+        headStyles: { fillColor: theme.slate900, fontSize: 10, fontStyle: 'bold', halign: 'center', cellPadding: 5 },
+        styles: { fontSize: 10, cellPadding: 6, valign: 'middle' },
         columnStyles: { 
-          0: { cellWidth: 45, fontStyle: 'bold' }, 
+          0: { cellWidth: 50, fontStyle: 'bold' }, 
           1: { cellWidth: 25, halign: 'center' }, 
-          2: { cellWidth: 32, halign: 'center' }, 
+          2: { cellWidth: 35, halign: 'center' }, 
           3: { cellWidth: 'auto' } 
         },
         didParseCell: (data) => {
@@ -214,28 +183,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
         }
       });
 
-      // --- PAGE 3+: TECHNICAL FINDINGS ---
+      // --- PAGE 3+: TECHNICAL FINDINGS LOG ---
       doc.addPage();
       currentY = 25;
       
       doc.setFont("helvetica", "bold").setFontSize(18).setTextColor(...theme.slate900);
       doc.text("3. Technical Observation Log", margin, currentY);
       doc.setDrawColor(...theme.primary);
-      doc.setLineWidth(1);
-      doc.line(margin, currentY + 3, margin + 25, currentY + 3);
+      doc.setLineWidth(1.2);
+      doc.line(margin, currentY + 4, margin + 30, currentY + 4);
       
-      currentY += 15;
+      currentY += 18;
       
       const findingsRows = result.findings.map(f => {
-        const complianceText = f.compliance?.map(c => `• ${c.standard}: ${c.controlId}`).join('\n') || 'General Best Practice.';
-        const context = `FILE: ${f.fileName || 'N/A'}\nLINE: ${f.lineNumber || 'N/A'}\nTYPE: ${f.category}`;
+        const complianceText = f.compliance?.map(c => `• ${c.standard}: ${c.controlId}`).join('\n') || 'Architectural Best Practice.';
+        const context = `SOURCE: ${f.fileName || 'Project-wide'}\nLOCATION: Line ${f.lineNumber || 'N/A'}\nCATEGORY: ${f.category}`;
         
         return [
           { content: `${f.severity.toUpperCase()}`, styles: { fontStyle: 'bold' as const, halign: 'center' as const } },
-          { content: context, styles: { fontSize: 8, fontStyle: 'italic' as const } },
+          { content: context, styles: { fontSize: 8.5, fontStyle: 'italic' as const } },
           { 
-            content: `${f.title.toUpperCase()}\n\n${f.description}\n\nREMEDIATION: ${f.remediation}\n\nSTANDARDS: ${complianceText}`,
-            styles: { fontSize: 9 }
+            content: `${f.title.toUpperCase()}\n\n${f.description}\n\nREMEDIATION STRATEGY: ${f.remediation}\n\nCOMPLIANCE MAPPING:\n${complianceText}`,
+            styles: { fontSize: 9.5 }
           }
         ];
       });
@@ -243,14 +212,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
       autoTable(doc, {
         startY: currentY,
         margin: { left: margin, right: margin, bottom: 25 },
-        head: [['PRIORITY', 'CONTEXT', 'DETAILED FINDING & REMEDIATION STRATEGY']],
+        head: [['SEVERITY', 'CONTEXT', 'FINDING, REMEDIATION & COMPLIANCE']],
         body: findingsRows,
         theme: 'striped',
-        headStyles: { fillColor: theme.primary, fontSize: 10.5, cellPadding: 6 },
-        styles: { fontSize: 9.5, cellPadding: 8, overflow: 'linebreak' },
+        headStyles: { fillColor: theme.primary, fontSize: 11, cellPadding: 7 },
+        styles: { fontSize: 10, cellPadding: 8, overflow: 'linebreak' },
         columnStyles: { 
-          0: { cellWidth: 35 }, // Increased to prevent "CRITICAL" wrapping
-          1: { cellWidth: 42 }, 
+          0: { cellWidth: 42 },
+          1: { cellWidth: 45 }, 
           2: { cellWidth: 'auto' } 
         },
         didParseCell: (data) => {
@@ -267,17 +236,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ result }) => {
         }
       });
 
-      // Unified Footer
       const totalPages = doc.internal.pages.length - 1;
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        doc.setFontSize(8.5).setTextColor(...theme.slateMuted);
+        doc.setFontSize(9).setTextColor(...theme.slateMuted);
         
-        // Horizontal separator line
-        doc.setDrawColor(...theme.slateMuted, 0.2);
+        doc.setDrawColor(...theme.slateMuted, 0.15);
         doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
         
-        doc.text(`DRA Auditor Enterprise | Proprietary Architectural Insight`, margin, pageHeight - 10);
+        doc.text(`Deployment Readiness Auditor | CONFIDENTIAL AUDIT REPORT | ${reportId}`, margin, pageHeight - 10);
         doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
       }
 
