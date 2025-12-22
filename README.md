@@ -55,7 +55,7 @@ Follow these exact steps to get the app running on your laptop:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/deployment-readiness-auditor.git
+git clone https://github.com/damian-sztankowski/Deployment-Readiness-Auditor.git
 cd deployment-readiness-auditor
 ```
 
