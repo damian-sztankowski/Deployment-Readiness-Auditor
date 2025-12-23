@@ -28,8 +28,6 @@ This project requires access to cloud services (e.g., Azure AI Studio, Google Cl
 * **Sensitive Data:** Do not input sensitive personal data (PII), API keys, or credentials directly into the code or prompt inputs unless you have secured the environment.
 
 </details>
-
-
 ---
 
 **Architect with Confidence. Audit with Intelligence.**
