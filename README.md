@@ -1,11 +1,17 @@
-# 🛡️ Deployment Readiness Auditor (DRA)
-
-<p align="left">
-  <img src="https://img.shields.io/badge/Google%20Cloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white" />
-  <img src="https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white" />
-  <img src="https://img.shields.io/badge/AI-Powered%20by%20Gemini-blue?style=for-the-badge&logo=google-gemini&logoColor=white" />
-  <img src="https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F%20%26%20AI-red?style=for-the-badge" />
-</p>
+<div align="center">
+  <h1 align="center">✨ Deployment Readiness Auditor (DRA)✨</h1>
+  <p>
+    <strong>
+      <a href="https://dra.damiansztankowski.cloud/">🔴 View Live Demo</a>
+    </strong>
+  </p>
+  <p>
+    <img src="https://img.shields.io/badge/Google%20Cloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white" />
+    <img src="https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white" />
+    <img src="https://img.shields.io/badge/AI-Powered%20by%20Gemini-blue?style=for-the-badge&logo=google-gemini&logoColor=white" />
+    <img src="https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F%20%26%20AI-red?style=for-the-badge" />
+  </p>
+</div>
 
 <details>
 <summary><strong>⚠️ Disclaimer: AI Usage, Costs, and Data Privacy (Click to read)</strong></summary>
@@ -28,6 +34,7 @@ This project requires access to cloud services (e.g., Azure AI Studio, Google Cl
 * **Sensitive Data:** Do not input sensitive personal data (PII), API keys, or credentials directly into the code or prompt inputs unless you have secured the environment.
 
 </details>
+
 ---
 
 **Architect with Confidence. Audit with Intelligence.**
@@ -109,7 +116,7 @@ gcloud run deploy dra-app \
 ```
 
 > [!TIP]
-> If you want only present capabilities of this tool, you don't have to provide ``API_KEY``. Simply ommit ``--set-env-vars API_KEY=`` and application will be deployed in showcase mode.
+> If you want only show capabilities of this tool, you don't have to provide ``API_KEY``. Simply ommit ``--set-env-vars API_KEY=`` and application will be deployed in showcase mode.
 
 ### 2. Access the App
 Once finished, the command output will provide a **Service URL**. Click it to access your live Deployment Readiness Auditor!
