@@ -29,7 +29,6 @@ This project requires access to cloud services (e.g., Azure AI Studio, Google Cl
 
 </details>
 
-</details>
 
 ---
 
@@ -159,17 +158,17 @@ Report example and analysis can be found here:
 ---
 
 
-
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE.md` for more information.
 
-> [!INFO]
-> *This tool provides AI-generated architectural advice. **Always perform a manual > review** of infrastructure changes before applying them to production environments.*
-
 ---
+<p align="center">
+  <a href="https://github.com/your-github-username">
+    <img src="https://img.shields.io/badge/Architected%20by-Damian%20Sztankowski-blue?style=for-the-badge&logo=github" alt="Damian Sztankowski" />
+  </a>
+</p>
 
-> Built with ❤️ for the Google Cloud Community by Damian Sztankowski.  
-> **Note**: This is an independent tool and is not an official Google product.
-
+> [!NOTE]
+> **Independent Tool**: This project is a community contribution and is not officially endorsed or maintained by Google.
 ---
