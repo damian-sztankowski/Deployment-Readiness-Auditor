@@ -65,6 +65,8 @@ Follow these exact steps to get the app running on your laptop:
 git clone https://github.com/your-username/deployment-readiness-auditor.git
 cd deployment-readiness-auditor
 ```
+> [!IMPORTANT]
+> *Note: In a production environment, you should use **environment variables**. For local testing, this is the fastest way.*
 
 > [!IMPORTANT]
 > *Note: In a production environment, you should use **environment variables**. For local testing, this is the fastest way.*
@@ -181,9 +183,6 @@ This project requires access to cloud services (e.g., Azure AI Studio, Google Cl
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE.md` for more information.
-
-> [!INFO]
-> *This tool provides AI-generated architectural advice. **Always perform a manual > review** of infrastructure changes before applying them to production environments.*
 
 ---
 
