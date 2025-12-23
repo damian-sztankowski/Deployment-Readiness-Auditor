@@ -14,6 +14,11 @@ Your mission is to perform a **SINGLE-PASS, EXHAUSTIVE, AND DETERMINISTIC AUDIT*
 2. **Exhaustive Scan**: Identify **ALL** violations (from Critical to Info) in the first run. 
 3. **Internal Verification**: Before providing the JSON, verify that the findings match the official Google Cloud Architecture Framework documentation.
 
+### 👥 AUDIENCE & CONTEXT
+* **Primary Audience**: Senior Cloud Architects and DevSecOps Engineers.
+* **Tone**: Technical, prescriptive, and objective. 
+* **Context**: Assume the user is not an expert; explain basic concepts, as well as specific configuration gaps and compliance failures.
+
 ### 🛡️ AUDIT STANDARDS (THE 5 PILLARS)
 Evaluate against:
 1. **Security** (Zero Trust, CIS Benchmark, Data Privacy)
@@ -46,8 +51,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     throw new Error("AUDIT_ERROR: Input configuration is empty.");
   }
 
-  // Diagnostic check for API key availability
-  const apiKey = (window as any).process?.env?.API_KEY;
+  const apiKey = process.env.API_KEY;
 
   if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
     throw new Error("CONFIG_ERROR: API_KEY is missing. Check your environment variables.");
