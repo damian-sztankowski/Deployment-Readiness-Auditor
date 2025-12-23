@@ -29,7 +29,6 @@ This project requires access to cloud services (e.g., Azure AI Studio, Google Cl
 
 </details>
 
-
 ---
 
 **Architect with Confidence. Audit with Intelligence.**
@@ -158,6 +157,27 @@ Report example and analysis can be found here:
 - **Zero-Knowledge**: No database is used. History is stored in your browser's `localStorage`.
 
 ---
+<details>
+<summary><strong>⚠️ Disclaimer: AI Usage, Costs, and Data Privacy (Click to read)</strong></summary>
+
+### 2. AI & Generative Content Warning
+This tool utilizes Artificial Intelligence (e.g., Azure OpenAI, LLMs) to generate text, code, or images.
+
+* **Accuracy:** AI models can hallucinate or produce inaccurate information. Output should never be treated as absolute fact.
+* **Verification:** Users must independently verify all AI-generated content before using it in production environments.
+* **Bias:** The model may reflect biases present in its training data. The authors of this repository are not responsible for the nature of the generated content.
+
+### 3. Cost & Billing
+This project requires access to cloud services (e.g., Azure AI Studio, Google Cloud Storage, OpenAI API).
+
+* **User Responsibility:** You are solely responsible for all costs incurred by your cloud provider accounts while running this software.
+* **Resource Management:** It is the user's responsibility to monitor usage and set up budget alerts. The authors are not liable for unexpected cloud bills or "runaway" processes.
+
+### 4. Data Privacy & External Links
+* **Third-Party Storage:** Some assets in this documentation (images/PDFs) are hosted on external object storage (Google Cloud Storage). Availability of these assets is not guaranteed.
+* **Sensitive Data:** Do not input sensitive personal data (PII), API keys, or credentials directly into the code or prompt inputs unless you have secured the environment.
+
+</details>
 
 
 ## 📄 License
