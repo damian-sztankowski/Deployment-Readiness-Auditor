@@ -1,3 +1,4 @@
+
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
@@ -15,7 +16,14 @@ const PORT = process.env.PORT || 8080;
  * into the index.html served to the client.
  */
 
-const handleIndexRequest = (req, res) => {
+// Health check for Cloud Run
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// Primary route handler for index.html with injection
+// We put this BEFORE express.static to ensure injection happens for the root path
+app.get('/', (req, res) => {
   const filePath = path.join(__dirname, 'index.html');
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
@@ -24,42 +32,38 @@ const handleIndexRequest = (req, res) => {
     }
 
     // Inject the API_KEY from the server environment into the client shim
-    // Use split/join for global replacement
-    const apiKey = (process.env.API_KEY || '').trim();
-    const result = data.split('__DRA_API_KEY_PLACEHOLDER__').join(apiKey);
+    const apiKey = process.env.API_KEY || '';
+    const result = data.replace('__DRA_API_KEY_PLACEHOLDER__', apiKey);
     
-    // Set headers to prevent caching of the sensitive key or stale placeholders
     res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.send(result);
   });
-};
-
-// Health check for Cloud Run load balancers
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
 });
 
-// Explicitly handle root and index.html with injection
-app.get('/', handleIndexRequest);
-app.get('/index.html', handleIndexRequest);
-
-// Serve other static assets (js, images, css)
-// index: false prevents express.static from serving index.html automatically without injection
+// Middleware for other static files (index.js, images, etc.)
+// We specify index: false to prevent it from automatically serving index.html on /
 app.use(express.static(__dirname, { index: false }));
 
 // Fallback for Single Page Application behavior
 app.get('*', (req, res) => {
+  // If it looks like a file request that wasn't found in express.static, return 404
   if (req.path.includes('.')) {
     return res.status(404).send('Not Found');
   }
-  handleIndexRequest(req, res);
+
+  const filePath = path.join(__dirname, 'index.html');
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).send('Internal Server Error');
+    const apiKey = process.env.API_KEY || '';
+    const result = data.replace('__DRA_API_KEY_PLACEHOLDER__', apiKey);
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.send(result);
+  });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 DRA Audit Engine active on port ${PORT}`);
-  console.log(`🛡️ Environment: Cloud Run Native`);
-  console.log(`🔑 Key Injection: Enabled`);
+  console.log(`🚀 DRA Deployment active on port ${PORT}`);
+  console.log(`🛡️ Environment: Cloud Run Native (API_KEY bound)`);
 });
