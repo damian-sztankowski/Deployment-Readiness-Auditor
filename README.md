@@ -14,12 +14,19 @@
 * [📋 Prerequisites](#-prerequisites)
 * [💻 Local Development](#-local-development-idiot-proof-guide)
     * [1. Clone Repository](#1-clone-the-repository)
-    * [2. Configure API Key](#2-configure-your-api-key)
+    * [2. Change LLM Model](#2-change-llm-model)
     * [3. Install and Build](#3-install-and-build)
+    * [4. Start the Development Server](#4-start-the-development-server)
 * [☁️ Deployment to Google Cloud Run](#️-deployment-to-google-cloud-run)
 * [🛠️ How to Use](#️-how-to-use)
+    * [1. Gallery](#1-gallery)
+    * [2. Project Report](#2-project-report)
 * [🔒 Security & Privacy](#-security--privacy)
+    * [⚠️ Disclaimer: AI Usage, Costs, and Data Privacy (Click to read)](#2-ai--generative-content-warning)
+    * [3. Cost & Billing](#3-cost--billing)
+    * [4. Data Privacy & External Links](#4-data-privacy--external-links)
 * [📄 License](#-license)
+
 
 ---
 
@@ -49,28 +56,36 @@ Before you begin, ensure you have the following:
 
 ---
 
-## 💻 Local Development (Idiot-Proof Guide)
+## 💻 Local Development
 
 Follow these exact steps to get the app running on your laptop:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/damian-sztankowski/Deployment-Readiness-Auditor.git
+git clone https://github.com/your-username/deployment-readiness-auditor.git
 cd deployment-readiness-auditor
 ```
 > [!IMPORTANT]
 > *Note: In a production environment, you should use **environment variables**. For local testing, this is the fastest way.*
 
-### 32. Install and Build
+> [!IMPORTANT]
+> *Note: In a production environment, you should use **environment variables**. For local testing, this is the fastest way.*
+### 2. Change LLM Model
+If you want to change your model, open the `services/geminiService.ts` file in the root directory. Look for this block:
+```javascript
+export const GEMINI_MODEL = "gemini-3-pro-preview";
+```
+
+### 3. Install and Build
 ```bash
 npm install
 npm run build
 ```
 This converts the `index.tsx` file into a browser-readable `index.js` file using **esbuild**.
 
-### 3. Start the Development Server
+### 4. Start the Development Server
 ```bash
-API_KEY=KEY npm start
+API_KEY=PASTE_YOUR_GEMINI_API_KEY_HERE npm start
 ```
 The terminal will provide a URL (usually `http://localhost:8080`). Open it in your browser!
 
@@ -82,25 +97,33 @@ The terminal will provide a URL (usually `http://localhost:8080`). Open it in yo
 > Cloud Run is the best way to host DRA. It's serverless, scales to zero, and highly secure.
 
 ### 1. Build and Deploy in One Command
-Replace `[PROJECT_ID]` with your actual Google Cloud Project ID. This command uses the provided `Dockerfile` to bundle and serve your app automatically.
+If you want to change your model, open the `services/geminiService.ts` file in the root directory. Look for this block:
+```javascript
+export const GEMINI_MODEL = "gemini-3-pro-preview";
+```
 
+Then run this command to deploy solution on Cloud Run.
 ```bash
 gcloud run deploy dra-app \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
-  --port 8080 \
-  --set-env-vars API_KEY=YOUR_API_KEY
+  --port 8080
+  --set-env-vars API_KEY=PASTE_YOUR_GEMINI_API_KEY_HERE \
 ```
+
+> [!TIP]
+> If you want only present capabilities of this tool, you don't have to provide ``API_KEY``. Simply ommit ``--set-env-vars API_KEY=`` and application will be deployed in showcase mode.
 
 ### 2. Access the App
 Once finished, the command output will provide a **Service URL**. Click it to access your live Deployment Readiness Auditor!
+
 
 ---
 
 ## 🛠️ How to Use
 
-1.  **Input**: Paste your `.tf` or `.tfvars` code into the "Deployment Specification" editor.
+1.  **Input**: Paste your `.tf` or `.tfvars` code into the "Deployment Specification" editor. You can also update entire directory.
 2.  **Analyze**: Click **Run Global Audit**.
 3.  **Review**: 
     - Use the **Pillar Matrix** to see which area needs most attention.
@@ -108,6 +131,23 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
     - Click any **Standard Tag** (e.g., NIST 800-53 AC-3) to see the formal regulatory requirement and business impact.
 4.  **Remediate**: Expand findings to see the **Terraform Change** and copy the fix directly into your source code.
 5.  **Report**: Click **Export Professional Audit** to generate a PDF for your compliance record.
+
+## 📸 Gallery
+<p align="center">
+  <img src="https://storage.googleapis.com/gh-repo-media-files/images/splash-page.png" width="400" />
+  <img src="https://storage.googleapis.com/gh-repo-media-files/images/scan-infra.png" width="400" />
+  <img src="https://storage.googleapis.com/gh-repo-media-files/images/running-analysis.png" width="400" />
+  <img src="https://storage.googleapis.com/gh-repo-media-files/images/summary.png" width="400" />
+</p>
+
+<p align="center">
+  <img src="https://storage.googleapis.com/gh-repo-media-files/images/key-findings.png" width="400" />
+  <img src="https://storage.googleapis.com/gh-repo-media-files/images/model-info.png" width="400" />
+</p>
+
+## 📄 Project Report
+Report example and analysis can be found here:
+[**Download / View Project Report (PDF)**](https://storage.googleapis.com/gh-repo-media-files/examples/reports/DRA_Enterprise_Audit_1766410688554.pdf)
 
 ---
 
@@ -118,9 +158,35 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
 - **Zero-Knowledge**: No database is used. History is stored in your browser's `localStorage`.
 
 ---
+<details>
+<summary><strong>⚠️ Disclaimer: AI Usage, Costs, and Data Privacy (Click to read)</strong></summary>
+
+### 2. AI & Generative Content Warning
+This tool utilizes Artificial Intelligence (e.g., Azure OpenAI, LLMs) to generate text, code, or images.
+
+* **Accuracy:** AI models can hallucinate or produce inaccurate information. Output should never be treated as absolute fact.
+* **Verification:** Users must independently verify all AI-generated content before using it in production environments.
+* **Bias:** The model may reflect biases present in its training data. The authors of this repository are not responsible for the nature of the generated content.
+
+### 3. Cost & Billing
+This project requires access to cloud services (e.g., Azure AI Studio, Google Cloud Storage, OpenAI API).
+
+* **User Responsibility:** You are solely responsible for all costs incurred by your cloud provider accounts while running this software.
+* **Resource Management:** It is the user's responsibility to monitor usage and set up budget alerts. The authors are not liable for unexpected cloud bills or "runaway" processes.
+
+### 4. Data Privacy & External Links
+* **Third-Party Storage:** Some assets in this documentation (images/PDFs) are hosted on external object storage (Google Cloud Storage). Availability of these assets is not guaranteed.
+* **Sensitive Data:** Do not input sensitive personal data (PII), API keys, or credentials directly into the code or prompt inputs unless you have secured the environment.
+
+</details>
 
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE.md` for more information.
 
-**Disclaimer**: *This tool provides AI-generated architectural advice. Always perform a manual review of infrastructure changes before applying them to production environments.*
+---
+
+> Built with ❤️ for the Google Cloud Community by Damian Sztankowski.  
+> **Note**: This is an independent tool and is not an official Google product.
+
+---
