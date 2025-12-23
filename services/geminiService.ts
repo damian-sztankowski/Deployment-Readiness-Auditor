@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 
@@ -8,51 +7,26 @@ export const GEMINI_MODEL = "gemini-3-pro-preview";
 const SYSTEM_INSTRUCTION = `
 ### ROLE & OBJECTIVE
 You are the **Deployment Readiness Auditor (DRA)**, a Principal Google Cloud Architect and Senior Site Reliability Engineer.
-Your mission is to perform a **SINGLE-PASS, EXHAUSTIVE AUDIT**. You must identify **ALL** violations (from Critical to Info) in the first run. 
-**DO NOT** hide minor issues just because critical issues exist. 
-**DO NOT** prioritize brevity over completeness.
+Your mission is to perform a **SINGLE-PASS, EXHAUSTIVE, AND DETERMINISTIC AUDIT**. 
 
-### 👥 AUDIENCE & CONTEXT
-* **Primary Audience**: Senior Cloud Architects and DevSecOps Engineers.
-* **Tone**: Technical, prescriptive, and objective. 
-* **Context**: This audit is part of a "Shift-Left" security strategy. Assume the user is not an expert;  explain *why* encryption is important also explain *how* the current HCL fails to meet the standard.
+### 🧠 CONSISTENCY PROTOCOL
+1. **Deterministic Reasoning**: You must follow a strict checklist. If a violation exists, it must ALWAYS be reported with the same severity and category for the same input.
+2. **Exhaustive Scan**: Identify **ALL** violations (from Critical to Info) in the first run. 
+3. **Internal Verification**: Before providing the JSON, verify that the findings match the official Google Cloud Architecture Framework documentation.
 
 ### 🛡️ AUDIT STANDARDS (THE 5 PILLARS)
 Evaluate against:
-1. **Security** (Zero Trust, CIS Benchmark, Maximize the security of your data and workloads in the cloud, design for privacy, and align with regulatory requirements and standards.)
-2. **Cost Optimization** (Waste elimination, right-sizing. Maximize the business value of your investment in Google Cloud.)
-3. **Reliability** (HA, Backups, Protection. Design and operate resilient and highly available workloads in the cloud.)
-4. **Operational Excellence** (Monitoring, Labels.Efficiently deploy, operate, monitor, and manage your cloud workloads.)
-5. **Performance** (Modern machine types.Design and tune your cloud resources for optimal performance.)
-
-### 🧠 EXHAUSTIVE ANALYSIS PROTOCOL (STRICT)
-You MUST iterate through EVERY resource block defined in the code and perform these checks:
-
-1.  **Resource-by-Resource Scan**:
-    - Take Resource A.
-    - Check against ALL 5 Pillars.
-    - If Resource A has 3 violations (e.g., 1 Critical Security + 1 Medium Cost + 1 Low Ops), **LIST ALL THREE SEPARATELY**.
-    - Move to Resource B.
-
-2.  **Anti-Masking Rule**:
-    - Never suppress a "Low" or "Medium" finding because a "Critical" one exists.
-    - Example: If a bucket is Public (Critical) AND lacks labels (Low), report BOTH.
-
-3.  **Default Assumptions**:
-    - If a specific configuration block is missing (e.g., 'encryption {}'), assume the default GCP behavior. If the default is insecure or not best-practice, flag it.
+1. **Security** (Zero Trust, CIS Benchmark, Data Privacy)
+2. **Cost Optimization** (Waste elimination, right-sizing)
+3. **Reliability** (HA, Backups, Protection)
+4. **Operational Excellence** (Monitoring, Labels, Automation)
+5. **Performance** (Modern machine types, resource tuning)
 
 ### 📝 OUTPUT REQUIREMENTS
 - **Code Fixes**: Valid HCL snippets.
-- **Compliance**: Map results to best mached: **CIS GCP Benchmark** **NIST 800-53**, **PCI DSS**, **EU GDPR**, **FedRAMP**, **HIPAA**, **SOC 2**, **ISO 27001**, **BSI C5**. 
-- **Specificity**: Tie every finding to a specific 'fileName' and 'lineNumber'.
-- **Cost Optimization**: For cost estimations, use pricing from "us-central1" region.
+- **Compliance**: Map results to standards: **CIS GCP Benchmark**, **NIST 800-53**, **PCI DSS**, **GDPR**, etc.
 - **Remediation**: Provide a copy-pasteable HCL "fix" snippet for every finding.
-
-### 🚫 NEGATIVE CONSTRAINTS
-- Do NOT incrementalize findings. Give me the full list NOW.
-- Do NOT hallucinate line numbers.
-- Return raw JSON only.
-- Do NOT assess other hyperscalers terraform code. If you find different hyperscaler, return *CRITICAL** with proper info.
+- **Raw JSON**: Return valid JSON only.
 `;
 
 const addLineNumbers = (code: string): string => {
@@ -72,7 +46,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     throw new Error("AUDIT_ERROR: Input configuration is empty.");
   }
 
-  const apiKey = (window as any).process?.env?.API_KEY;
+  const apiKey = process.env.API_KEY;
 
   if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
     throw new Error("CONFIG_ERROR: API_KEY is missing. Check your environment variables.");
@@ -89,11 +63,11 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         // DETERMINISTIC SETTINGS
-        temperature: 0.3, 
+        temperature: 0.1, 
         seed: 42, // Ensures identical prompts yield identical outputs
         // THINKING CONFIG (Available for Gemini 3 Pro)
         thinkingConfig: { 
-          thinkingBudget: 16384 // High budget for deep architectural reasoning
+          thinkingBudget: 16384 // High budget for consistent deep architectural reasoning
         },
         responseMimeType: "application/json",
         responseSchema: {

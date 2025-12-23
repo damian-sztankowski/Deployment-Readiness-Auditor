@@ -110,7 +110,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
             <p className="text-slate-600 dark:text-slate-400">DRA is built on the principle of sovereign intelligence. Here is how we protect your proprietary infrastructure.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-indigo-500 transition-colors shadow-sm">
                 <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
                     <EyeOff className="w-7 h-7" />
@@ -118,15 +118,6 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 <h4 className="text-xl font-black">Zero Code Retention</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
                     DRA processes infrastructure code ephemerally. Your snippets are sent via encrypted TLS to the Gemini API and purged immediately after analysis. We maintain no backend database for your code.
-                </p>
-            </div>
-            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-emerald-500 transition-colors shadow-sm">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                    <Key className="w-7 h-7" />
-                </div>
-                <h4 className="text-xl font-black">Sovereign Keys (BYOK)</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    Bypass public rate limits by providing your own Professional Gemini API Key. This ensures your data remains within your organizational cloud quota and security parameters.
                 </p>
             </div>
             <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-amber-500 transition-colors shadow-sm">
@@ -277,11 +268,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
              />
              <FAQItem
                 question="Is my code used to train models?"
-                answer="When using your own Professional Gemini API Key, Google Cloud Vertex/GenAI standard terms apply: your data is NOT used for model training. DRA is designed for zero-retention ephemeral processing. No code is stored on our servers."
-             />
-             <FAQItem
-                question="Why should I use a Professional API Key?"
-                answer="While DRA provides a public trial key, it is shared across all users and strictly rate-limited. Using your own key grants you dedicated quotas, higher throughput for large projects, and ensures your analysis never fails due to global volume. You can add your key in the 'Sovereign Key' settings (Key icon in the header)."
+                answer="Google Cloud Vertex/GenAI standard terms for enterprise access usually specify that data is NOT used for model training. DRA is designed for zero-retention ephemeral processing. No code is stored on our servers."
              />
              <FAQItem
                 question="Does it support high-level designs or only Terraform/HCL?"
