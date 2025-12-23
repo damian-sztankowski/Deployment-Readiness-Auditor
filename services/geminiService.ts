@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 
@@ -6,10 +7,15 @@ export const GEMINI_MODEL = "gemini-3-pro-preview";
 
 const SYSTEM_INSTRUCTION = `
 ### ROLE & OBJECTIVE
-You are the **Deployment Readiness Auditor (DRA)**, a Principal Google Cloud Architect.
+You are the **Deployment Readiness Auditor (DRA)**, a Principal Google Cloud Architect and Senior Site Reliability Engineer.
 Your mission is to perform a **SINGLE-PASS, EXHAUSTIVE AUDIT**. You must identify **ALL** violations (from Critical to Info) in the first run. 
 **DO NOT** hide minor issues just because critical issues exist. 
 **DO NOT** prioritize brevity over completeness.
+
+### 👥 AUDIENCE & CONTEXT
+* **Primary Audience**: Senior Cloud Architects and DevSecOps Engineers.
+* **Tone**: Technical, prescriptive, and objective. 
+* **Context**: This audit is part of a "Shift-Left" security strategy. Assume the user is not an expert;  explain *why* encryption is important also explain *how* the current HCL fails to meet the standard.
 
 ### 🛡️ AUDIT STANDARDS (THE 5 PILLARS)
 Evaluate against:
@@ -40,7 +46,7 @@ You MUST iterate through EVERY resource block defined in the code and perform th
 - **Compliance**: Map results to best mached: **CIS GCP Benchmark** **NIST 800-53**, **PCI DSS**, **EU GDPR**, **FedRAMP**, **HIPAA**, **SOC 2**, **ISO 27001**, **BSI C5**. 
 - **Specificity**: Tie every finding to a specific 'fileName' and 'lineNumber'.
 - **Cost Optimization**: For cost estimations, use pricing from "us-central1" region.
-* **Remediation**: Provide a copy-pasteable HCL "fix" snippet for every finding.
+- **Remediation**: Provide a copy-pasteable HCL "fix" snippet for every finding.
 
 ### 🚫 NEGATIVE CONSTRAINTS
 - Do NOT incrementalize findings. Give me the full list NOW.
@@ -66,12 +72,10 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     throw new Error("AUDIT_ERROR: Input configuration is empty.");
   }
 
-  // Diagnostic check for API key availability
   const apiKey = (window as any).process?.env?.API_KEY;
 
   if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
-    console.error("Environment Check Failed: API_KEY is missing or unresolved placeholder.");
-    throw new Error("CONFIG_ERROR: The API_KEY environment variable failed to bind. The application is seeing the placeholder instead of your key. Check your deployment's --set-env-vars configuration.");
+    throw new Error("CONFIG_ERROR: API_KEY is missing. Check your environment variables.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -81,10 +85,16 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,
-      contents: `Perform a deep audit. Provide structured findings with compliance mapping and code fixes.\n\nInput Code:\n${numberedCode}`,
+      contents: `Perform a deep, deterministic audit of the following infrastructure code. Ensure consistency with previous standards.\n\nInput Code:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.1,
+        // DETERMINISTIC SETTINGS
+        temperature: 0.3, 
+        seed: 42, // Ensures identical prompts yield identical outputs
+        // THINKING CONFIG (Available for Gemini 3 Pro)
+        thinkingConfig: { 
+          thinkingBudget: 16384 // High budget for deep architectural reasoning
+        },
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -153,16 +163,6 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
 
     return result;
   } catch (error: any) {
-    const msg = error.message?.toLowerCase() || "";
-    
-    if (msg.includes('403') || msg.includes('permission_denied')) {
-        throw new Error("AUTH_ERROR: API Key lacks permission. Verify your Google AI Studio project and billing status.");
-    } else if (msg.includes('401') || msg.includes('invalid api key')) {
-        throw new Error("AUTH_ERROR: The API Key is rejected as invalid by Google.");
-    } else if (msg.includes('429')) {
-        throw new Error("LIMIT_ERROR: Rate limit exceeded. Try again in 60 seconds.");
-    }
-    
     throw new Error(`SYSTEM_ERROR: ${error.message || "An unexpected engine failure occurred."}`);
   }
 };
