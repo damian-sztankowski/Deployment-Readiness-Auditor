@@ -52,27 +52,27 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-12 relative overflow-hidden bg-[#020617] transition-colors duration-700">
+    <div className="flex flex-col items-center justify-center min-h-screen py-12 relative overflow-hidden bg-slate-50 dark:bg-[#020617] transition-colors duration-700">
         
         {/* Optimized Background based on reference screenshot */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          {/* Base Dark Navy Layer */}
-          <div className="absolute inset-0 bg-[#020617]"></div>
+          {/* Base Background Layers */}
+          <div className="absolute inset-0 bg-slate-50 dark:bg-[#020617]"></div>
           
-          {/* Central Radial Lightening - Lighter in the middle, darker on the sides */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(28,37,65,1)_0%,rgba(2,6,23,0)_75%)]"></div>
+          {/* Central Radial Lightening */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(241,245,249,1)_0%,rgba(248,250,252,0)_75%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(28,37,65,1)_0%,rgba(2,6,23,0)_75%)]"></div>
 
-          {/* Subtly tinted central glow for branding */}
+          {/* Subtly tinted central glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[1200px] max-h-[1200px] bg-indigo-600/5 rounded-full blur-[160px] animate-pulse"></div>
 
           {/* Precision Grid Overlay */}
-          <div className="absolute inset-0 opacity-[0.12]" style={{ 
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)`,
+          <div className="absolute inset-0 opacity-[0.06] dark:opacity-[0.12]" style={{ 
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.2) 1px, transparent 1px)`,
             backgroundSize: '40px 40px'
           }}></div>
           
-          {/* Edge Vingette to ensure darker sides */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_50%,rgba(2,6,23,1)_100%)]"></div>
+          {/* Edge Vingette */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_50%,rgba(248,250,252,1)_100%)] dark:bg-[radial-gradient(circle_at_50%_50%,transparent_50%,rgba(2,6,23,1)_100%)]"></div>
         </div>
 
         {/* Center Content */}
@@ -92,23 +92,23 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
             {/* Hero Typography */}
             <div className="space-y-6 animate-enter">
                 <div className="inline-block relative">
-                    <span className="relative inline-flex items-center gap-2 px-6 py-2 rounded-full bg-slate-900/50 border border-slate-800/50 text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl backdrop-blur-md">
+                    <span className="relative inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/50 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl backdrop-blur-md">
                         Enterprise Audit Intelligence
                     </span>
                 </div>
 
                 <div className="space-y-0">
-                  <h1 className="text-7xl md:text-8xl lg:text-[10rem] font-black tracking-tighter text-white leading-[0.85]">
+                  <h1 className="text-7xl md:text-8xl lg:text-[10rem] font-black tracking-tighter text-slate-900 dark:text-white leading-[0.85]">
                     Deployment Readiness
                   </h1>
-                  <h2 className="text-7xl md:text-8xl lg:text-[10rem] font-black tracking-tighter bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent leading-[0.85] bg-300% animate-gradient">
+                  <h2 className="text-7xl md:text-8xl lg:text-[10rem] font-black tracking-tighter bg-gradient-to-r from-indigo-600 via-purple-500 to-indigo-600 dark:from-indigo-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent leading-[0.85] bg-300% animate-gradient">
                     Auditor
                   </h2>
                 </div>
                 
-                <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
+                <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
                     Analyze architectural integrity against the 
-                    <span className="text-indigo-400 font-bold mx-2">Google Cloud Framework</span> 
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold mx-2">Google Cloud Framework</span> 
                     using advanced AI semantics.
                 </p>
             </div>
@@ -118,7 +118,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                 
                 {/* Scan Infrastructure Button */}
                 <div className="relative group">
-                    <div className="absolute -inset-1.5 bg-indigo-500 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition duration-500"></div>
+                    <div className="absolute -inset-1.5 bg-indigo-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition duration-500"></div>
                     <button 
                         onClick={onStart}
                         className="relative flex items-center justify-center gap-4 px-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-lg font-black tracking-tight transition-all duration-300 active:scale-95 shadow-2xl border border-indigo-400/20"
@@ -131,7 +131,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                 {/* Interactive Showcase Button */}
                 <button 
                     onClick={onRunDemo}
-                    className="flex items-center justify-center gap-4 px-12 py-5 bg-slate-900/40 hover:bg-slate-800/60 text-white rounded-2xl text-lg font-black border border-slate-800/50 transition-all duration-300 group shadow-lg backdrop-blur-sm"
+                    className="flex items-center justify-center gap-4 px-12 py-5 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-900 dark:text-white rounded-2xl text-lg font-black border border-slate-200 dark:border-slate-800/50 transition-all duration-300 group shadow-lg backdrop-blur-sm"
                 >
                     <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
                         <Sparkles className="w-4 h-4" />
@@ -142,7 +142,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                 {/* Learn More Button */}
                 <button 
                     onClick={() => setIsLearnMoreOpen(true)}
-                    className="flex items-center justify-center gap-4 px-10 py-5 bg-transparent hover:bg-white/5 text-slate-500 hover:text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] border border-slate-800/50 transition-all group"
+                    className="flex items-center justify-center gap-4 px-10 py-5 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] border border-slate-200 dark:border-slate-800/50 transition-all group"
                 >
                     <HelpCircle className="w-5 h-5 opacity-60 group-hover:opacity-100" />
                     Learn More
@@ -152,11 +152,11 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
             {/* Feature Pills */}
             <div className="flex flex-wrap items-center justify-center gap-4 pt-16 animate-enter" style={{ animationDelay: '0.4s' }}>
                 {[
-                    { icon: ShieldCheck, text: "WAF PILLARS", color: "text-indigo-400" },
-                    { icon: Lock, text: "COMPLIANCE", color: "text-emerald-400" },
-                    { icon: Activity, text: "FINOPS AUDIT", color: "text-amber-400" }
+                    { icon: ShieldCheck, text: "WAF PILLARS", color: "text-indigo-600 dark:text-indigo-400" },
+                    { icon: Lock, text: "COMPLIANCE", color: "text-emerald-600 dark:text-emerald-400" },
+                    { icon: Activity, text: "FINOPS AUDIT", color: "text-amber-600 dark:text-amber-400" }
                 ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-3 px-8 py-3 rounded-xl bg-slate-900/60 border border-slate-800/50 text-[9px] font-black text-slate-500 uppercase tracking-widest cursor-default hover:bg-slate-800/80 transition-colors shadow-2xl backdrop-blur-sm">
+                    <div key={i} className="flex items-center gap-3 px-8 py-3 rounded-xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/50 text-[9px] font-black text-slate-500 uppercase tracking-widest cursor-default hover:bg-white/80 dark:hover:bg-slate-800/80 transition-colors shadow-2xl backdrop-blur-sm">
                         <feature.icon className={`w-3.5 h-3.5 ${feature.color} opacity-80`} />
                         {feature.text}
                     </div>
@@ -172,19 +172,19 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                     onClick={() => setIsLearnMoreOpen(false)}
                 />
                 
-                <div className="relative w-full max-w-5xl bg-slate-900 rounded-[3rem] shadow-[0_32px_128px_rgba(0,0,0,0.8)] overflow-hidden border border-slate-800 animate-in zoom-in-95 duration-500 flex flex-col md:flex-row min-h-[500px]">
+                <div className="relative w-full max-w-5xl bg-slate-50 dark:bg-slate-900 rounded-[3rem] shadow-[0_32px_128px_rgba(0,0,0,0.8)] overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-500 flex flex-col md:flex-row min-h-[500px]">
                     <button 
                         onClick={() => setIsLearnMoreOpen(false)}
-                        className="absolute top-8 right-8 z-20 p-4 bg-slate-800 hover:bg-red-500 hover:text-white text-slate-400 rounded-2xl transition-all duration-300 group shadow-lg"
+                        className="absolute top-8 right-8 z-20 p-4 bg-white dark:bg-slate-800 hover:bg-red-500 hover:text-white text-slate-400 rounded-2xl transition-all duration-300 group shadow-lg border border-slate-200 dark:border-slate-700"
                     >
                         <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
                     </button>
                     
                     {/* Sidebar Nav */}
-                    <div className="w-full md:w-80 bg-slate-950 p-10 border-b md:border-b-0 md:border-r border-slate-800 space-y-6">
+                    <div className="w-full md:w-80 bg-white dark:bg-slate-950 p-10 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 space-y-6">
                         <div className="mb-10">
-                           <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-2">Core Protocol</h3>
-                           <p className="text-2xl font-black text-white">Audit Pillars</p>
+                           <h3 className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2">Core Protocol</h3>
+                           <p className="text-2xl font-black text-slate-900 dark:text-white">Audit Pillars</p>
                         </div>
                         <div className="space-y-3">
                             {showcaseSteps.map((step, i) => (
@@ -193,24 +193,24 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                                     onClick={() => setActiveStep(i)}
                                     className={`w-full flex items-center gap-5 p-5 rounded-2xl transition-all text-left group/nav
                                         ${activeStep === i 
-                                            ? 'bg-slate-900 shadow-2xl border border-slate-800' 
-                                            : 'hover:bg-slate-900/40 text-slate-500'}
+                                            ? 'bg-slate-100 dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800' 
+                                            : 'hover:bg-slate-100/40 dark:hover:bg-slate-900/40 text-slate-500'}
                                     `}
                                 >
-                                    <div className={`p-3 rounded-xl transition-colors ${activeStep === i ? step.bg + ' ' + step.color : 'bg-slate-800'}`}>
+                                    <div className={`p-3 rounded-xl transition-colors ${activeStep === i ? step.bg + ' ' + step.color : 'bg-slate-200 dark:bg-slate-800'}`}>
                                         <step.icon className="w-5 h-5" />
                                     </div>
-                                    <span className={`text-sm font-black uppercase tracking-tight ${activeStep === i ? 'text-white' : 'text-slate-500'}`}>
+                                    <span className={`text-sm font-black uppercase tracking-tight ${activeStep === i ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>
                                         {step.title}
                                     </span>
-                                    {activeStep === i && <ChevronRight className="w-4 h-4 ml-auto text-indigo-400" />}
+                                    {activeStep === i && <ChevronRight className="w-4 h-4 ml-auto text-indigo-600 dark:text-indigo-400" />}
                                 </button>
                             ))}
                         </div>
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 p-12 md:p-20 flex flex-col justify-center relative overflow-hidden bg-slate-900">
+                    <div className="flex-1 p-12 md:p-20 flex flex-col justify-center relative overflow-hidden bg-white dark:bg-slate-900">
                         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
                         
                         <div key={activeStep} className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-10">
@@ -223,21 +223,21 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                                     <h4 className={`text-xs font-black uppercase tracking-[0.3em] mb-3 ${showcaseSteps[activeStep].color}`}>
                                         {showcaseSteps[activeStep].subtitle}
                                     </h4>
-                                    <h3 className="text-5xl font-black text-white tracking-tighter leading-none">
+                                    <h3 className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
                                         {showcaseSteps[activeStep].title}
                                     </h3>
                                 </div>
-                                <p className="text-slate-400 text-xl leading-relaxed max-w-lg font-medium">
+                                <p className="text-slate-600 dark:text-slate-400 text-xl leading-relaxed max-w-lg font-medium">
                                     {showcaseSteps[activeStep].description}
                                 </p>
                             </div>
 
                             <div className="pt-6 flex flex-wrap gap-4">
-                                <div className="flex items-center gap-3 px-6 py-3 bg-slate-950 rounded-2xl border border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                <div className="flex items-center gap-3 px-6 py-3 bg-slate-100 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500">
                                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                                     Production Ready
                                 </div>
-                                <div className="flex items-center gap-3 px-6 py-3 bg-slate-950 rounded-2xl border border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                <div className="flex items-center gap-3 px-6 py-3 bg-slate-100 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500">
                                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                                     AI Sovereignty
                                 </div>
@@ -249,7 +249,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                                 {showcaseSteps.map((_, i) => (
                                     <div 
                                         key={i} 
-                                        className={`h-2 rounded-full transition-all duration-500 ${activeStep === i ? 'w-10 bg-indigo-500' : 'w-2 bg-slate-800'}`} 
+                                        className={`h-2 rounded-full transition-all duration-500 ${activeStep === i ? 'w-10 bg-indigo-600 dark:bg-indigo-500' : 'w-2 bg-slate-200 dark:bg-slate-800'}`} 
                                     />
                                 ))}
                              </div>

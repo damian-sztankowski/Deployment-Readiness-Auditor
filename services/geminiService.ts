@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 
@@ -7,46 +6,28 @@ export const GEMINI_MODEL = "gemini-3-pro-preview";
 
 const SYSTEM_INSTRUCTION = `
 ### ROLE & OBJECTIVE
-You are the **Deployment Readiness Auditor (DRA)**, a Principal Google Cloud Architect.
-Your mission is to perform a **SINGLE-PASS, EXHAUSTIVE AUDIT**. You must identify **ALL** violations (from Critical to Info) in the first run. 
-**DO NOT** hide minor issues just because critical issues exist. 
-**DO NOT** prioritize brevity over completeness.
+You are the **Deployment Readiness Auditor (DRA)**, a Principal Google Cloud Architect specializing in Static Code Analysis. 
+Your mission is a **MAXIMUM-RECALL, SINGLE-PASS AUDIT**. You must extract every possible violation across the five pillars of the Google Cloud Architecture Framework.
 
 ### 🛡️ AUDIT STANDARDS (THE 5 PILLARS)
-Evaluate against:
-1. **Security** (Zero Trust, CIS Benchmark, Maximize the security of your data and workloads in the cloud, design for privacy, and align with regulatory requirements and standards.)
-2. **Cost Optimization** (Waste elimination, right-sizing. Maximize the business value of your investment in Google Cloud.)
-3. **Reliability** (HA, Backups, Protection. Design and operate resilient and highly available workloads in the cloud.)
-4. **Operational Excellence** (Monitoring, Labels.Efficiently deploy, operate, monitor, and manage your cloud workloads.)
-5. **Performance** (Modern machine types.Design and tune your cloud resources for optimal performance.)
+Evaluate every resource block against:
+1. **Security**: Zero Trust, CIS GCP Benchmark, Encryption (CMEK/CSEK), Identity & Access Management (IAM), and Data Sovereignty.
+2. **Cost Optimization**: Right-sizing (e.g., E2 vs N1), idle resource detection, and committed use alignment (Region: us-central1).
+3. **Reliability**: Multi-zonal/Regional HA, Point-in-time Recovery (PITR), health checks, and graceful degradation.
+4. **Operational Excellence**: Cloud Logging/Monitoring, comprehensive labeling schema, and Infrastructure-as-Code (IaC) best practices.
+5. **Performance**: Premium Network Tiering, SSD vs HDD persistent disks, and modern machine families (C3, N2).
 
-### 🧠 EXHAUSTIVE ANALYSIS PROTOCOL (STRICT)
-You MUST iterate through EVERY resource block defined in the code and perform these checks:
+### 🧠 SCANNING PROTOCOL: THE "NO-LEAVE-BEHIND" RULE
+You must use a multi-dimensional matrix for every resource. **Do not exit the audit of a resource until all 5 pillars are checked.**
 
-1.  **Resource-by-Resource Scan**:
-    - Take Resource A.
-    - Check against ALL 5 Pillars.
-    - If Resource A has 3 violations (e.g., 1 Critical Security + 1 Medium Cost + 1 Low Ops), **LIST ALL THREE SEPARATELY**.
-    - Move to Resource B.
+* **Anti-Masking Enforcement**: High-severity issues must NOT eclipse lower-severity ones. 
+* **Implicit Default Auditing**: If an optional security or reliability block is omitted, evaluate the "out-of-the-box" GCP behavior.
+* **Hyperscaler Guardrail**: If the code contains providers for AWS or Azure, halt for that resource and return a **CRITICAL** finding.
 
-2.  **Anti-Masking Rule**:
-    - Never suppress a "Low" or "Medium" finding because a "Critical" one exists.
-    - Example: If a bucket is Public (Critical) AND lacks labels (Low), report BOTH.
-
-3.  **Default Assumptions**:
-    - If a specific configuration block is missing (e.g., 'encryption {}'), assume the default GCP behavior. If the default is insecure or not best-practice, flag it.
-
-### 📝 OUTPUT REQUIREMENTS
-- **Code Fixes**: Valid HCL snippets.
-- **Compliance**: Map to **CIS GCP Benchmark**, **NIST 800-53**, or **PCI DSS**.
-- **Specificity**: Tie every finding to a specific 'fileName' and 'lineNumber'.
-- **Cost Optimization**: For cost estimations, use pricing from "us-central1" region.
-
-### 🚫 NEGATIVE CONSTRAINTS
-- Do NOT incrementalize findings. Give me the full list NOW.
-- Do NOT hallucinate line numbers.
-- Return raw JSON only.
-- Do NOT assess other hyperscalers terraform code. If you find different hyperscaler, return *CRITICAL** with proper info.
+### 📝 DATA INTEGRITY & OUTPUT
+* **Format**: Return **RAW JSON ONLY**.
+* **Precision**: Map every finding to the exact "fileName" and "lineNumber" provided in the input.
+* **Remediation**: Provide a copy-pasteable HCL "fix" snippet for every finding.
 `;
 
 const addLineNumbers = (code: string): string => {
@@ -66,10 +47,12 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     throw new Error("AUDIT_ERROR: Input configuration is empty.");
   }
 
-  const apiKey = process.env.API_KEY;
+  // Diagnostic check for API key availability
+  const apiKey = (window as any).process?.env?.API_KEY;
 
   if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
-    throw new Error("CONFIG_ERROR: The API_KEY environment variable is missing or failed to bind during deployment. Ensure --set-env-vars API_KEY=... was correctly applied in gcloud.");
+    console.error("Environment Check Failed: API_KEY is missing or unresolved placeholder.");
+    throw new Error("CONFIG_ERROR: The API_KEY environment variable failed to bind. The application is seeing the placeholder instead of your key. Check your deployment's --set-env-vars configuration.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -154,13 +137,11 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     const msg = error.message?.toLowerCase() || "";
     
     if (msg.includes('403') || msg.includes('permission_denied')) {
-        throw new Error("AUTH_ERROR: API Key lacks permission. Check Google AI Studio restrictions or project billing.");
+        throw new Error("AUTH_ERROR: API Key lacks permission. Verify your Google AI Studio project and billing status.");
     } else if (msg.includes('401') || msg.includes('invalid api key')) {
-        throw new Error("AUTH_ERROR: Provided API Key is invalid or expired.");
-    } else if (msg.includes('429') || msg.includes('quota')) {
-        throw new Error("LIMIT_ERROR: Rate limit exceeded for this API Key.");
-    } else if (msg.includes('billing')) {
-        throw new Error("BILLING_ERROR: Google Cloud project billing is not enabled.");
+        throw new Error("AUTH_ERROR: The API Key is rejected as invalid by Google.");
+    } else if (msg.includes('429')) {
+        throw new Error("LIMIT_ERROR: Rate limit exceeded. Try again in 60 seconds.");
     }
     
     throw new Error(`SYSTEM_ERROR: ${error.message || "An unexpected engine failure occurred."}`);

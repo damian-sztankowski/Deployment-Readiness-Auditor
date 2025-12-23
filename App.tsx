@@ -13,7 +13,7 @@ import { Footer } from './components/Footer';
 import { analyzeInfrastructure } from './services/geminiService';
 import { MOCK_AUDIT_RESULT } from './services/mockData';
 import { AnalysisState, AuditResult, HistoryItem } from './types';
-import { AlertOctagon, ShieldAlert, Terminal, RefreshCw, Key, ShieldX, Globe } from 'lucide-react';
+import { AlertOctagon, ShieldAlert, Terminal, RefreshCw, Key, ShieldX, Globe, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -125,11 +125,11 @@ const App: React.FC = () => {
   const renderError = (error: string) => {
     const errorCode = error.split(':')[0] || 'SYSTEM_FAILURE';
     const errorMsg = error.split(':').slice(1).join(':').trim() || error;
+    const isConfigError = errorCode === 'CONFIG_ERROR';
     
     return (
       <div className="max-w-4xl mx-auto mb-16 animate-enter">
         <div className="bg-white dark:bg-[#0a0f1e] rounded-[2.5rem] border border-red-200 dark:border-red-900/40 shadow-3xl overflow-hidden">
-          {/* Header */}
           <div className="px-10 py-8 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-[#0a0f1e] border-b border-red-100 dark:border-red-900/30 flex items-center gap-6">
             <div className="p-4 bg-red-600 rounded-3xl shadow-xl shadow-red-500/20">
               <AlertOctagon className="w-8 h-8 text-white" />
@@ -145,7 +145,6 @@ const App: React.FC = () => {
           </div>
           
           <div className="p-10 space-y-10">
-            {/* Error Message Box */}
             <div className="bg-slate-50 dark:bg-slate-900/60 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 flex gap-5">
               <div className="mt-1 shrink-0">
                 <ShieldX className="w-6 h-6 text-red-500 opacity-60" />
@@ -155,7 +154,29 @@ const App: React.FC = () => {
               </p>
             </div>
 
-            {/* Diagnostics & Troubleshooting */}
+            {isConfigError && (
+              <div className="p-6 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-2xl">
+                 <div className="flex items-center gap-3 mb-4 text-amber-600 dark:text-amber-400">
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="text-sm font-black uppercase tracking-widest">Client-Side Diagnostics</span>
+                 </div>
+                 <div className="space-y-3 font-mono text-[11px]">
+                    <div className="flex justify-between border-b border-amber-100 dark:border-amber-900/20 pb-2">
+                        <span className="text-slate-400 uppercase">Process Shim</span>
+                        <span className="text-slate-600 dark:text-slate-300">Active</span>
+                    </div>
+                    <div className="flex justify-between border-b border-amber-100 dark:border-amber-900/20 pb-2">
+                        <span className="text-slate-400 uppercase">Current Key State</span>
+                        <span className="text-red-500">Placeholder Detected</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-slate-400 uppercase">Injection Result</span>
+                        <span className="text-amber-600">FAILED (Check Server routes)</span>
+                    </div>
+                 </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
@@ -165,14 +186,11 @@ const App: React.FC = () => {
                 <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Run gcloud with environment flags:</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Verify --set-env-vars</span>
                   </div>
                   <pre className="text-[10px] font-mono bg-slate-900 p-3 rounded-lg text-emerald-400 overflow-x-auto border border-slate-800">
-                    --set-env-vars API_KEY=YOUR_KEY
+                    gcloud run deploy ... --set-env-vars API_KEY=AIzaSy...
                   </pre>
-                  <p className="text-[10px] text-slate-500 leading-relaxed italic">
-                    Ensure there are no leading or trailing spaces in your key during deployment.
-                  </p>
                 </div>
               </div>
 
@@ -184,23 +202,12 @@ const App: React.FC = () => {
                 <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 space-y-4">
                   <div className="flex items-start gap-3">
                     <Globe className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
-                    <div>
-                      <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">Check AI Studio</span>
-                      <p className="text-[10px] text-slate-500 mt-1">Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-indigo-500 underline font-bold">Google AI Studio</a> to verify your API Key is active and has 0 restrictions.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <ShieldAlert className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                    <div>
-                      <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">Billing Profile</span>
-                      <p className="text-[10px] text-slate-500 mt-1">Ensure the GCP project associated with the key has billing enabled for GenAI models.</p>
-                    </div>
+                    <p className="text-[10px] text-slate-500">Verify the key is active in <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-indigo-500 underline font-bold">Google AI Studio</a>.</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Footer Buttons */}
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-4">
                <button 
                 onClick={() => window.location.reload()}
@@ -223,22 +230,22 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col w-full bg-[#020617] transition-colors duration-500 relative font-sans text-slate-900 dark:text-slate-100">
+    <div className="flex-1 flex flex-col w-full bg-slate-50 dark:bg-[#020617] transition-colors duration-500 relative font-sans text-slate-900 dark:text-slate-100">
       
       <OnboardingTour startTour={!showSplash} />
 
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[#020617]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(28,37,65,1)_0%,rgba(2,6,23,0)_75%)]"></div>
+        <div className="absolute inset-0 bg-slate-50 dark:bg-[#020617]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(241,245,249,1)_0%,rgba(248,250,252,0)_75%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(28,37,65,1)_0%,rgba(2,6,23,0)_75%)]"></div>
         <div className="absolute inset-0">
             <div className="absolute top-[-10%] left-[-5%] w-[80vw] h-[80vw] bg-indigo-500/5 rounded-full blur-[160px] animate-blob" />
             <div className="absolute bottom-[-10%] right-[-5%] w-[70vw] h-[70vw] bg-violet-500/5 rounded-full blur-[140px] animate-blob animation-delay-4000" />
         </div>
-        <div className="absolute inset-0 opacity-[0.1]" style={{ 
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+        <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.1]" style={{ 
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)`,
           backgroundSize: '40px 40px'
         }}></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_60%,rgba(2,6,23,1)_100%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_60%,rgba(248,250,252,1)_100%)] dark:bg-[radial-gradient(circle_at_50%_50%,transparent_60%,rgba(2,6,23,1)_100%)]"></div>
       </div>
 
       <div className="relative z-10 flex flex-col flex-grow w-full">

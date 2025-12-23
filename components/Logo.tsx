@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ShieldCheck, Zap, Lock, Activity } from 'lucide-react';
 
@@ -54,23 +55,23 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', animate
       
       {/* 1. LAYER: Base Liquid Glow */}
       <div 
-        className={`absolute inset-0 bg-indigo-500/20 dark:bg-indigo-400/20 blur-xl rounded-full transition-all duration-700 group-hover:scale-150 ${animate ? 'animate-logo-pulse' : 'opacity-0'}`}
+        className={`absolute inset-0 bg-indigo-500/10 dark:bg-indigo-400/20 blur-xl rounded-full transition-all duration-700 group-hover:scale-150 ${animate ? 'animate-logo-pulse' : 'opacity-0'}`}
       ></div>
 
       {/* 2. LAYER: Liquid Morphing Core Outer (The Shell) */}
       <div 
-        className={`absolute inset-0 border border-indigo-500/30 dark:border-indigo-400/30 bg-white/20 dark:bg-slate-900/20 backdrop-blur-md shadow-2xl ${animate ? 'animate-morph' : 'rounded-2xl'}`}
+        className={`absolute inset-0 border border-indigo-500/20 dark:border-indigo-400/30 bg-white/40 dark:bg-slate-900/20 backdrop-blur-md shadow-2xl ${animate ? 'animate-morph' : 'rounded-2xl'}`}
         style={{ animationDuration: '8s' }}
       ></div>
 
       {/* 3. LAYER: Inner Morphing Core (Secondary Layer for depth) */}
       <div 
-        className={`absolute inset-1.5 border border-indigo-500/10 dark:border-indigo-400/10 bg-indigo-500/5 dark:bg-indigo-400/5 ${animate ? 'animate-morph' : 'rounded-xl'}`}
+        className={`absolute inset-1.5 border border-indigo-500/5 dark:border-indigo-400/10 bg-indigo-500/5 dark:bg-indigo-400/5 ${animate ? 'animate-morph' : 'rounded-xl'}`}
         style={{ animationDuration: '6s', animationDirection: 'reverse' }}
       ></div>
 
       {/* 4. LAYER: Rotating Hex Frame */}
-      <div className={`absolute inset-0.5 flex items-center justify-center opacity-30 dark:opacity-20 ${animate ? 'animate-spin-slow' : ''}`} style={{ animationDuration: '15s' }}>
+      <div className={`absolute inset-0.5 flex items-center justify-center opacity-20 dark:opacity-20 ${animate ? 'animate-spin-slow' : ''}`} style={{ animationDuration: '15s' }}>
         <svg viewBox="0 0 100 100" className="w-full h-full fill-none stroke-indigo-600 dark:stroke-indigo-400" strokeWidth="1.2" strokeDasharray="8 4">
           <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" />
         </svg>
@@ -79,15 +80,15 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', animate
       {/* 5. LAYER: Data Orbit Node */}
       <div className={`absolute inset-0 ${animate ? 'animate-spin-slow' : ''}`} style={{ animationDuration: '3.5s' }}>
         <div 
-            className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 ${s.orb} bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,1)] border border-white/40 animate-pulse`}
+            className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 ${s.orb} bg-cyan-500 dark:bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,1)] border border-white/40 animate-pulse`}
         ></div>
       </div>
 
       {/* 6. LAYER: Central Icon Core */}
       <div className={`relative flex items-center justify-center z-10 transition-all duration-500 group-hover:scale-110`}>
-        <div className={`${animate ? 'animate-wiggle' : ''} drop-shadow-[0_0_12px_rgba(79,70,229,0.5)]`}>
+        <div className={`${animate ? 'animate-wiggle' : ''} drop-shadow-[0_0_12px_rgba(79,70,229,0.3)] dark:drop-shadow-[0_0_12px_rgba(79,70,229,0.5)]`}>
            <ShieldCheck 
-             className={`${s.icon} text-indigo-700 dark:text-indigo-300 transition-colors duration-500 group-hover:text-indigo-500`} 
+             className={`${s.icon} text-indigo-700 dark:text-indigo-300 transition-colors duration-500 group-hover:text-indigo-600`} 
              strokeWidth={2.5} 
            />
         </div>
@@ -102,8 +103,8 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', animate
       {/* Security Lock (Top Right) */}
       <div className={`absolute top-0 right-0 ${s.badgeOffsetTop} z-20 pointer-events-none`}>
         <div className={animate ? 'animate-float-orbit-1' : ''}>
-          <div className={`bg-slate-900/85 dark:bg-slate-800/85 backdrop-blur-2xl ${s.badgeSize} rounded-lg md:rounded-xl shadow-2xl border border-emerald-500/30 flex items-center justify-center ring-1 ring-white/5 pointer-events-auto`}>
-            <Lock className={`${s.badgeIcon} text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.8)]`} />
+          <div className={`bg-white/90 dark:bg-slate-800/85 backdrop-blur-2xl ${s.badgeSize} rounded-lg md:rounded-xl shadow-xl dark:shadow-2xl border border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-center ring-1 ring-black/5 dark:ring-white/5 pointer-events-auto`}>
+            <Lock className={`${s.badgeIcon} text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.4)] dark:drop-shadow-[0_0_10px_rgba(52,211,153,0.8)]`} />
           </div>
         </div>
       </div>
@@ -111,8 +112,8 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', animate
       {/* Activity Pulse (Bottom Left) */}
       <div className={`absolute bottom-0 left-0 ${s.badgeOffsetBottom} z-20 pointer-events-none`}>
         <div className={animate ? 'animate-float-orbit-2' : ''}>
-          <div className={`bg-slate-900/85 dark:bg-slate-800/85 backdrop-blur-2xl ${s.badgeSize} rounded-lg md:rounded-xl shadow-2xl border border-amber-500/30 flex items-center justify-center ring-1 ring-white/5 pointer-events-auto`}>
-            <Activity className={`${s.badgeIcon} text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.8)]`} />
+          <div className={`bg-white/90 dark:bg-slate-800/85 backdrop-blur-2xl ${s.badgeSize} rounded-lg md:rounded-xl shadow-xl dark:shadow-2xl border border-amber-500/20 dark:border-amber-500/30 flex items-center justify-center ring-1 ring-black/5 dark:ring-white/5 pointer-events-auto`}>
+            <Activity className={`${s.badgeIcon} text-amber-600 dark:text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.4)] dark:drop-shadow-[0_0_10px_rgba(251,191,36,0.8)]`} />
           </div>
         </div>
       </div>
@@ -120,7 +121,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', animate
       {/* Floating Metadata for Large Sizes */}
       {(size === 'lg' || size === 'xl') && (
           <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-2 group-hover:translate-y-0 whitespace-nowrap z-20">
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 bg-white/90 dark:bg-slate-900/90 px-4 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-800 backdrop-blur-xl shadow-lg">
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-700 dark:text-indigo-400 bg-white/90 dark:bg-slate-900/90 px-4 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-800 backdrop-blur-xl shadow-lg">
                 DRA CORE 2.5 ACTIVE
             </span>
           </div>
