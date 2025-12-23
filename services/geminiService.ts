@@ -46,7 +46,8 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     throw new Error("AUDIT_ERROR: Input configuration is empty.");
   }
 
-  const apiKey = process.env.API_KEY;
+  // Diagnostic check for API key availability
+  const apiKey = (window as any).process?.env?.API_KEY;
 
   if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
     throw new Error("CONFIG_ERROR: API_KEY is missing. Check your environment variables.");
