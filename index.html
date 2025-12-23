@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -49,14 +48,13 @@
        * DEPLOYMENT KEY SHIM
        * The server replaces the placeholder with the actual Cloud Run environment variable.
        */
-      const processShim = {
+      window.process = {
         env: {
           API_KEY: "__DRA_API_KEY_PLACEHOLDER__"
         }
       };
       
-      window.process = processShim;
-      globalThis.process = processShim;
+      globalThis.process = window.process;
 
       try {
         const localTheme = localStorage.getItem('dra-theme');
@@ -85,18 +83,18 @@
         padding: 0;
         overflow-x: hidden;
         font-family: 'Inter', sans-serif;
-        background-color: #020617;
+        background-color: #f8fafc; /* Dynamic Light Default */
+        transition: background-color 0.5s ease;
+      }
+
+      .dark body {
+        background-color: #020617; /* Dark Default */
       }
 
       #root {
         display: flex;
         flex-direction: column;
         min-height: 100%;
-      }
-
-      .dark body {
-        color: #f1f5f9;
-        background-color: #020617;
       }
 
       ::-webkit-scrollbar {

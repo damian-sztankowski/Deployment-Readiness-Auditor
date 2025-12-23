@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 
@@ -38,9 +37,10 @@ You MUST iterate through EVERY resource block defined in the code and perform th
 
 ### 📝 OUTPUT REQUIREMENTS
 - **Code Fixes**: Valid HCL snippets.
-- **Compliance**: Map to **CIS GCP Benchmark**, **NIST 800-53**, or **PCI DSS**.
+- **Compliance**: Map results to best mached: **CIS GCP Benchmark** **NIST 800-53**, **PCI DSS**, **EU GDPR**, **FedRAMP**, **HIPAA**, **SOC 2**, **ISO 27001**, **BSI C5**. 
 - **Specificity**: Tie every finding to a specific 'fileName' and 'lineNumber'.
 - **Cost Optimization**: For cost estimations, use pricing from "us-central1" region.
+* **Remediation**: Provide a copy-pasteable HCL "fix" snippet for every finding.
 
 ### 🚫 NEGATIVE CONSTRAINTS
 - Do NOT incrementalize findings. Give me the full list NOW.
@@ -66,10 +66,12 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     throw new Error("AUDIT_ERROR: Input configuration is empty.");
   }
 
-  const apiKey = process.env.API_KEY;
+  // Diagnostic check for API key availability
+  const apiKey = (window as any).process?.env?.API_KEY;
 
   if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
-    throw new Error("CONFIG_ERROR: The API_KEY environment variable is missing or failed to bind during deployment. Ensure --set-env-vars API_KEY=... was correctly applied in gcloud.");
+    console.error("Environment Check Failed: API_KEY is missing or unresolved placeholder.");
+    throw new Error("CONFIG_ERROR: The API_KEY environment variable failed to bind. The application is seeing the placeholder instead of your key. Check your deployment's --set-env-vars configuration.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -154,13 +156,11 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     const msg = error.message?.toLowerCase() || "";
     
     if (msg.includes('403') || msg.includes('permission_denied')) {
-        throw new Error("AUTH_ERROR: API Key lacks permission. Check Google AI Studio restrictions or project billing.");
+        throw new Error("AUTH_ERROR: API Key lacks permission. Verify your Google AI Studio project and billing status.");
     } else if (msg.includes('401') || msg.includes('invalid api key')) {
-        throw new Error("AUTH_ERROR: Provided API Key is invalid or expired.");
-    } else if (msg.includes('429') || msg.includes('quota')) {
-        throw new Error("LIMIT_ERROR: Rate limit exceeded for this API Key.");
-    } else if (msg.includes('billing')) {
-        throw new Error("BILLING_ERROR: Google Cloud project billing is not enabled.");
+        throw new Error("AUTH_ERROR: The API Key is rejected as invalid by Google.");
+    } else if (msg.includes('429')) {
+        throw new Error("LIMIT_ERROR: Rate limit exceeded. Try again in 60 seconds.");
     }
     
     throw new Error(`SYSTEM_ERROR: ${error.message || "An unexpected engine failure occurred."}`);
