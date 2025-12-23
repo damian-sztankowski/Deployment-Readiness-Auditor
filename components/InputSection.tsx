@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { 
   Play, Upload, RefreshCw, Terminal, ChevronUp, Edit2, 
@@ -154,76 +153,82 @@ resource "google_compute_disk" "unattached_disk" {
 
   return (
     <div id="input-section-container" className="relative group w-full max-w-[1400px] mx-auto">
-       <div className="absolute -inset-1 rounded-[2.2rem] bg-indigo-500/10 blur-2xl pointer-events-none"></div>
+       {/* Enhanced Neon Glow Background - Reacts to focus/hover */}
+       <div className="absolute -inset-3 rounded-[2.5rem] bg-gradient-to-r from-indigo-500 via-pink-500 via-purple-500 via-cyan-500 to-indigo-500 blur-3xl opacity-15 group-hover:opacity-30 group-focus-within:opacity-40 transition-opacity animate-gradient bg-300% pointer-events-none"></div>
 
-      <div className="relative bg-white dark:bg-[#0a0f1e] rounded-[2rem] shadow-3xl overflow-hidden border border-slate-200 dark:border-slate-800/80 transition-all duration-500">
-        <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-[#111827]/40 flex justify-between items-center">
-          <div className="flex items-center gap-3 text-slate-900 dark:text-white font-black">
-            <Terminal className="w-5 h-5 text-indigo-500" strokeWidth={3} />
-            <h3 className="text-base tracking-tight font-black uppercase tracking-widest opacity-90">Deployment Specification</h3>
-          </div>
-          <div className="flex items-center gap-3" id="action-buttons-group">
-              <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
-                  <Upload className="w-3.5 h-3.5" />
-                  Upload File
-                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".tf,.json,.yaml,.yml" />
-              </label>
-
-              <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
-                  <FolderUp className="w-3.5 h-3.5" />
-                  Upload Project
-                  <input 
-                    ref={folderInputRef} 
-                    type="file" 
-                    className="hidden" 
-                    onChange={handleFolderUpload} 
-                    {...({ webkitdirectory: '', directory: '' } as any)} 
-                    multiple 
-                  />
-              </label>
-              
-              <div className="h-5 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
-
-              <button onClick={loadExample} className="text-[10px] font-black uppercase tracking-widest text-indigo-500 hover:text-indigo-400 px-3 py-2 transition-colors">Example</button>
-              
-              {onToggleMinimize && inputCode.trim() && (
-                  <button onClick={onToggleMinimize} className="p-2 bg-slate-100 dark:bg-[#1e293b]/60 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"><ChevronUp className="w-4 h-4" /></button>
-              )}
-          </div>
-        </div>
+      {/* Animated Neon Border Wrapper - Slightly thicker and more vibrant */}
+      <div className="relative p-[2.5px] rounded-[2.2rem] bg-gradient-to-r from-indigo-500 via-pink-500 via-purple-500 via-cyan-500 to-indigo-500 animate-gradient bg-300% shadow-3xl overflow-hidden transition-all duration-500 group-focus-within:scale-[1.002]">
         
-        <div className="relative">
-          <textarea
-            id="code-editor-area"
-            value={inputCode}
-            onChange={(e) => setInputCode(e.target.value)}
-            placeholder={isReadingFiles ? "Reading files..." : "Paste HCL here..."}
-            className="w-full h-[540px] p-10 font-mono text-base text-slate-900 dark:text-slate-100 bg-transparent outline-none resize-none leading-relaxed placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-colors"
-            spellCheck={false}
-          />
-          
-          <div className="absolute bottom-10 right-10 z-30 flex flex-col items-end gap-5">
-            {!inputCode.trim() && !isAnalyzing && (
-              <button 
-                onClick={onRunDemo}
-                className="group flex items-center gap-3 px-8 py-4 bg-white/5 dark:bg-white/[0.03] backdrop-blur-3xl border border-indigo-500/20 hover:border-indigo-500 rounded-2xl text-sm font-black text-indigo-500 dark:text-indigo-400 shadow-2xl transition-all animate-in slide-in-from-bottom-4 duration-700"
-              >
-                <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                Interactive Showcase
-              </button>
-            )}
+        {/* Main Content Area */}
+        <div className="relative bg-white dark:bg-[#0a0f1e] rounded-[calc(2.2rem-2.5px)] overflow-hidden transition-colors">
+          <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-[#111827]/40 flex justify-between items-center">
+            <div className="flex items-center gap-3 text-slate-900 dark:text-white font-black">
+              <Terminal className="w-5 h-5 text-indigo-500" strokeWidth={3} />
+              <h3 className="text-base tracking-tight font-black uppercase tracking-widest opacity-90">Deployment Specification</h3>
+            </div>
+            <div className="flex items-center gap-3" id="action-buttons-group">
+                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
+                    <Upload className="w-3.5 h-3.5" />
+                    Upload File
+                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".tf,.json,.yaml,.yml" />
+                </label>
 
-            <button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing || !inputCode.trim() || isReadingFiles}
-              className={`flex items-center gap-5 px-12 py-6 rounded-[2rem] font-black text-xl shadow-3xl transition-all duration-300 
-                ${isAnalyzing || !inputCode.trim() || isReadingFiles
-                  ? 'bg-slate-200 text-slate-400 dark:bg-[#1e293b] dark:text-slate-600 cursor-not-allowed' 
-                  : 'bg-indigo-600 hover:bg-indigo-500 text-white hover:scale-105 active:scale-95 shadow-indigo-500/30 border border-indigo-400/20'}`}
-            >
-              {isAnalyzing ? <RefreshCw className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6 fill-current" />}
-              {isAnalyzing ? "Auditing Intelligence..." : "Run Global Audit"}
-            </button>
+                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
+                    <FolderUp className="w-3.5 h-3.5" />
+                    Upload Project
+                    <input 
+                      ref={folderInputRef} 
+                      type="file" 
+                      className="hidden" 
+                      onChange={handleFolderUpload} 
+                      {...({ webkitdirectory: '', directory: '' } as any)} 
+                      multiple 
+                    />
+                </label>
+                
+                <div className="h-5 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+                <button onClick={loadExample} className="text-[10px] font-black uppercase tracking-widest text-indigo-500 hover:text-indigo-400 px-3 py-2 transition-colors">Example</button>
+                
+                {onToggleMinimize && inputCode.trim() && (
+                    <button onClick={onToggleMinimize} className="p-2 bg-slate-100 dark:bg-[#1e293b]/60 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"><ChevronUp className="w-4 h-4" /></button>
+                )}
+            </div>
+          </div>
+          
+          <div className="relative">
+            <textarea
+              id="code-editor-area"
+              value={inputCode}
+              onChange={(e) => setInputCode(e.target.value)}
+              placeholder={isReadingFiles ? "Reading files..." : "Paste HCL here..."}
+              className="w-full h-[540px] p-10 font-mono text-base text-slate-900 dark:text-slate-100 bg-transparent outline-none resize-none leading-relaxed placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-colors"
+              spellCheck={false}
+            />
+            
+            <div className="absolute bottom-10 right-10 z-30 flex flex-col items-end gap-5">
+              {!inputCode.trim() && !isAnalyzing && (
+                <button 
+                  onClick={onRunDemo}
+                  className="group flex items-center gap-3 px-8 py-4 bg-white/5 dark:bg-white/[0.03] backdrop-blur-3xl border border-indigo-500/20 hover:border-indigo-500 rounded-2xl text-sm font-black text-indigo-500 dark:text-indigo-400 shadow-2xl transition-all animate-in slide-in-from-bottom-4 duration-700"
+                >
+                  <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                  Interactive Showcase
+                </button>
+              )}
+
+              <button
+                onClick={handleAnalyze}
+                disabled={isAnalyzing || !inputCode.trim() || isReadingFiles}
+                className={`flex items-center gap-5 px-12 py-6 rounded-[2rem] font-black text-xl shadow-3xl transition-all duration-300 
+                  ${isAnalyzing || !inputCode.trim() || isReadingFiles
+                    ? 'bg-slate-200 text-slate-400 dark:bg-[#1e293b] dark:text-slate-600 cursor-not-allowed' 
+                    : 'bg-indigo-600 hover:bg-indigo-500 text-white hover:scale-105 active:scale-95 shadow-indigo-500/30 border border-indigo-400/20'}`}
+              >
+                {isAnalyzing ? <RefreshCw className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6 fill-current" />}
+                {isAnalyzing ? "Auditing Intelligence..." : "Run Global Audit"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
