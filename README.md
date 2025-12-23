@@ -7,26 +7,27 @@
   <img src="https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F%20%26%20AI-red?style=for-the-badge" />
 </p>
 
----
+<details>
+<summary><strong>⚠️ Disclaimer: AI Usage, Costs, and Data Privacy (Click to read)</strong></summary>
 
-## 📖 Table of Contents
-* [🌟 Key Features](#-key-features)
-* [📋 Prerequisites](#-prerequisites)
-* [💻 Local Development](#-local-development-idiot-proof-guide)
-    * [1. Clone Repository](#1-clone-the-repository)
-    * [2. Change LLM Model](#2-change-llm-model)
-    * [3. Install and Build](#3-install-and-build)
-    * [4. Start the Development Server](#4-start-the-development-server)
-* [☁️ Deployment to Google Cloud Run](#️-deployment-to-google-cloud-run)
-* [🛠️ How to Use](#️-how-to-use)
-    * [1. Gallery](#1-gallery)
-    * [2. Project Report](#2-project-report)
-* [🔒 Security & Privacy](#-security--privacy)
-    * [⚠️ Disclaimer: AI Usage, Costs, and Data Privacy (Click to read)](#2-ai--generative-content-warning)
-    * [3. Cost & Billing](#3-cost--billing)
-    * [4. Data Privacy & External Links](#4-data-privacy--external-links)
-* [📄 License](#-license)
+### 2. AI & Generative Content Warning
+This tool utilizes Artificial Intelligence (e.g., Azure OpenAI, LLMs) to generate text, code, or images.
 
+* **Accuracy:** AI models can hallucinate or produce inaccurate information. Output should never be treated as absolute fact.
+* **Verification:** Users must independently verify all AI-generated content before using it in production environments.
+* **Bias:** The model may reflect biases present in its training data. The authors of this repository are not responsible for the nature of the generated content.
+
+### 3. Cost & Billing
+This project requires access to cloud services (e.g., Azure AI Studio, Google Cloud Storage, OpenAI API).
+
+* **User Responsibility:** You are solely responsible for all costs incurred by your cloud provider accounts while running this software.
+* **Resource Management:** It is the user's responsibility to monitor usage and set up budget alerts. The authors are not liable for unexpected cloud bills or "runaway" processes.
+
+### 4. Data Privacy & External Links
+* **Third-Party Storage:** Some assets in this documentation (images/PDFs) are hosted on external object storage (Google Cloud Storage). Availability of these assets is not guaranteed.
+* **Sensitive Data:** Do not input sensitive personal data (PII), API keys, or credentials directly into the code or prompt inputs unless you have secured the environment.
+
+</details>
 
 ---
 
@@ -56,7 +57,7 @@ Before you begin, ensure you have the following:
 
 ---
 
-## 💻 Local Development
+## 1. 💻 Local Development
 
 Follow these exact steps to get the app running on your laptop:
 
@@ -65,8 +66,6 @@ Follow these exact steps to get the app running on your laptop:
 git clone https://github.com/your-username/deployment-readiness-auditor.git
 cd deployment-readiness-auditor
 ```
-> [!IMPORTANT]
-> *Note: In a production environment, you should use **environment variables**. For local testing, this is the fastest way.*
 
 > [!IMPORTANT]
 > *Note: In a production environment, you should use **environment variables**. For local testing, this is the fastest way.*
@@ -132,7 +131,7 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
 4.  **Remediate**: Expand findings to see the **Terraform Change** and copy the fix directly into your source code.
 5.  **Report**: Click **Export Professional Audit** to generate a PDF for your compliance record.
 
-## 📸 Gallery
+### 📸 Gallery
 <p align="center">
   <img src="https://storage.googleapis.com/gh-repo-media-files/images/splash-page.png" width="400" />
   <img src="https://storage.googleapis.com/gh-repo-media-files/images/scan-infra.png" width="400" />
@@ -145,7 +144,7 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
   <img src="https://storage.googleapis.com/gh-repo-media-files/images/model-info.png" width="400" />
 </p>
 
-## 📄 Project Report
+### 📄 Project Report
 Report example and analysis can be found here:
 [**Download / View Project Report (PDF)**](https://storage.googleapis.com/gh-repo-media-files/examples/reports/DRA_Enterprise_Audit_1766410688554.pdf)
 
@@ -180,9 +179,13 @@ This project requires access to cloud services (e.g., Azure AI Studio, Google Cl
 
 </details>
 
+
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE.md` for more information.
+
+> [!INFO]
+> *This tool provides AI-generated architectural advice. **Always perform a manual > review** of infrastructure changes before applying them to production environments.*
 
 ---
 
