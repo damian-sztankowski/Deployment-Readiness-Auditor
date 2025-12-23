@@ -29,6 +29,7 @@ This project requires access to cloud services (e.g., Azure AI Studio, Google Cl
 
 </details>
 
+</details>
 
 ---
 
@@ -156,6 +157,7 @@ Report example and analysis can be found here:
 - **Zero-Knowledge**: No database is used. History is stored in your browser's `localStorage`.
 
 ---
+
 
 
 ## 📄 License
