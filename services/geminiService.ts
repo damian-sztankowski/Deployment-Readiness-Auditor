@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
+import { anonymizeHcl } from "./dlpService";
 
 // Standardizing on Pro for comprehensive architectural analysis
 export const GEMINI_MODEL = "gemini-3-pro-preview";
@@ -80,7 +81,11 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const numberedCode = addLineNumbers(inputCode);
+    // DLP PRE-PROCESSING: Anonymize identifiers before analysis
+    const anonymizedCode = anonymizeHcl(inputCode);
+    
+    // Add line numbers to sanitized code for better AI reasoning and reporting
+    const numberedCode = addLineNumbers(anonymizedCode);
 
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,
@@ -88,7 +93,7 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         // DETERMINISTIC SETTINGS
-        temperature: 0.1, 
+        temperature: 0, 
         seed: 42, // Ensures identical prompts yield identical outputs
         // THINKING CONFIG (Available for Gemini 3 Pro)
         thinkingConfig: { 

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { 
   Play, Upload, RefreshCw, Terminal, ChevronUp, Edit2, 
-  FileCode, FolderUp, Sparkles
+  FileCode, FolderUp, Sparkles, ShieldCheck
 } from 'lucide-react';
 
 interface InputSectionProps {
@@ -140,13 +140,19 @@ resource "google_compute_disk" "unattached_disk" {
                 <p className="text-base text-slate-500 font-mono mt-3">{inputCode.split('\n').length} lines ready for review</p>
             </div>
         </div>
-        <button 
-            onClick={onToggleMinimize}
-            className="flex items-center gap-3 text-lg font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 px-10 py-5 rounded-[1.5rem] transition-all"
-        >
-            <Edit2 className="w-5 h-5" />
-            Modify Infrastructure
-        </button>
+        <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                DLP Shield Active
+            </div>
+            <button 
+                onClick={onToggleMinimize}
+                className="flex items-center gap-3 text-lg font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 px-10 py-5 rounded-[1.5rem] transition-all"
+            >
+                <Edit2 className="w-5 h-5" />
+                Modify Infrastructure
+            </button>
+        </div>
       </div>
     );
   }
@@ -162,9 +168,15 @@ resource "google_compute_disk" "unattached_disk" {
         {/* Main Content Area */}
         <div className="relative bg-white dark:bg-[#0a0f1e] rounded-[calc(2.2rem-2.5px)] overflow-hidden transition-colors">
           <div className="px-8 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-[#111827]/40 flex justify-between items-center">
-            <div className="flex items-center gap-3 text-slate-900 dark:text-white font-black">
-              <Terminal className="w-5 h-5 text-indigo-500" strokeWidth={3} />
-              <h3 className="text-base tracking-tight font-black uppercase tracking-widest opacity-90">Deployment Specification</h3>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3 text-slate-900 dark:text-white font-black">
+                <Terminal className="w-5 h-5 text-indigo-500" strokeWidth={3} />
+                <h3 className="text-base tracking-tight font-black uppercase tracking-widest opacity-90">Deployment Specification</h3>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest animate-in fade-in slide-in-from-left-2 duration-700">
+                <ShieldCheck className="w-3 h-3" />
+                DLP Pre-Processor Active
+              </div>
             </div>
             <div className="flex items-center gap-3" id="action-buttons-group">
                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
@@ -206,6 +218,13 @@ resource "google_compute_disk" "unattached_disk" {
               spellCheck={false}
             />
             
+            <div className="absolute bottom-10 left-10 z-30">
+               <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-white/50 dark:bg-slate-950/50 backdrop-blur px-4 py-2 rounded-xl border border-slate-100 dark:border-slate-800 shadow-xl">
+                  <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                  Sensitive Identifiers are anonymized before audit for your security
+               </div>
+            </div>
+
             <div className="absolute bottom-10 right-10 z-30 flex flex-col items-end gap-5">
               {!inputCode.trim() && !isAnalyzing && (
                 <button 
