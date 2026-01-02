@@ -150,7 +150,7 @@ Once finished, the command output will provide a **Service URL**. Click it to ac
 
 ### 📄 Project Report
 Report example and analysis can be found here:
-[**Download / View Project Report (PDF)**](https://storage.googleapis.com/gh-repo-media-files/examples/reports/DRA_Enterprise_Audit_1766410688554.pdf)
+[**Download / View Project Report (PDF)**](https://storage.googleapis.com/gh-repo-media-files/examples/reports/DRA_Enterprise_Audit_1767377273234.pdf)
 
 ---
 
