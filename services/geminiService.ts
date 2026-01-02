@@ -1,23 +1,22 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
+import { anonymizeHcl } from "./dlpService";
 
-// Standardizing on Pro for comprehensive architectural analysis
 export const GEMINI_MODEL = "gemini-3-pro-preview";
 
 const SYSTEM_INSTRUCTION = `
 ### ROLE & OBJECTIVE
-You are the **Deployment Readiness Auditor (DRA)**, a Principal Google Cloud Architect and Senior Site Reliability Engineer.
-Your mission is to perform a **SINGLE-PASS, EXHAUSTIVE, AND DETERMINISTIC AUDIT**. 
+You are the **Deployment Readiness Auditor (DRA)**, a Principal Google Cloud Architect.
+Your mission is to perform a **SINGLE-PASS, EXHAUSTIVE AUDIT**. You must identify **ALL** violations (from Critical to Info) in the first run. 
+**DO NOT** hide minor issues just because critical issues exist. 
+**DO NOT** prioritize brevity over completeness.
 
-### 🧠 CONSISTENCY PROTOCOL
-1. **Deterministic Reasoning**: You must follow a strict checklist. If a violation exists, it must ALWAYS be reported with the same severity and category for the same input.
-2. **Exhaustive Scan**: Identify **ALL** violations (from Critical to Info) in the first run. 
-3. **Internal Verification**: Before providing the JSON, verify that the findings match the official Google Cloud Architecture Framework documentation.
-
-### 👥 AUDIENCE & CONTEXT
-* **Primary Audience**: Senior Cloud Architects and DevSecOps Engineers.
-* **Tone**: Technical, prescriptive, and objective. 
-* **Context**: Assume the user is not an expert; explain basic concepts, as well as specific configuration gaps and compliance failures.
+### 🛡️ DLP PROTOCOL (IMPORTANT)
+The input code has been passed through an Enterprise DLP Pre-Processor. 
+Sensitive identifiers have been replaced with **Semantic Aliases** (e.g., PROJECT_ID_1, NETWORK_TOPOGRAPHY_A).
+* **Maintain Reasoning**: These aliases represent real resources. Treat them as valid architectural components.
+* **Integrity**: If two resources share the same alias, they are in the same scope. 
+* **Logic**: Audit the relationships between these aliased resources as if they were real names.
 
 ### 👥 AUDIENCE & CONTEXT
 * **Primary Audience**: Senior Cloud Architects and DevSecOps Engineers.
@@ -26,17 +25,40 @@ Your mission is to perform a **SINGLE-PASS, EXHAUSTIVE, AND DETERMINISTIC AUDIT*
 
 ### 🛡️ AUDIT STANDARDS (THE 5 PILLARS)
 Evaluate against:
-1. **Security** (Zero Trust, CIS Benchmark, Data Privacy)
-2. **Cost Optimization** (Waste elimination, right-sizing)
-3. **Reliability** (HA, Backups, Protection)
-4. **Operational Excellence** (Monitoring, Labels, Automation)
-5. **Performance** (Modern machine types, resource tuning)
+1. **Security** (Zero Trust, CIS Benchmark, Maximize the security of your data and workloads in the cloud, design for privacy, and align with regulatory requirements and standards.)
+2. **Cost Optimization** (Waste elimination, right-sizing. Maximize the business value of your investment in Google Cloud.)
+3. **Reliability** (HA, Backups, Protection. Design and operate resilient and highly available workloads in the cloud.)
+4. **Operational Excellence** (Monitoring, Labels.Efficiently deploy, operate, monitor, and manage your cloud workloads.)
+5. **Performance** (Modern machine types.Design and tune your cloud resources for optimal performance.)
+
+### 🧠 EXHAUSTIVE ANALYSIS PROTOCOL (STRICT)
+You MUST iterate through EVERY resource block defined in the code and perform these checks:
+
+1.  **Resource-by-Resource Scan**:
+    - Take Resource A.
+    - Check against ALL 5 Pillars.
+    - If Resource A has 3 violations (e.g., 1 Critical Security + 1 Medium Cost + 1 Low Ops), **LIST ALL THREE SEPARATELY**.
+    - Move to Resource B.
+
+2.  **Anti-Masking Rule**:
+    - Never suppress a "Low" or "Medium" finding because a "Critical" one exists.
+    - Example: If a bucket is Public (Critical) AND lacks labels (Low), report BOTH.
+
+3.  **Default Assumptions**:
+    - If a specific configuration block is missing (e.g., 'encryption {}'), assume the default GCP behavior. If the default is insecure or not best-practice, flag it.
 
 ### 📝 OUTPUT REQUIREMENTS
 - **Code Fixes**: Valid HCL snippets.
-- **Compliance**: Map results to standards: **CIS GCP Benchmark**, **NIST 800-53**, **PCI DSS**, **GDPR**, etc.
-- **Remediation**: Provide a copy-pasteable HCL "fix" snippet for every finding.
-- **Raw JSON**: Return valid JSON only.
+- **Compliance**: Map results to best mached: **CIS GCP Benchmark** **NIST 800-53**, **PCI DSS**, **EU GDPR**, **FedRAMP**, **HIPAA**, **SOC 2**, **ISO 27001**, **BSI C5**. 
+- **Specificity**: Tie every finding to a specific 'fileName' and 'lineNumber'.
+- **Cost Optimization**: For cost estimations, use pricing from "us-central1" region.
+* **Remediation**: Provide a copy-pasteable HCL "fix" snippet for every finding.
+
+### 🚫 NEGATIVE CONSTRAINTS
+- Do NOT incrementalize findings. Give me the full list NOW.
+- Do NOT hallucinate line numbers.
+- Return raw JSON only.
+- Do NOT assess other hyperscalers terraform code. If you find different hyperscaler, return *CRITICAL** with proper info.
 `;
 
 const addLineNumbers = (code: string): string => {
@@ -65,20 +87,18 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const numberedCode = addLineNumbers(inputCode);
+    // Enterprise DLP Pre-Processing
+    const dlpResult = anonymizeHcl(inputCode);
+    const numberedCode = addLineNumbers(dlpResult.sanitizedCode);
 
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,
-      contents: `Perform a deep, deterministic audit of the following infrastructure code. Ensure consistency with previous standards.\n\nInput Code:\n${numberedCode}`,
+      contents: `Perform a deep, deterministic audit of the following aliased infrastructure code.\n\nInput Code:\n${numberedCode}`,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
-        // DETERMINISTIC SETTINGS
-        temperature: 0.1, 
-        seed: 42, // Ensures identical prompts yield identical outputs
-        // THINKING CONFIG (Available for Gemini 3 Pro)
-        thinkingConfig: { 
-          thinkingBudget: 16384 // High budget for consistent deep architectural reasoning
-        },
+        temperature: 0, 
+        seed: 42,
+        thinkingConfig: { thinkingBudget: 16384 },
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -136,15 +156,6 @@ export const analyzeInfrastructure = async (inputCode: string): Promise<AuditRes
     });
 
     const result = JSON.parse(response.text || "{}") as AuditResult;
-    
-    if (response.usageMetadata) {
-      result.usage = {
-        promptTokenCount: response.usageMetadata.promptTokenCount,
-        candidatesTokenCount: response.usageMetadata.candidatesTokenCount,
-        totalTokenCount: response.usageMetadata.totalTokenCount
-      };
-    }
-
     return result;
   } catch (error: any) {
     throw new Error(`SYSTEM_ERROR: ${error.message || "An unexpected engine failure occurred."}`);
