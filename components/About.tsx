@@ -350,7 +350,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
              />
              <FAQItem
                 question="Does it support high-level designs or only Terraform/HCL?"
-                answer="While DRA is optimized for HCL (Terraform), its semantic engine is flexible. You can paste JSON export from GCP asset inventory, YAML configuration files, or even high-level technical descriptions of a planned architecture. The AI will attempt to infer the resource relationships and apply the Well-Architected Framework regardless of the input format."
+                answer="DRA is built EXCLUSIVELY for pure Terraform (HCL) code. To maintain the highest audit fidelity and deterministic mapping to regulatory standards, we do not support technical descriptions, JSON exports, or other non-HCL formats. Please ensure you paste pure HCL code for analysis."
              />
              <FAQItem
                 question="Which regulatory standards are covered in the mapping?"
@@ -365,11 +365,12 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         <div className="bg-slate-50 dark:bg-slate-950/40 rounded-[2.5rem] border border-slate-200/60 dark:border-slate-800/60 p-10 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-6">
                 <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm">
-                    <MessageSquare className="w-8 h-8 text-indigo-500" />
+                    <span className="text-slate-400 font-black uppercase tracking-widest text-[10px] absolute -top-2 left-4 bg-white px-2"></span>
+                    <ShieldAlert className="w-8 h-8 text-indigo-500" />
                 </div>
                 <div>
-                    <h4 className="text-xl font-bold text-slate-900 dark:text-white">Have more technical questions?</h4>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">Our community-driven support is available via GitHub and LinkedIn.</p>
+                    <h4 className="text-xl font-bold text-slate-900 dark:text-white">Pure HCL Auditing Platform</h4>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Focused exclusively on Google Cloud Terraform for maximum precision.</p>
                 </div>
             </div>
             <div className="flex gap-4">
