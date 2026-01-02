@@ -76,7 +76,8 @@ resource "google_compute_firewall" "allow_all" {
 
   # Auditor Logic Test: 0.0.0.0/0 should NOT be redacted 
   # so the DRA can still flag the security risk.
-  source_ranges = ["0.0.0.0/0"] 
+  source_ranges = ["0.0.0.0/0"]
+}
 }`;
     setInputCode(example);
     if (minimized && onToggleMinimize) onToggleMinimize();
@@ -165,26 +166,20 @@ resource "google_compute_firewall" "allow_all" {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3 text-slate-900 dark:text-white font-black">
                 <Terminal className="w-5 h-5 text-indigo-500" strokeWidth={3} />
-                <h3 className="text-base tracking-tight font-black uppercase tracking-widest opacity-90">Deployment Specification</h3>
+                <h3 className="text-base tracking-tight font-black uppercase tracking-widest opacity-90">Terraform (HCL) Specification</h3>
               </div>
               <div className="hidden sm:flex items-center gap-3">
                 <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest">
                   <ShieldCheck className="w-3 h-3" />
-                  Sovereign DLP Shield Active
+                  Enterprise DLP Active
                 </div>
-                {dlpStats && dlpStats.redactionCount > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest animate-in fade-in slide-in-from-left-2">
-                    <Fingerprint className="w-3 h-3" />
-                    {dlpStats.redactionCount} Semantic Aliases Created
-                  </div>
-                )}
               </div>
             </div>
             <div className="flex items-center gap-3">
                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
                     <Upload className="w-3.5 h-3.5" />
-                    Upload File
-                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".tf,.json,.yaml,.yml" />
+                    Upload .tf
+                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".tf" />
                 </label>
 
                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
@@ -208,22 +203,12 @@ resource "google_compute_firewall" "allow_all" {
               id="code-editor-area"
               value={inputCode}
               onChange={(e) => setInputCode(e.target.value)}
-              placeholder={isReadingFiles ? "Reading files..." : "Paste HCL here..."}
+              placeholder={isReadingFiles ? "Reading files..." : "Paste pure Terraform (HCL) code here..."}
               className="w-full h-[540px] p-10 font-mono text-base text-slate-900 dark:text-slate-100 bg-transparent outline-none resize-none leading-relaxed placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-colors"
               spellCheck={false}
             />
 
             <div className="absolute bottom-10 right-10 z-30 flex flex-col items-end gap-5">
-              {!inputCode.trim() && !isAnalyzing && (
-                <button 
-                  onClick={onRunDemo}
-                  className="group flex items-center gap-3 px-8 py-4 bg-white/5 dark:bg-white/[0.03] backdrop-blur-3xl border border-indigo-500/20 hover:border-indigo-500 rounded-2xl text-sm font-black text-indigo-500 dark:text-indigo-400 shadow-2xl transition-all animate-in slide-in-from-bottom-4 duration-700"
-                >
-                  <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                  Interactive Showcase
-                </button>
-              )}
-
               <button
                 onClick={handleAnalyze}
                 disabled={isAnalyzing || !inputCode.trim() || isReadingFiles}
@@ -233,7 +218,7 @@ resource "google_compute_firewall" "allow_all" {
                     : 'bg-indigo-600 hover:bg-indigo-500 text-white hover:scale-105 active:scale-95 shadow-indigo-500/30 border border-indigo-400/20'}`}
               >
                 {isAnalyzing ? <RefreshCw className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6 fill-current" />}
-                {isAnalyzing ? "Auditing Intelligence..." : "Run Global Audit"}
+                {isAnalyzing ? "Auditing Intelligence..." : "Run Audit"}
               </button>
             </div>
           </div>

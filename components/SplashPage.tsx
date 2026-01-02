@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ShieldCheck, ArrowRight, Lock, Activity, X, Brain, Wand2, ChevronRight, CheckCircle2, Sparkles, HelpCircle } from 'lucide-react';
 import { Logo } from './Logo';
@@ -14,9 +13,9 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
 
   const showcaseSteps = [
     {
-      title: "Semantic Analysis",
+      title: "Pure HCL Analysis",
       subtitle: "Beyond Basic Linting",
-      description: "DRA doesn't just check for syntax. It uses Gemini's multi-modal intelligence to understand architectural intent, identifying risks that static analyzers miss.",
+      description: "DRA focuses exclusively on pure Terraform (HCL) to maintain deterministic mapping between your resources and the Google Cloud Well-Architected Framework.",
       icon: Brain,
       color: "text-purple-400",
       bg: "bg-purple-500/10",
@@ -93,7 +92,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
             <div className="space-y-6 animate-enter">
                 <div className="inline-block relative">
                     <span className="relative inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/50 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl backdrop-blur-md">
-                        Enterprise Audit Intelligence
+                        Pure Terraform Auditor
                     </span>
                 </div>
 
@@ -107,9 +106,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                 </div>
                 
                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
-                    Analyze architectural integrity against the 
-                    <span className="text-indigo-600 dark:text-indigo-400 font-bold mx-2">Google Cloud Framework</span> 
-                    using advanced AI semantics.
+                    Analyze your Google Cloud <span className="text-indigo-600 dark:text-indigo-400 font-bold mx-1">Terraform (HCL)</span> architecture against against the <span className="text-indigo-600 dark:text-indigo-400 font-bold mx-1">Google Cloud Framework</span> using specialized AI semantics.
                 </p>
             </div>
 
@@ -152,8 +149,8 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
             {/* Feature Pills */}
             <div className="flex flex-wrap items-center justify-center gap-4 pt-16 animate-enter" style={{ animationDelay: '0.4s' }}>
                 {[
-                    { icon: ShieldCheck, text: "WAF PILLARS", color: "text-indigo-600 dark:text-indigo-400" },
-                    { icon: Lock, text: "COMPLIANCE", color: "text-emerald-600 dark:text-emerald-400" },
+                    { icon: ShieldCheck, text: "PURE HCL SUPPORT", color: "text-indigo-600 dark:text-indigo-400" },
+                    { icon: Lock, text: "GCP COMPLIANCE", color: "text-emerald-600 dark:text-emerald-400" },
                     { icon: Activity, text: "FINOPS AUDIT", color: "text-amber-600 dark:text-amber-400" }
                 ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-3 px-8 py-3 rounded-xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/50 text-[9px] font-black text-slate-500 uppercase tracking-widest cursor-default hover:bg-white/80 dark:hover:bg-slate-800/80 transition-colors shadow-2xl backdrop-blur-sm">
