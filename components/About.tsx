@@ -4,7 +4,8 @@ import {
   TrendingDown, ChevronDown, HelpCircle, Brain, FolderSearch, 
   Code2, Gauge, ShieldCheck, Globe, FileCheck, Lock, Scale, 
   BarChart3, Activity, Cpu, Layers, BookOpen, Landmark,
-  CheckCircle, MessageSquare, EyeOff, ServerOff, Key, Target
+  CheckCircle, MessageSquare, EyeOff, ServerOff, Key, Target,
+  Fingerprint, Database, Binary, ShieldAlert, Tag
 } from 'lucide-react';
 
 interface AboutProps {
@@ -102,10 +103,83 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         </div>
       </section>
 
+      {/* DLP PRE-PROCESSOR FEATURE SECTION */}
+      <section className="relative py-12">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[150%] bg-indigo-500/5 dark:bg-indigo-500/10 skew-y-6 blur-3xl pointer-events-none -z-10"></div>
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1 space-y-8 order-2 lg:order-1">
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] shadow-sm">
+                    <ShieldAlert className="w-4 h-4" />
+                    Context-Aware Semantic Anonymization
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight">
+                    Stateful DLP <br/>
+                    <span className="text-emerald-600 dark:text-emerald-400">Pre-Processor.</span>
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed font-medium">
+                    DRA includes a real-time <strong>Semantic DLP Engine</strong> that deterministicly masks sensitive data while preserving the architectural logic required for a high-fidelity audit.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                        { icon: Fingerprint, title: "Stateful Aliasing", desc: "Unique IDs map to consistent aliases (PROJECT_A), allowing AI to reason about resource relationships." },
+                        { icon: Binary, title: "Secret Scrubbing", desc: "API keys, private keys, and high-entropy tokens are fully redacted before transmission." },
+                        { icon: Globe, title: "Network Topology", desc: "VPC/Subnet names and IPs are hashed to semantic placeholders to protect routing logic." },
+                        { icon: Tag, title: "Tier Redaction", desc: "Critical indicators like 'Prod', 'Master', or 'Primary' are scrubbed from names and labels." }
+                    ].map((item, i) => (
+                        <div key={i} className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2 shadow-sm">
+                            <item.icon className="w-5 h-5 text-emerald-500" />
+                            <h4 className="text-sm font-black uppercase tracking-tight">{item.title}</h4>
+                            <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="flex-1 order-1 lg:order-2">
+                <div className="relative p-1 bg-gradient-to-br from-emerald-500/40 to-indigo-500/40 rounded-[3rem] shadow-2xl">
+                    <div className="bg-white dark:bg-slate-950 rounded-[calc(3rem-4px)] p-10 overflow-hidden relative">
+                         <div className="absolute top-0 right-0 p-8 opacity-10">
+                            <Binary className="w-40 h-40" />
+                         </div>
+                         <div className="space-y-6 relative z-10">
+                             <div className="space-y-2">
+                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                     <span>Source Infrastructure</span>
+                                     <span className="text-red-500">Sensitive</span>
+                                 </div>
+                                 <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl font-mono text-[11px] text-slate-500 border border-slate-100 dark:border-slate-800 line-through decoration-red-500/50">
+                                     project = "bank-prod-secure-123"<br/>
+                                     name    = "master-db-primary"<br/>
+                                     range   = "10.0.1.0/24"
+                                 </div>
+                             </div>
+                             <div className="flex justify-center">
+                                 <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center animate-bounce">
+                                     <ArrowRight className="w-5 h-5 rotate-90" />
+                                 </div>
+                             </div>
+                             <div className="space-y-2">
+                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-emerald-500">
+                                     <span>Semantic Specification</span>
+                                     <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Protected</span>
+                                 </div>
+                                 <div className="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl font-mono text-[11px] text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-inner">
+                                     project = "PROJECT_ID_1"<br/>
+                                     name    = "RESOURCE_NAME_A"<br/>
+                                     range   = "IP_RANGE_1"
+                                 </div>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </section>
+
       {/* SOVEREIGNTY & PRIVACY CENTER */}
       <section className="space-y-12">
         <div className="max-w-3xl mx-auto text-center space-y-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600 dark:text-emerald-400">Security Sovereignty</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">Security Sovereignty</h3>
             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">Your Architecture, Your Sovereignty</h2>
             <p className="text-slate-600 dark:text-slate-400">DRA is built on the principle of sovereign intelligence. Here is how we protect your proprietary infrastructure.</p>
         </div>
@@ -117,7 +191,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 </div>
                 <h4 className="text-xl font-black">Zero Code Retention</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    DRA processes infrastructure code ephemerally. Your snippets are sent via encrypted TLS to the Gemini API and purged immediately after analysis. We maintain no backend database for your code.
+                    DRA processes infrastructure code ephemerally. Your snippets are scrubbed by the DLP engine, sent via encrypted TLS to the Gemini API, and purged immediately after analysis. We maintain no backend database for your code.
                 </p>
             </div>
             <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-amber-500 transition-colors shadow-sm">
@@ -160,7 +234,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
       </section>
 
       {/* Layer 2: Regulatory & Industry Standards */}
-      <section className="space-y-12 py-12 border-y border-slate-100 dark:border-slate-900">
+      <section className="space-y-12 py-12 border-y border-slate-100 dark:border-slate-800">
         <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="flex-1 space-y-6">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600 dark:text-emerald-400">Compliance Layer</h3>
@@ -228,10 +302,10 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                  <h4 className="text-xl font-bold mb-4">How We Audit</h4>
                  <div className="space-y-4 relative z-10">
                     {[
-                        { step: '01', title: 'HCL Parsing', desc: 'We extract resource relationships and configuration attributes.' },
-                        { step: '02', title: 'Framework Alignment', desc: 'Analysis against the 5 pillars of the Google Cloud Well-Architected docs.' },
-                        { step: '03', title: 'Compliance Overlay', desc: 'Risks are mapped to CIS, NIST, and other regulatory frameworks.' },
-                        { step: '04', title: 'Remediation Generation', desc: 'Precise Terraform fixes are provided for every high-risk finding.' }
+                        { step: '01', title: 'Stateful Anonymization', desc: 'Locally scrub Project IDs and Tier indicators while preserving logic topology.' },
+                        { step: '02', title: 'Relationship Analysis', desc: 'AI models evaluate resource interaction patterns and architectural intent.' },
+                        { step: '03', title: 'Standard Validation', desc: 'Risks are mapped to CIS, NIST, and Well-Architected Framework controls.' },
+                        { step: '04', title: 'Deterministic Fixes', desc: 'Precise Terraform remediations are generated for all identified gaps.' }
                     ].map((step, i) => (
                         <div key={i} className="flex gap-4">
                             <span className="text-xs font-black text-indigo-500">{step.step}</span>
@@ -263,20 +337,20 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 answer="Traditional static analysis tools rely on hardcoded regex or YAML-based policies that check for specific key-value pairs. DRA utilizes LLM-based semantic analysis via the selected Gemini model. This allows the auditor to understand the 'intent' and 'context' of your architecture. For example, DRA can identify that a specific load balancer configuration is under-provisioned for a production workload, or that an IAM role is too broad for the specific service accounts it interacts with, even if the HCL syntax itself is valid."
              />
              <FAQItem
+                question="How does the stateful DLP Pre-Processor protect my data?"
+                answer="Before your code leaves the browser, DRA passed it through a two-pass semantic redaction engine. First, it identifies sensitive strings (Project IDs, IP ranges, Tier names). Second, it maps these to consistent, non-sensitive aliases (e.g., PROJECT_ID_1). This ensures the AI model can still 'understand' that two resources are in the same project without knowing what that project is called, maintaining the fidelity of the architectural audit while guaranteeing privacy."
+             />
+             <FAQItem
                 question="How accurate are the FinOps cost savings estimates?"
                 answer="The cost savings provided are heuristic estimates based on current Google Cloud pricing benchmarks known to the underlying Gemini model. While they are highly accurate for identifying 'waste' (like unattached PD-SSD disks or over-provisioned machine types), they should be treated as quantifiable targets rather than absolute billing projections. We recommend validating these findings with the official Google Cloud Pricing Calculator."
              />
              <FAQItem
                 question="Is my code used to train models?"
-                answer="Google Cloud Vertex/GenAI standard terms for enterprise access usually specify that data is NOT used for model training. DRA is designed for zero-retention ephemeral processing. No code is stored on our servers."
+                answer="Google Cloud Vertex/GenAI standard terms for enterprise access usually specify that data is NOT used for model training. DRA is designed for zero-retention ephemeral processing. No code is stored on our servers, and the pre-processor scrubbs identifying information before transmission."
              />
              <FAQItem
                 question="Does it support high-level designs or only Terraform/HCL?"
                 answer="While DRA is optimized for HCL (Terraform), its semantic engine is flexible. You can paste JSON export from GCP asset inventory, YAML configuration files, or even high-level technical descriptions of a planned architecture. The AI will attempt to infer the resource relationships and apply the Well-Architected Framework regardless of the input format."
-             />
-             <FAQItem
-                question="Can I audit multi-file projects or entire folders?"
-                answer="Yes. The 'Upload Project' feature allows you to select a directory. DRA will parse and concatenate valid infrastructure files (.tf, .tfvars, .json) into a single context-aware specification for the auditor. This is critical for detecting cross-file dependencies and remote state risks."
              />
              <FAQItem
                 question="Which regulatory standards are covered in the mapping?"

@@ -1,46 +1,46 @@
 import React from 'react';
-import { Shield, Sparkles, Zap, Brain, FileText, Code, Database, Compass, CheckCircle } from 'lucide-react';
+import { Shield, Sparkles, Zap, Brain, FileText, Code, Database, Compass, CheckCircle, ShieldAlert, Fingerprint, Lock } from 'lucide-react';
 
 export const Features: React.FC = () => {
   const featureList = [
     {
-      title: "Dynamic Gemini Intelligence",
-      description: "Leverages cutting-edge multimodal models to understand architectural intent beyond simple syntax checks.",
-      icon: Brain,
-      color: "text-purple-500",
-      bg: "bg-purple-50 dark:bg-purple-900/20"
-    },
-    {
-      title: "Full Pillar Audit",
-      description: "Evaluates infrastructure against all 5 pillars of the Google Cloud Well-Architected Framework.",
-      icon: Database,
-      color: "text-blue-500",
-      bg: "bg-blue-50 dark:bg-blue-900/20"
-    },
-    {
-      title: "Compliance Mapping",
-      description: "Automatic cross-referencing with CIS Benchmarks, NIST 800-53, GDPR, and HIPAA requirements.",
-      icon: Compass,
+      title: "Stateful Semantic DLP",
+      description: "Strategically anonymizes Project IDs, IP ranges, and Tier indicators ('Prod', 'Main') using deterministic aliases that preserve architectural relationships.",
+      icon: ShieldAlert,
       color: "text-emerald-500",
       bg: "bg-emerald-50 dark:bg-emerald-900/20"
     },
     {
-      title: "FinOps Optimization",
-      description: "Identifies waste and provides quantifiable monthly savings estimates for cloud resources.",
+      title: "Topology Preservation",
+      description: "Hash networking components like VPCs and Subnets into placeholders. AI audits routing logic without seeing internal naming conventions.",
+      icon: Fingerprint,
+      color: "text-indigo-500",
+      bg: "bg-indigo-50 dark:bg-indigo-900/20"
+    },
+    {
+      title: "Compliance Mapping",
+      description: "Automatic cross-referencing with CIS Benchmarks, NIST 800-53, PCI DSS, GDPR, and HIPAA requirements in a single audit pass.",
+      icon: Compass,
+      color: "text-blue-500",
+      bg: "bg-blue-50 dark:bg-blue-900/20"
+    },
+    {
+      title: "FinOps Intelligence",
+      description: "Identifies resource waste and provides quantifiable monthly savings estimates for right-sizing GCP compute and storage.",
       icon: Zap,
       color: "text-amber-500",
       bg: "bg-amber-50 dark:bg-amber-900/20"
     },
     {
-      title: "Terraform Remediations",
-      description: "Generates production-ready HCL code snippets to instantly fix identified vulnerabilities.",
+      title: "Deterministic Remediation",
+      description: "Generates production-ready HCL code snippets to instantly fix identified vulnerabilities using your specific (aliased) HCL structure.",
       icon: Code,
       color: "text-indigo-500",
       bg: "bg-indigo-50 dark:bg-indigo-900/20"
     },
     {
-      title: "Enterprise Reporting",
-      description: "Exports professional PDF audit briefs with executive summaries and detailed findings for stakeholders.",
+      title: "Enterprise Briefing",
+      description: "Exports high-fidelity PDF audit reports with executive summaries, pillar scores, and deep technical observation logs.",
       icon: FileText,
       color: "text-pink-500",
       bg: "bg-pink-50 dark:bg-pink-900/20"
@@ -51,9 +51,9 @@ export const Features: React.FC = () => {
     <div className="animate-enter space-y-16 py-8">
       <div className="text-center max-w-3xl mx-auto space-y-6">
         <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">Capabilities</h3>
-        <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">Advanced Infrastructure Auditing</h2>
+        <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">Enterprise Infrastructure Auditing</h2>
         <p className="text-slate-500 dark:text-slate-400 text-lg">
-          The Deployment Readiness Auditor combines semantic AI analysis with official cloud architecture standards.
+          The Deployment Readiness Auditor combines stateful semantic analysis with official cloud architecture standards and sovereign data protection.
         </p>
       </div>
 
@@ -75,15 +75,15 @@ export const Features: React.FC = () => {
           <div className="flex-1 space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest">
               <Sparkles className="w-4 h-4" />
-              Next-Gen Auditing
+              Sovereign Pipeline
             </div>
             <h3 className="text-3xl md:text-4xl font-bold tracking-tight">How it Works: The Audit Pipeline</h3>
             <div className="space-y-6">
               {[
-                { step: "01", title: "Resource Ingestion", desc: "Upload HCL files or paste code. We parse resources and dependencies." },
-                { step: "02", title: "LLM Contextualization", desc: "Gemini analyzes the workload type and environment (Production vs Development)." },
-                { step: "03", title: "Framework Scanning", desc: "Architecture is checked against five Well-Architected pillars." },
-                { step: "04", title: "Compliance Mapping", desc: "Identified risks are mapped to regulatory controls like NIST or GDPR." }
+                { step: "01", title: "Stateful Anonymization", desc: "Local pre-processor identifies sensitive IDs and environment indicators, replacing them with consistent semantic aliases." },
+                { step: "02", title: "Relationship Logic Evaluation", desc: "Gemini models evaluate resource topology and interaction intent without seeing proprietary naming." },
+                { step: "03", title: "Multi-Pillar Framework Scan", desc: "Architecture is checked against five Well-Architected pillars: Security, Cost, Reliability, Ops, and Performance." },
+                { step: "04", title: "Regulatory Standard Mapping", desc: "All identified gaps are automatically mapped to specific controls in CIS, NIST, HIPAA, and other frameworks." }
               ].map((s, i) => (
                 <div key={i} className="flex gap-6 items-start group">
                   <span className="text-lg font-black text-indigo-500 opacity-50 group-hover:opacity-100 transition-opacity">{s.step}</span>
