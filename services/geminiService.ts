@@ -2,7 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { AuditResult } from "../types";
 import { anonymizeHcl } from "./dlpService";
 
-export const GEMINI_MODEL = "gemini-3-pro-preview";
+export const GEMINI_MODEL = "gemini-3.5-flash";
 
 const SYSTEM_INSTRUCTION = `
 ### ROLE & OBJECTIVE
@@ -73,6 +73,53 @@ const addLineNumbers = (code: string): string => {
   }).join('\n');
 };
 
+const extractJson = (text: string): string => {
+  const firstOpen = text.indexOf('{');
+  const lastClose = text.lastIndexOf('}');
+  if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
+    return text.substring(firstOpen, lastClose + 1);
+  }
+  return text.trim();
+};
+
+const sanitizeAuditResult = (data: any): AuditResult => {
+  const result: AuditResult = {
+    summary: typeof data?.summary === 'string' ? data.summary : 'No summary provided by the audit engine.',
+    categories: Array.isArray(data?.categories) ? data.categories : [],
+    findings: Array.isArray(data?.findings) ? data.findings : []
+  };
+
+  // Ensure each category has valid format
+  result.categories = result.categories.map((c: any) => ({
+    name: typeof c?.name === 'string' ? c.name : 'Unknown Pillar',
+    score: typeof c?.score === 'number' ? c.score : 100,
+    status: c?.status === 'Safe' || c?.status === 'Warning' || c?.status === 'Critical' ? c.status : 'Safe',
+    explanation: typeof c?.explanation === 'string' ? c.explanation : ''
+  }));
+
+  // Ensure each finding has valid format
+  result.findings = result.findings.map((f: any) => ({
+    id: typeof f?.id === 'string' ? f.id : Math.random().toString(36).substring(2, 9),
+    severity: f?.severity === 'Critical' || f?.severity === 'High' || f?.severity === 'Medium' || f?.severity === 'Low' || f?.severity === 'Info' ? f.severity : 'Info',
+    category: typeof f?.category === 'string' ? f.category : 'General',
+    title: typeof f?.title === 'string' ? f.title : 'Architectural Issue',
+    description: typeof f?.description === 'string' ? f.description : '',
+    remediation: typeof f?.remediation === 'string' ? f.remediation : 'Review configuration.',
+    fix: typeof f?.fix === 'string' ? f.fix : '',
+    fileName: typeof f?.fileName === 'string' ? f.fileName : 'main.tf',
+    lineNumber: typeof f?.lineNumber === 'number' ? f.lineNumber : 1,
+    costSavings: typeof f?.costSavings === 'string' ? f.costSavings : '',
+    compliance: Array.isArray(f?.compliance) ? f.compliance.map((comp: any) => ({
+      standard: typeof comp?.standard === 'string' ? comp.standard : 'CIS GCP Benchmark',
+      controlId: typeof comp?.controlId === 'string' ? comp.controlId : '',
+      description: typeof comp?.description === 'string' ? comp.description : '',
+      impact: typeof comp?.impact === 'string' ? comp.impact : ''
+    })) : []
+  }));
+
+  return result;
+};
+
 export const analyzeInfrastructure = async (
   inputCode: string,
   options?: { provider?: string; modelUrl?: string; modelName?: string }
@@ -108,10 +155,10 @@ export const analyzeInfrastructure = async (
       }
       const data = await response.json();
       let responseText = typeof data.response === 'string' ? data.response : JSON.stringify(data);
-      // Clean up markdown code blocks if the model wrapped the JSON
-      responseText = responseText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
-      return JSON.parse(responseText);
-      
+      console.log("[OLLAMA RAW RESPONSE]", responseText);
+      const cleaned = extractJson(responseText);
+      return sanitizeAuditResult(JSON.parse(cleaned));
+
     } else if (provider === 'openai' || provider === 'lm-studio') {
       const response = await fetch(modelUrl, {
         method: 'POST',
@@ -132,8 +179,9 @@ export const analyzeInfrastructure = async (
       }
       const data = await response.json();
       let responseText = data.choices?.[0]?.message?.content || "";
-      responseText = responseText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
-      return JSON.parse(responseText);
+      console.log("[LM STUDIO RAW RESPONSE]", responseText);
+      const cleaned = extractJson(responseText);
+      return sanitizeAuditResult(JSON.parse(cleaned));
 
     } else {
       // Domyślnie Gemini API
@@ -148,15 +196,65 @@ export const analyzeInfrastructure = async (
         contents: `Perform a deep, deterministic audit of the following aliased infrastructure code.\n\nInput Code:\n${numberedCode}`,
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: 0, 
+          temperature: 0,
           seed: 42,
-          thinkingConfig: { thinkingBudget: 16384 },
           responseMimeType: "application/json",
-          responseSchema: { /* ... zostaw schemat bez zmian ... */ }
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              summary: { type: Type.STRING },
+              categories: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING },
+                    score: { type: Type.NUMBER },
+                    status: { type: Type.STRING, enum: ["Safe", "Warning", "Critical"] },
+                    explanation: { type: Type.STRING }
+                  },
+                  required: ["name", "score", "status", "explanation"]
+                }
+              },
+              findings: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.STRING },
+                    severity: { type: Type.STRING, enum: ["Critical", "High", "Medium", "Low", "Info"] },
+                    category: { type: Type.STRING },
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    remediation: { type: Type.STRING },
+                    fix: { type: Type.STRING },
+                    fileName: { type: Type.STRING },
+                    lineNumber: { type: Type.INTEGER },
+                    costSavings: { type: Type.STRING },
+                    compliance: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          standard: { type: Type.STRING },
+                          controlId: { type: Type.STRING },
+                          description: { type: Type.STRING },
+                          impact: { type: Type.STRING }
+                        },
+                        required: ["standard", "controlId", "description", "impact"]
+                      }
+                    }
+                  },
+                  required: ["severity", "category", "title", "description", "remediation", "id", "lineNumber", "fileName", "fix", "compliance"]
+                }
+              }
+            },
+            required: ["summary", "categories", "findings"]
+          }
         }
       });
 
-      return JSON.parse(response.text || "{}") as AuditResult;
+      return sanitizeAuditResult(JSON.parse(response.text || "{}"));
     }
   } catch (error: any) {
     throw new Error(`SYSTEM_ERROR: ${error.message || "An unexpected engine failure occurred."}`);

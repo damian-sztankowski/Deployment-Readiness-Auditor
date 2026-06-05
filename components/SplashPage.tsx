@@ -183,7 +183,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                            <h3 className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2">Core Protocol</h3>
                            <p className="text-2xl font-black text-slate-900 dark:text-white">Audit Pillars</p>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {showcaseSteps.map((step, i) => (
                                 <button
                                     key={i}
@@ -210,17 +210,17 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                     <div className="flex-1 p-12 md:p-20 flex flex-col justify-center relative overflow-hidden bg-white dark:bg-slate-900">
                         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
                         
-                        <div key={activeStep} className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-10">
+                        <div key={activeStep} className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-12">
                             <div className={`w-24 h-24 rounded-3xl ${showcaseSteps[activeStep].bg} ${showcaseSteps[activeStep].color} flex items-center justify-center border ${showcaseSteps[activeStep].accent} shadow-2xl`}>
                                 {React.createElement(showcaseSteps[activeStep].icon, { className: "w-12 h-12" })}
                             </div>
                             
-                            <div className="space-y-6">
+                            <div className="space-y-8">
                                 <div>
-                                    <h4 className={`text-xs font-black uppercase tracking-[0.3em] mb-3 ${showcaseSteps[activeStep].color}`}>
+                                    <h4 className={`text-xs font-black uppercase tracking-[0.3em] mb-4 ${showcaseSteps[activeStep].color}`}>
                                         {showcaseSteps[activeStep].subtitle}
                                     </h4>
-                                    <h3 className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                                    <h3 className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none mb-2">
                                         {showcaseSteps[activeStep].title}
                                     </h3>
                                 </div>
@@ -241,7 +241,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
                             </div>
                         </div>
 
-                        <div className="mt-20 flex items-center justify-between">
+                        <div className="mt-24 flex items-center justify-between">
                              <div className="flex gap-2">
                                 {showcaseSteps.map((_, i) => (
                                     <div 
