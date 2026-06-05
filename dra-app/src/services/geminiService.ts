@@ -120,6 +120,53 @@ const sanitizeAuditResult = (data: any): AuditResult => {
   return result;
 };
 
+const isPrivateUrl = (urlStr: string): boolean => {
+  try {
+    const url = new URL(urlStr);
+    const hostname = url.hostname.toLowerCase();
+    
+    // Always block local/GCP metadata server
+    if (
+      hostname === '169.254.169.254' ||
+      hostname === 'metadata.google.internal' ||
+      hostname === 'metadata'
+    ) {
+      return true;
+    }
+    
+    // In production or Cloud Run container environment, restrict private IP ranges and loopbacks
+    const isProduction = process.env.NODE_ENV === 'production' || !!process.env.K_SERVICE;
+    if (isProduction) {
+      if (
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '[::1]' ||
+        hostname.endsWith('.local') ||
+        hostname.endsWith('.internal')
+      ) {
+        return true;
+      }
+      
+      const parts = hostname.split('.');
+      if (parts.length === 4) {
+        const p1 = parseInt(parts[0], 10);
+        const p2 = parseInt(parts[1], 10);
+        if (
+          p1 === 10 ||
+          (p1 === 172 && p2 >= 16 && p2 <= 31) ||
+          (p1 === 192 && p2 === 168) ||
+          (p1 === 169 && p2 === 254)
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  } catch {
+    return true; // Safe fallback: treat malformed URLs as restricted
+  }
+};
+
 export const analyzeInfrastructure = async (
   inputCode: string,
   options?: { provider?: string; modelUrl?: string; modelName?: string }
@@ -131,6 +178,11 @@ export const analyzeInfrastructure = async (
   const provider = options?.provider || process.env.LLM_PROVIDER || 'gemini';
   const modelUrl = options?.modelUrl || process.env.LLM_URL || 'http://127.0.0.1:9090/api/generate';
   const modelName = options?.modelName || process.env.LLM_MODEL || 'gemma4:e2b';
+
+  // Mitigate SSRF: Validate client-provided modelUrl
+  if (options?.modelUrl && isPrivateUrl(options.modelUrl)) {
+    throw new Error("SECURITY_ERROR: Access to the specified LLM URL is restricted.");
+  }
 
   // DLP teraz dzieje się na serwerze!
   const dlpResult = anonymizeHcl(inputCode);

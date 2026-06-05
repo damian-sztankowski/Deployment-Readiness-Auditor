@@ -31,6 +31,20 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [modelUrl, setModelUrl] = useState('');
   const [showSettings, setShowSettings] = useState(false);
 
+  // Check if running on localhost/local network to toggle local LLM capabilities
+  const isLocal = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const hn = window.location.hostname;
+    return (
+      hn === 'localhost' ||
+      hn === '127.0.0.1' ||
+      hn === '[::1]' ||
+      hn.startsWith('192.168.') ||
+      hn.startsWith('10.') ||
+      hn.startsWith('172.')
+    );
+  }, []);
+
   // Real-time DLP feedback
   const dlpStats = useMemo(() => {
     if (!inputCode.trim()) return null;
@@ -225,11 +239,11 @@ resource "google_compute_firewall" "allow_all" {
               <div className="absolute bottom-32 right-10 z-40 w-96 p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 animate-enter">
                 <div className="flex items-center gap-2 text-slate-900 dark:text-white font-black text-xs uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-3">
                   <Settings className="w-4 h-4 text-indigo-500" />
-                  <span>LLM Engine Options</span>
+                  <span>Audit Engine Settings</span>
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">LLM Provider</label>
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Audit Engine Provider</label>
                   <div className="flex flex-col gap-2 p-2 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
                     <div className="flex gap-2">
                       <button
@@ -248,8 +262,16 @@ resource "google_compute_firewall" "allow_all" {
                       </button>
                       <button
                         type="button"
+                        disabled={!isLocal}
                         onClick={() => { setProvider('lm-studio'); setModelName('gemma'); setModelUrl('http://127.0.0.1:9090/v1/chat/completions'); }}
-                        className={`flex-1 py-2 rounded-lg text-[10px] font-black transition-all ${provider === 'lm-studio' ? 'bg-white dark:bg-slate-850 shadow text-indigo-700 dark:text-indigo-300' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`flex-1 py-2 rounded-lg text-[10px] font-black transition-all ${
+                          !isLocal
+                            ? 'opacity-30 cursor-not-allowed text-slate-400 dark:text-slate-650'
+                            : provider === 'lm-studio'
+                              ? 'bg-white dark:bg-slate-850 shadow text-indigo-700 dark:text-indigo-300'
+                              : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                        title={!isLocal ? "Available only during local runs" : "Use self-hosted LM Studio"}
                       >
                         LM Studio
                       </button>
@@ -291,7 +313,7 @@ resource "google_compute_firewall" "allow_all" {
                   ${showSettings 
                     ? 'bg-indigo-600 border-indigo-500 text-white shadow-indigo-500/20' 
                     : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white'}`}
-                title="LLM Settings"
+                title="Audit Engine Settings"
               >
                 <Settings className={`w-6 h-6 ${showSettings ? 'animate-spin-slow' : ''}`} />
               </button>

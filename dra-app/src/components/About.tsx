@@ -103,6 +103,50 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         </div>
       </section>
 
+      {/* HOW TO START SECTION */}
+      <section className="space-y-12 max-w-6xl mx-auto py-8">
+        <div className="text-center space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+                <Layers className="w-3.5 h-3.5" />
+                Getting Started
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">How to Start</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-base max-w-2xl mx-auto font-medium">Follow three simple steps to configure your Audit Engine settings and run infrastructure checks.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 relative shadow-sm hover:border-indigo-500 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
+                    1
+                </div>
+                <h4 className="text-lg font-black uppercase tracking-tight">Prepare Code</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+                    Paste your Terraform (HCL) code directly into the editor, or upload individual files and entire project directories using the top toolbar.
+                </p>
+            </div>
+
+            <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 relative shadow-sm hover:border-indigo-500 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
+                    2
+                </div>
+                <h4 className="text-lg font-black uppercase tracking-tight">Configure Engine</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+                    Click the <strong>Settings Gear</strong> icon next to "Run Audit" to adjust your settings. Select between the cloud-hosted <strong>Gemini</strong> API or local self-hosted models (like <strong>Ollama</strong> or <strong>LM Studio</strong>).
+                </p>
+            </div>
+
+            <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 relative shadow-sm hover:border-indigo-500 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
+                    3
+                </div>
+                <h4 className="text-lg font-black uppercase tracking-tight">Analyze & Repair</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+                    Click <strong>Run Audit</strong>. The system pre-processes your code using the DLP Engine and generates a score matrix, FinOps savings, and compliance fixes.
+                </p>
+            </div>
+        </div>
+      </section>
+
       {/* DLP PRE-PROCESSOR FEATURE SECTION */}
       <section className="relative py-12">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[150%] bg-indigo-500/5 dark:bg-indigo-500/10 skew-y-6 blur-3xl pointer-events-none -z-10"></div>
@@ -184,23 +228,32 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
             <p className="text-slate-600 dark:text-slate-400">DRA is built on the principle of sovereign intelligence. Here is how we protect your proprietary infrastructure.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-indigo-500 transition-colors shadow-sm">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-emerald-500 transition-colors shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
                     <EyeOff className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-black">Zero Code Retention</h4>
+                <h4 className="text-xl font-black">Enterprise DLP Scrubbing</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    DRA processes infrastructure code ephemerally. Your snippets are scrubbed by the DLP engine, sent via encrypted TLS to the Gemini API, and purged immediately after analysis. We maintain no backend database for your code.
+                    Automatically aliases IPs, cloud IDs, and domains. Includes <strong>Global High-Entropy Scanning</strong> to redact GCP API keys, AWS tokens, and PEM private keys, even when stored under generic variable names.
+                </p>
+            </div>
+            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-indigo-500 transition-colors shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                    <ShieldAlert className="w-7 h-7" />
+                </div>
+                <h4 className="text-xl font-black">SSRF Outbound Protection</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    In production and container environments (such as Cloud Run), the LLM routing proxy strictly validates external target URLs, blocking attempts to scan internal subnets or access the GCP Link-Local Metadata Server.
                 </p>
             </div>
             <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-amber-500 transition-colors shadow-sm">
                 <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all">
                     <ServerOff className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-black">Local-Only History</h4>
+                <h4 className="text-xl font-black">Zero Retention & Local Storage</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    Your audit reports are never saved to our servers. History is stored exclusively in your browser's <span className="text-indigo-500 font-bold">LocalStorage</span>, keeping you in full control of your audit trails.
+                    DRA contains no backend database. Payloads are processed ephemerally in container memory and immediately purged. Audit history is stored exclusively in your browser's local storage.
                 </p>
             </div>
         </div>
@@ -338,7 +391,11 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
              />
              <FAQItem
                 question="How does the stateful DLP Pre-Processor protect my data?"
-                answer="Before your code leaves the browser, DRA passed it through a two-pass semantic redaction engine. First, it identifies sensitive strings (Project IDs, IP ranges, Tier names). Second, it maps these to consistent, non-sensitive aliases (e.g., PROJECT_ID_1). This ensures the AI model can still 'understand' that two resources are in the same project without knowing what that project is called, maintaining the fidelity of the architectural audit while guaranteeing privacy."
+                answer="Before your code is analyzed by any external LLM, the backend passes it through a multi-pass semantic redaction engine. First, it identifies sensitive strings (Project IDs, IP ranges, Tier names). Second, it maps these to consistent, non-sensitive aliases (e.g. PROJECT_ID_1). Finally, it runs a global high-entropy scanner to search for and redact GCP API keys, AWS Access Key IDs, and RSA/EC private keys, even if they are assigned to standard parameters like 'value' or 'text'. This maintains logic relationships for the AI audit while strictly guaranteeing data privacy."
+             />
+             <FAQItem
+                question="How does DRA prevent SSRF and secure self-hosted LLM endpoints?"
+                answer="When deployed in container or production environments (like Google Cloud Run), the DRA backend includes outbound URL validation. If a client attempts to supply a custom LLM URL that resolves to a private IP, local loopback, or the GCP Link-Local Metadata Server (169.254.169.254), the request is intercepted and blocked. This prevents unauthorized actors from using the auditor container to scan internal company networks or exfiltrate GCP IAM credentials."
              />
              <FAQItem
                 question="How accurate are the FinOps cost savings estimates?"

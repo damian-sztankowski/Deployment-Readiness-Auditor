@@ -1,0 +1,11 @@
+.git
+node_modules
+dist
+index.js
+.env
+.env.*
+*.log
+npm-debug.log*
+.vscode
+.idea
+.DS_Store

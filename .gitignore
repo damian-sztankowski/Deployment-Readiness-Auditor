@@ -22,3 +22,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment Configuration Files
+.env
+.env.*
+!.env.example
+
+# Terraform Artifacts & States
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+
+# Compiled Binaries
+dra-cli/bin/
+bin/
+*.exe
+*.test
