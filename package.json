@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-  "dev": "esbuild index.tsx --bundle --outfile=index.js --format=esm --sourcemap --watch --loader:.tsx=tsx --loader:.ts=ts --external:react --external:react-dom --external:recharts --external:lucide-react --external:@google/genai --external:html2canvas --external:jspdf --external:jspdf-autotable --external:mermaid --external:driver.js",
-  "build": "esbuild index.tsx --bundle --outfile=index.js --format=esm --minify --loader:.tsx=tsx --loader:.ts=ts --external:react --external:react-dom --external:recharts --external:lucide-react --external:@google/genai --external:html2canvas --external:jspdf --external:jspdf-autotable --external:mermaid --external:driver.js",
+  "dev": "esbuild src/index.tsx --bundle --outfile=index.js --format=esm --sourcemap --watch --loader:.tsx=tsx --loader:.ts=ts --external:react --external:react-dom --external:recharts --external:lucide-react --external:@google/genai --external:html2canvas --external:jspdf --external:jspdf-autotable --external:mermaid --external:driver.js",
+  "build": "esbuild src/index.tsx --bundle --outfile=index.js --format=esm --minify --loader:.tsx=tsx --loader:.ts=ts --external:react --external:react-dom --external:recharts --external:lucide-react --external:@google/genai --external:html2canvas --external:jspdf --external:jspdf-autotable --external:mermaid --external:driver.js",
   "start": "npm run build && npx tsx server.ts"
   },
   "dependencies": {
