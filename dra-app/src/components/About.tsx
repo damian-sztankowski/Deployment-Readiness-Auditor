@@ -103,6 +103,50 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         </div>
       </section>
 
+      {/* HOW TO START SECTION */}
+      <section className="space-y-12 max-w-6xl mx-auto py-8">
+        <div className="text-center space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+                <Layers className="w-3.5 h-3.5" />
+                Getting Started
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">How to Start</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-base max-w-2xl mx-auto font-medium">Follow three simple steps to configure your Audit Engine settings and run infrastructure checks.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 relative shadow-sm hover:border-indigo-500 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
+                    1
+                </div>
+                <h4 className="text-lg font-black uppercase tracking-tight">Prepare Code</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+                    Paste your Terraform (HCL) code directly into the editor, or upload individual files and entire project directories using the top toolbar.
+                </p>
+            </div>
+
+            <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 relative shadow-sm hover:border-indigo-500 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
+                    2
+                </div>
+                <h4 className="text-lg font-black uppercase tracking-tight">Configure Engine</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+                    Click the <strong>Settings Gear</strong> icon next to "Run Audit" to adjust your settings. Select between the cloud-hosted <strong>Gemini</strong> API or local self-hosted models (like <strong>Ollama</strong> or <strong>LM Studio</strong>).
+                </p>
+            </div>
+
+            <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 relative shadow-sm hover:border-indigo-500 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
+                    3
+                </div>
+                <h4 className="text-lg font-black uppercase tracking-tight">Analyze & Repair</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+                    Click <strong>Run Audit</strong>. The system pre-processes your code using the DLP Engine and generates a score matrix, FinOps savings, and compliance fixes.
+                </p>
+            </div>
+        </div>
+      </section>
+
       {/* DLP PRE-PROCESSOR FEATURE SECTION */}
       <section className="relative py-12">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[150%] bg-indigo-500/5 dark:bg-indigo-500/10 skew-y-6 blur-3xl pointer-events-none -z-10"></div>

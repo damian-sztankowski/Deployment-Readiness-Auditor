@@ -369,7 +369,7 @@ export const CliInfo: React.FC = () => {
             </div>
             <div>
               <h3 className="text-2xl font-black tracking-tight">CLI Options and Flags</h3>
-              <p className="text-slate-400 text-sm mt-0.5 font-medium">Fine-tune scanning metrics, target endpoints, and LLM providers.</p>
+              <p className="text-slate-400 text-sm mt-0.5 font-medium">Fine-tune scanning metrics, target endpoints, and Audit Engine providers.</p>
             </div>
           </div>
           
@@ -406,19 +406,19 @@ export const CliInfo: React.FC = () => {
                   <td className="py-4 pr-6 font-mono text-amber-400 font-bold">--llm-provider</td>
                   <td className="py-4 pr-6 font-mono">-</td>
                   <td className="py-4 pr-6 font-mono">""</td>
-                  <td className="py-4 text-slate-400">Instructs the DRA backend to use a specific model provider (e.g. <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">gemini</code>, <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">ollama</code>, <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">lm-studio</code>).</td>
+                  <td className="py-4 text-slate-400">Instructs the DRA backend to use a specific Audit Engine provider (e.g. <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">gemini</code>, <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">ollama</code>, <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">lm-studio</code>).</td>
                 </tr>
                 <tr className="hover:bg-slate-950/40 transition-colors">
                   <td className="py-4 pr-6 font-mono text-amber-400 font-bold">--llm-model</td>
                   <td className="py-4 pr-6 font-mono">-</td>
                   <td className="py-4 pr-6 font-mono">""</td>
-                  <td className="py-4 text-slate-400">Overrides the default LLM model name inside the chosen provider (e.g. <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">gemini-3.5-flash</code>, <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">gemma4:e2b</code>).</td>
+                  <td className="py-4 text-slate-400">Overrides the default Audit Engine model name inside the chosen provider (e.g. <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">gemini-3.5-flash</code>, <code className="bg-slate-850 px-1.5 py-0.5 rounded text-amber-300 font-mono">gemma4:e2b</code>).</td>
                 </tr>
                 <tr className="hover:bg-slate-950/40 transition-colors">
                   <td className="py-4 pr-6 font-mono text-amber-400 font-bold">--llm-url</td>
                   <td className="py-4 pr-6 font-mono">-</td>
                   <td className="py-4 pr-6 font-mono">""</td>
-                  <td className="py-4 text-slate-400">The endpoint URL of your local, self-hosted LLM server. The DRA Backend API (specified by <code className="text-indigo-400 font-mono">--endpoint</code>) will route queries to this local server instead of Gemini.</td>
+                  <td className="py-4 text-slate-400">The endpoint URL of your local, self-hosted Audit Engine server. The DRA Backend API (specified by <code className="text-indigo-400 font-mono">--endpoint</code>) will route queries to this local server instead of Gemini.</td>
                 </tr>
               </tbody>
             </table>
