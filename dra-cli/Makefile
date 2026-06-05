@@ -1,6 +1,6 @@
 .PHONY: build install clean
 
-BINARY_NAME=dra-cli # <--- ZMIENIONE TUTAJ
+BINARY_NAME=dra-cli
 
 build:
 	@echo "🛠️  Building DRA CLI..."
