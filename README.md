@@ -228,9 +228,14 @@ Report example and analysis can be found here:
 
 ## 🔒 Security & Privacy
 
-- **No Persistence**: DRA does not store your code. Analysis is ephemeral and exists only during your session.
-- **Client-Side Processing**: The UI runs entirely in your browser. Code is sent securely via HTTPS to the Gemini API for analysis.
-- **Zero-Knowledge**: No database is used. History is stored in your browser's `localStorage`.
+- **No Persistence**: DRA does not store your code. Infrastructure analysis is ephemeral and exists only in memory during the execution phase.
+- **Hybrid API Proxy Architecture**: To safeguard API credentials, the browser UI routes all analyses through a local backend proxy (`/api/audit`), ensuring Google Gemini API keys are never exposed to client bundles or browser consoles.
+- **Enterprise-Grade DLP Engine**: Implements a semantic data loss prevention engine before sending code payloads to any LLM provider.
+  - Automatically sanitizes identities (emails), VPC/IP topographies, database names, and billing/GCP project resource identifiers into semantic aliases (e.g. `IP_RANGE_1`, `CLOUD_ID_2`).
+  - Implements **Global High-Entropy Scanning** to scrub hardcoded credentials (such as Google API keys `AIzaSy...`, AWS Access Key IDs `AKIA...`, and PEM private key files) even if assigned to generic attribute names (like `value = "..."`).
+- **SSRF Outbound Protection**: In production and container environments (such as Cloud Run), the LLM routing proxy strictly validates external target URLs to prevent Server-Side Request Forgery (SSRF). Attempts to access internal subnets, local loopbacks, or the GCP Link-Local Instance Metadata Server (`169.254.169.254`) are intercepted and blocked.
+- **Vulnerability Isolation**: Local developer options remain active for offline environments, allowing loopback requests to local Ollama (`localhost:11434`) or LM Studio endpoints only when not executing in production or containerized environments.
+- **Zero-Knowledge Storage**: Audit history logs are preserved locally inside the client browser's `localStorage` and are never synced to any remote database.
 
 ---
 

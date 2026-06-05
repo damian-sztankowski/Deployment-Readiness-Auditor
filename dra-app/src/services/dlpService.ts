@@ -90,6 +90,31 @@ export const anonymizeHcl = (code: string): AuditDlpResult => {
   const ENV_KEY_REGEX = new RegExp(`((?:name|labels?|tags?|env|environment|tier|role)\\s*[:=]\\s*["'])([^"']*?(?:${ENV_INDICATORS})[^"']*?)(["'])`, 'gi');
   processed = processed.replace(ENV_KEY_REGEX, (m, p1, p2, p3) => `${p1}${getAlias(p2, 'Env_Indicator')}${p3}`);
 
+  // 9. Global High-Entropy Secret Scanning (regardless of property key names)
+  // GCP API Keys
+  const GCP_KEY_REGEX = /AIzaSy[A-Za-z0-9-_]{35}/g;
+  processed = processed.replace(GCP_KEY_REGEX, () => {
+    redactionCount++;
+    types['High_Entropy_Secret'] = (types['High_Entropy_Secret'] || 0) + 1;
+    return '[REDACTED_GCP_API_KEY]';
+  });
+
+  // PEM Private Keys (RSA, EC, etc.)
+  const PEM_KEY_REGEX = /-----BEGIN [A-Z\s]+?PRIVATE KEY-----[\s\S]+?-----END [A-Z\s]+?PRIVATE KEY-----/g;
+  processed = processed.replace(PEM_KEY_REGEX, () => {
+    redactionCount++;
+    types['High_Entropy_Secret'] = (types['High_Entropy_Secret'] || 0) + 1;
+    return '[REDACTED_PEM_PRIVATE_KEY]';
+  });
+
+  // AWS Access Key IDs
+  const AWS_KEY_REGEX = /\bAKIA[0-9A-Z]{16}\b/g;
+  processed = processed.replace(AWS_KEY_REGEX, () => {
+    redactionCount++;
+    types['High_Entropy_Secret'] = (types['High_Entropy_Secret'] || 0) + 1;
+    return '[REDACTED_AWS_ACCESS_KEY_ID]';
+  });
+
   return {
     sanitizedCode: processed,
     redactionCount,
