@@ -9,7 +9,8 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ lastResult }) => {
-  const formattedModelName = GEMINI_MODEL
+  const rawModel = lastResult?.model || GEMINI_MODEL;
+  const formattedModelName = rawModel
     .replace('gemini-', 'Gemini ')
     .replace('-preview', ' Preview')
     .replace('flash', 'Flash')

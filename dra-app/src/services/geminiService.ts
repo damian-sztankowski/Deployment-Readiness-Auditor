@@ -209,7 +209,10 @@ export const analyzeInfrastructure = async (
       let responseText = typeof data.response === 'string' ? data.response : JSON.stringify(data);
       console.log("[OLLAMA RAW RESPONSE]", responseText);
       const cleaned = extractJson(responseText);
-      return sanitizeAuditResult(JSON.parse(cleaned));
+      const result = sanitizeAuditResult(JSON.parse(cleaned));
+      result.model = modelName;
+      result.provider = provider;
+      return result;
 
     } else if (provider === 'openai' || provider === 'lm-studio') {
       const response = await fetch(modelUrl, {
@@ -233,7 +236,10 @@ export const analyzeInfrastructure = async (
       let responseText = data.choices?.[0]?.message?.content || "";
       console.log("[LM STUDIO RAW RESPONSE]", responseText);
       const cleaned = extractJson(responseText);
-      return sanitizeAuditResult(JSON.parse(cleaned));
+      const result = sanitizeAuditResult(JSON.parse(cleaned));
+      result.model = modelName;
+      result.provider = provider;
+      return result;
 
     } else {
       // Domyślnie Gemini API
@@ -307,7 +313,19 @@ export const analyzeInfrastructure = async (
         }
       });
 
-      return sanitizeAuditResult(JSON.parse(response.text || "{}"));
+      const result = sanitizeAuditResult(JSON.parse(response.text || "{}"));
+      result.model = targetModel;
+      result.provider = provider;
+      
+      if (response.usageMetadata) {
+        result.usage = {
+          promptTokenCount: response.usageMetadata.promptTokenCount || 0,
+          candidatesTokenCount: response.usageMetadata.candidatesTokenCount || 0,
+          totalTokenCount: response.usageMetadata.totalTokenCount || 0
+        };
+      }
+      
+      return result;
     }
   } catch (error: any) {
     throw new Error(`SYSTEM_ERROR: ${error.message || "An unexpected engine failure occurred."}`);

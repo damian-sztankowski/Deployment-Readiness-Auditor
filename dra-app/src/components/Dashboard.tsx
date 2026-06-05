@@ -284,9 +284,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ result, isDemo = false }) 
                     <ShieldCheck className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
                     <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">Audit Summary Report</h2>
                 </div>
-                <div className="flex items-center gap-6 text-sm text-slate-500 font-medium">
+                <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 font-medium">
                     <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-indigo-500" /> {new Date().toLocaleDateString()}</span>
                     <span className="text-indigo-600 font-bold uppercase tracking-widest text-[10px]">Architecture Integrity Verified</span>
+                    <div className="h-3 w-[1px] bg-slate-200 dark:bg-slate-800"></div>
+                    <span className="px-3.5 py-1 bg-indigo-500/10 text-indigo-650 dark:text-indigo-400 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                      Engine: {(result.model || 'gemini-3.5-flash').replace('gemini-', 'Gemini ').replace('-preview', ' Preview').replace('flash', 'Flash').replace('pro', 'Pro').split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                    </span>
                 </div>
             </div>
             {isDemo && (
