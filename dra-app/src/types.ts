@@ -45,6 +45,8 @@ export interface AuditResult {
   categories: CategoryScore[];
   findings: Finding[];
   usage?: UsageMetadata;
+  model?: string;
+  provider?: string;
 }
 
 export interface AnalysisState {
