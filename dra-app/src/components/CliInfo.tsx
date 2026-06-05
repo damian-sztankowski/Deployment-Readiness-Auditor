@@ -176,7 +176,7 @@ export const CliInfo: React.FC = () => {
 
                 <div className="mt-4">
                   <span className="text-indigo-400 font-black">📢 EXECUTIVE SUMMARY:</span><br />
-                  <p className="text-slate-300 pl-4 mt-1 border-l-2 border-slate-700">
+                  <p className="text-slate-300 pl-4 mt-3 border-l-2 border-slate-700">
                     The audit of bucket.tf revealed multiple security and reliability vulnerabilities. The bucket lacks uniform bucket-level access, versioning, and access logging, while force_destroy is enabled, risking permanent data loss.
                   </p>
                 </div>
@@ -226,11 +226,11 @@ export const CliInfo: React.FC = () => {
                   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br />
                   <span className="font-bold"> 1. [🟠 HIGH] Missing Uniform Bucket-Level Access (Category: Security)</span><br />
                   ────────────────────────────────────────────────────────────────────────────────<br />
-                  <span className="text-slate-400">  📍 Location:</span> bucket.tf (Line 1)<br />
-                  <span className="text-slate-400">  📝 Description:</span> Legacy ACLs are active. Disabling uniform bucket access increases public exposure risk.<br />
-                  <span className="text-slate-400">  🔧 Remediation:</span> Set uniform_bucket_level_access = true in bucket block.<br />
+                  <span className="text-slate-400">  📍 Location:</span> bucket.tf (Line 1)<br /><br />
+                  <span className="text-slate-400">  📝 Description:</span> Legacy ACLs are active. Disabling uniform bucket access increases public exposure risk.<br /><br />
+                  <span className="text-slate-400">  🔧 Remediation:</span> Set uniform_bucket_level_access = true in bucket block.<br /><br />
                   <span className="text-slate-400">  📋 Compliance:</span><br />
-                  <span className="text-slate-300 pl-4">      • CIS GCP Benchmark (5.1)</span><br />
+                  <span className="text-slate-300 pl-4">      • CIS GCP Benchmark (5.1)</span><br /><br />
                   ────────────────────────────────────────────────────────────────────────────────<br />
                   <span className="text-emerald-400">  💡 Suggested HCL Fix:</span><br />
                   <span className="text-emerald-500 pl-6">      resource "google_storage_bucket" "vulnerable_bucket" &#123;</span><br />
