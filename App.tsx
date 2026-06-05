@@ -7,10 +7,10 @@ import { LoadingAnimation } from './components/LoadingAnimation';
 import { SplashPage } from './components/SplashPage';
 import { About } from './components/About';
 import { Features } from './components/Features';
+import { CliInfo } from './components/CliInfo';
 import { HistorySidebar } from './components/HistorySidebar';
 import { OnboardingTour } from './components/OnboardingTour';
 import { Footer } from './components/Footer';
-import { analyzeInfrastructure } from './services/geminiService';
 import { MOCK_AUDIT_RESULT } from './services/mockData';
 import { AnalysisState, AuditResult, HistoryItem } from './types';
 import { AlertOctagon, ShieldAlert, Terminal, RefreshCw, Key, ShieldX, Globe, AlertCircle } from 'lucide-react';
@@ -92,15 +92,32 @@ const App: React.FC = () => {
     setAnalysis({ isLoading: false, error: null, result: MOCK_AUDIT_RESULT });
   };
 
-  const handleAnalyze = async (code: string) => {
+const handleAnalyze = async (code: string, options?: { provider?: string; modelUrl?: string; modelName?: string }) => {
     setIsDemoMode(false);
     setIsInputMinimized(true);
     setAnalysis({ isLoading: true, error: null, result: null });
     
     try {
-      const result = await analyzeInfrastructure(code);
-      setAnalysis({ isLoading: false, error: null, result });
-      addToHistory(result);
+      // Bezpośredni strzał do Twojego nowego API z opcjami LLM
+      const response = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          code,
+          llmProvider: options?.provider,
+          llmModel: options?.modelName,
+          llmUrl: options?.modelUrl
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP ERROR: ${response.status}`);
+      }
+
+      setAnalysis({ isLoading: false, error: null, result: data });
+      addToHistory(data);
     } catch (error: any) {
       setAnalysis({ 
         isLoading: false, 
@@ -110,7 +127,6 @@ const App: React.FC = () => {
       setIsInputMinimized(false);
     }
   };
-
   const handleStart = () => {
     if (isDemoMode) {
       setIsDemoMode(false);
@@ -277,6 +293,10 @@ const App: React.FC = () => {
 
               {currentView === 'features' && (
                   <Features />
+              )}
+
+              {currentView === 'cli' && (
+                  <CliInfo />
               )}
 
               <div className={currentView === 'assessment' ? 'block animate-enter' : 'hidden'}>
