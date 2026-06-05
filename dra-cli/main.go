@@ -259,11 +259,9 @@ var scanCmd = &cobra.Command{
 		fmt.Println("\n" + Bold + Blue + "====================================================" + Reset)
 		fmt.Println("📊 " + Bold + "AUDIT RUN SUMMARY" + Reset)
 		fmt.Println(Bold + Blue + "====================================================" + Reset)
-		fmt.Printf(" 🔍 Files Audited : %-4d\n", len(targetFiles))
-		fmt.Printf(" 🔴 Critical Risks: %s%-4d%s\n", Red+Bold, criticalCount, Reset)
-		fmt.Printf(" 🟠 High Risks    : %s%-4d%s\n", Yellow+Bold, highCount, Reset)
-		fmt.Printf(" 🟡 Medium Risks  : %s%-4d%s\n", Yellow, mediumCount, Reset)
-		fmt.Printf(" 🔵 Low/Info Risks: %s%-4d%s\n", Blue, lowCount+infoCount, Reset)
+		fmt.Printf("  🔍 Files Audited : %-10d   🔴 Critical Risks: %s%d%s\n", len(targetFiles), Red+Bold, criticalCount, Reset)
+		fmt.Printf("  🟠 High Risks    : %-10d   🟡 Medium Risks  : %s%d%s\n", highCount, Yellow+Bold, mediumCount, Reset)
+		fmt.Printf("  🔵 Low/Info Risks: %-10d\n", lowCount+infoCount)
 		fmt.Println(Bold + Blue + "====================================================" + Reset)
 
 		// --- EXECUTIVE SUMMARY ---
@@ -272,16 +270,20 @@ var scanCmd = &cobra.Command{
 
 		// --- PILLAR SCORES WITH PROGRESS BARS ---
 		fmt.Println(Bold + "📊 ARCHITECTURE PILLAR SCORES (Google Cloud Framework):" + Reset)
-		for _, cat := range report.Categories {
-			statusIcon := "✅"
+		for i, cat := range report.Categories {
+			statusIcon := Green + "✔" + Reset
 			if cat.Status == "Critical" {
-				statusIcon = "❌"
+				statusIcon = Red + "✘" + Reset
 			} else if cat.Status == "Warning" {
-				statusIcon = "⚠️"
+				statusIcon = Yellow + "!" + Reset
 			}
 			
 			progressBar := drawProgressBar(cat.Score, cat.Status)
-			fmt.Printf(" [%s] %-22s | %s %3d/100 | %s\n", statusIcon, Bold+cat.Name+Reset, progressBar, cat.Score, cat.Explanation)
+			paddedName := fmt.Sprintf("%-22s", cat.Name)
+			fmt.Printf(" [%s] %s | %s %3d/100 | %s\n", statusIcon, Bold+paddedName+Reset, progressBar, cat.Score, cat.Explanation)
+			if i < len(report.Categories)-1 {
+				fmt.Println()
+			}
 		}
 
 		// --- DETAILED FINDINGS ---
@@ -299,16 +301,33 @@ var scanCmd = &cobra.Command{
 
 // Helper: Loading Spinner
 func startSpinner(msg string, done chan struct{}) {
-	frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+	frames := []string{
+		"🤖        ",
+		" 🤖       ",
+		"  🤖      ",
+		"   🤖     ",
+		"    🤖    ",
+		"     🤖   ",
+		"      🤖  ",
+		"       🤖 ",
+		"        🤖",
+		"       🤖 ",
+		"      🤖  ",
+		"     🤖   ",
+		"    🤖    ",
+		"   🤖     ",
+		"  🤖      ",
+		" 🤖       ",
+	}
 	i := 0
 	for {
 		select {
 		case <-done:
 			return
 		default:
-			fmt.Printf("\r\033[K%s %s", Yellow+frames[i]+Reset, msg)
+			fmt.Printf("\r\033[K%s %s", frames[i], msg)
 			i = (i + 1) % len(frames)
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(85 * time.Millisecond)
 		}
 	}
 }
@@ -365,14 +384,19 @@ func drawBoxedFinding(index int, f Finding) {
 	fmt.Printf("\n%s%s%s\n", color+Bold, strings.Repeat("━", borderWidth), Reset)
 	fmt.Printf(" %s%s%s\n", Bold, header, Reset)
 	fmt.Printf("%s%s%s\n", color, strings.Repeat("─", borderWidth), Reset)
-	fmt.Printf("  📍 %-12s: %s (Line %d)\n", Bold+"Location"+Reset, f.FileName, f.LineNumber)
-	fmt.Printf("  📝 %-12s: %s\n", Bold+"Description"+Reset, f.Description)
-	fmt.Printf("  🔧 %-12s: %s\n", Bold+"Remediation"+Reset, f.Remediation)
+	paddedLoc := fmt.Sprintf("%-12s", "Location")
+	paddedDesc := fmt.Sprintf("%-12s", "Description")
+	paddedRem := fmt.Sprintf("%-12s", "Remediation")
+	fmt.Printf("  📍 %s: %s (Line %d)\n", Bold+paddedLoc+Reset, f.FileName, f.LineNumber)
+	fmt.Printf("  📝 %s: %s\n", Bold+paddedDesc+Reset, f.Description)
+	fmt.Printf("  🔧 %s: %s\n", Bold+paddedRem+Reset, f.Remediation)
 	if f.CostSavings != "" {
-		fmt.Printf("  💰 %-12s: %s%s%s\n", Bold+"FinOps"+Reset, Green, f.CostSavings, Reset)
+		paddedFin := fmt.Sprintf("%-12s", "FinOps")
+		fmt.Printf("  💰 %s: %s%s%s\n", Bold+paddedFin+Reset, Green, f.CostSavings, Reset)
 	}
 	if len(f.Compliance) > 0 {
-		fmt.Printf("  📋 %-12s:\n", Bold+"Compliance"+Reset)
+		paddedComp := fmt.Sprintf("%-12s", "Compliance")
+		fmt.Printf("  📋 %s:\n", Bold+paddedComp+Reset)
 		for _, comp := range f.Compliance {
 			fmt.Printf("      • %s (%s): %s\n", Bold+comp.Standard+Reset, comp.ControlID, comp.Description)
 		}

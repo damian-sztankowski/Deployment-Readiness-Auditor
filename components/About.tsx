@@ -45,7 +45,7 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
 
 export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
   return (
-    <div className="animate-enter space-y-20 py-8">
+    <div className="animate-enter space-y-32 py-16">
       
       {/* Hero Section: The Dual Engine */}
       <section className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 dark:bg-black text-white p-8 md:p-20 flex flex-col md:flex-row items-center gap-12 shadow-2xl border border-slate-800">
@@ -119,7 +119,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed font-medium">
                     DRA includes a real-time <strong>Semantic DLP Engine</strong> that deterministicly masks sensitive data while preserving the architectural logic required for a high-fidelity audit.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {[
                         { icon: Fingerprint, title: "Stateful Aliasing", desc: "Unique IDs map to consistent aliases (PROJECT_A), allowing AI to reason about resource relationships." },
                         { icon: Binary, title: "Secret Scrubbing", desc: "API keys, private keys, and high-entropy tokens are fully redacted before transmission." },
@@ -214,7 +214,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
             <p className="text-slate-600 dark:text-slate-400">Our primary audit engine scores your resources against the five foundational pillars of Google's official architecture framework.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             {[
                 { name: 'Operational Excellence', icon: Activity, color: 'text-blue-500', desc: 'Deployment automation, logging, and incident response readiness.' },
                 { name: 'Security & Compliance', icon: Shield, color: 'text-red-500', desc: 'IAM least-privilege, network hardening, and data protection.' },
@@ -272,8 +272,8 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
       </section>
 
       {/* Why AI? Section */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
                     <Brain className="w-6 h-6" />
                 </div>
@@ -299,8 +299,8 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
             </div>
             <div className="p-8 bg-slate-50 dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
                  <Code2 className="absolute -right-4 -bottom-4 w-40 h-40 text-indigo-500/5 group-hover:text-indigo-500/10 transition-colors" />
-                 <h4 className="text-xl font-bold mb-4">How We Audit</h4>
-                 <div className="space-y-4 relative z-10">
+                 <h4 className="text-xl font-bold mb-6">How We Audit</h4>
+                 <div className="space-y-6 relative z-10">
                     {[
                         { step: '01', title: 'Stateful Anonymization', desc: 'Locally scrub Project IDs and Tier indicators while preserving logic topology.' },
                         { step: '02', title: 'Relationship Analysis', desc: 'AI models evaluate resource interaction patterns and architectural intent.' },
@@ -320,7 +320,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
       </section>
 
       {/* Enhanced FAQ Section */}
-      <section id="faq-section" className="max-w-5xl mx-auto w-full space-y-12">
+      <section id="faq-section" className="max-w-5xl mx-auto w-full space-y-16">
         <div className="text-center space-y-4">
           <div className="inline-flex p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl text-indigo-600 dark:text-indigo-400 mb-2">
              <HelpCircle className="w-7 h-7" />

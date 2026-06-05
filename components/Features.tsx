@@ -48,7 +48,7 @@ export const Features: React.FC = () => {
   ];
 
   return (
-    <div className="animate-enter space-y-16 py-8">
+    <div className="animate-enter space-y-28 py-16">
       <div className="text-center max-w-3xl mx-auto space-y-6">
         <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">Capabilities</h3>
         <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">Infrastructure Auditing Platform</h2>
@@ -71,14 +71,14 @@ export const Features: React.FC = () => {
 
       <div className="bg-slate-900 dark:bg-black rounded-[3rem] p-12 md:p-20 text-white relative overflow-hidden border border-slate-800">
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-12">
-          <div className="flex-1 space-y-8">
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-16">
+          <div className="flex-1 space-y-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest">
               <Sparkles className="w-4 h-4" />
               Sovereign Pipeline
             </div>
             <h3 className="text-3xl md:text-4xl font-bold tracking-tight">How it Works: The Audit Pipeline</h3>
-            <div className="space-y-6">
+            <div className="space-y-8">
               {[
                 { step: "01", title: "Stateful Anonymization", desc: "Local pre-processor identifies sensitive IDs and environment indicators, replacing them with consistent semantic aliases." },
                 { step: "02", title: "Relationship Logic Evaluation", desc: "Gemini models evaluate pure Terraform (HCL) topology and interaction intent without seeing proprietary naming." },
@@ -88,7 +88,7 @@ export const Features: React.FC = () => {
                 <div key={i} className="flex gap-6 items-start group">
                   <span className="text-lg font-black text-indigo-500 opacity-50 group-hover:opacity-100 transition-opacity">{s.step}</span>
                   <div>
-                    <h5 className="font-bold text-lg mb-1">{s.title}</h5>
+                    <h5 className="font-bold text-lg mb-2">{s.title}</h5>
                     <p className="text-slate-400 text-sm leading-relaxed">{s.desc}</p>
                   </div>
                 </div>
