@@ -31,6 +31,20 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [modelUrl, setModelUrl] = useState('');
   const [showSettings, setShowSettings] = useState(false);
 
+  // Check if running on localhost/local network to toggle local LLM capabilities
+  const isLocal = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const hn = window.location.hostname;
+    return (
+      hn === 'localhost' ||
+      hn === '127.0.0.1' ||
+      hn === '[::1]' ||
+      hn.startsWith('192.168.') ||
+      hn.startsWith('10.') ||
+      hn.startsWith('172.')
+    );
+  }, []);
+
   // Real-time DLP feedback
   const dlpStats = useMemo(() => {
     if (!inputCode.trim()) return null;
@@ -248,8 +262,16 @@ resource "google_compute_firewall" "allow_all" {
                       </button>
                       <button
                         type="button"
+                        disabled={!isLocal}
                         onClick={() => { setProvider('lm-studio'); setModelName('gemma'); setModelUrl('http://127.0.0.1:9090/v1/chat/completions'); }}
-                        className={`flex-1 py-2 rounded-lg text-[10px] font-black transition-all ${provider === 'lm-studio' ? 'bg-white dark:bg-slate-850 shadow text-indigo-700 dark:text-indigo-300' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`flex-1 py-2 rounded-lg text-[10px] font-black transition-all ${
+                          !isLocal
+                            ? 'opacity-30 cursor-not-allowed text-slate-400 dark:text-slate-650'
+                            : provider === 'lm-studio'
+                              ? 'bg-white dark:bg-slate-850 shadow text-indigo-700 dark:text-indigo-300'
+                              : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                        title={!isLocal ? "Available only during local runs" : "Use self-hosted LM Studio"}
                       >
                         LM Studio
                       </button>
