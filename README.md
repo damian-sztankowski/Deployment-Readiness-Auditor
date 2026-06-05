@@ -73,24 +73,96 @@ git clone https://github.com/your-username/deployment-readiness-auditor.git
 cd deployment-readiness-auditor
 ```
 
-### 2. Change LLM Model
-If you want to change your model, open the `services/geminiService.ts` file in the root directory. Look for this block:
-```javascript
-export const GEMINI_MODEL = "gemini-3-pro-preview";
-```
-
-### 3. Install and Build
+### 2. Install and Build
 ```bash
 npm install
 npm run build
 ```
 This converts the `index.tsx` file into a browser-readable `index.js` file using **esbuild**.
 
-### 4. Start the Development Server
+### 3. Start the Development Server
+
+#### Option A: Running with Google Gemini (Default)
 ```bash
 API_KEY=PASTE_YOUR_GEMINI_API_KEY_HERE npm start
 ```
-The terminal will provide a URL (usually `http://localhost:8080`). Open it in your browser!
+
+#### Option B: Running with a Local Self-Hosted LLM (e.g. LM Studio / Ollama)
+You can configure the backend engine to default to a local/self-hosted model using environment variables:
+```bash
+# For LM Studio (OpenAI Compatible):
+LLM_PROVIDER=lm-studio \
+LLM_MODEL=gemma \
+LLM_URL=http://127.0.0.1:9090/v1/chat/completions \
+npm start
+
+# For Ollama:
+LLM_PROVIDER=ollama \
+LLM_MODEL=gemma4:e2b \
+LLM_URL=http://localhost:11434/api/generate \
+npm start
+```
+The terminal will provide a URL (usually `http://localhost:8080`). Open it in your browser! You can also customize your provider, model name, and endpoint URL dynamically in the web UI by clicking the **Gear icon (Settings)** next to the "Run Audit" button.
+
+---
+
+## 🛠️ Command Line Interface (CLI)
+
+The **DRA CLI (`dra-cli`)** lets you scan Terraform infrastructure files directly from your terminal or CI/CD pipelines.
+
+### 1. Build and Install
+Compile the standalone Go binary from the project workspace:
+```bash
+# Build the binary locally in ./dra-cli/bin/dra-cli
+make -C dra-cli build
+
+# Or build and install it to your system Go bin path
+make -C dra-cli install
+```
+
+### 2. Add to PATH
+Add the compiled binary directory to your current terminal environment:
+```bash
+export PATH=$PATH:$(pwd)/dra-cli/bin
+```
+*(Add this line to your `~.zshrc` or `~/.bashrc` to make it persistent across terminal sessions)*
+
+### 3. Running Scans
+Execute the audit against any folder containing `.tf` files:
+
+#### Auditing with Gemini API (requires GCP_IAM_TOKEN env if deployed on GCP Cloud Run)
+```bash
+# Standard local scan
+./dra-cli/bin/dra-cli scan --path /path/to/terraform/code
+
+# Scanning recursively into all subdirectories
+./dra-cli/bin/dra-cli scan --path /path/to/terraform/code --deep-scan
+```
+
+#### Auditing with Local Self-Hosted LLMs (bypasses GCP authorization checks)
+```bash
+# Auditing via local LM Studio:
+./dra-cli/bin/dra-cli scan \
+  --path /path/to/terraform/code \
+  --llm-provider lm-studio \
+  --llm-model gemma-4-12b \
+  --llm-url http://127.0.0.1:9090/v1/chat/completions
+
+# Auditing via local Ollama:
+./dra-cli/bin/dra-cli scan \
+  --path /path/to/terraform/code \
+  --llm-provider ollama \
+  --llm-model gemma4:e2b \
+  --llm-url http://localhost:11434/api/generate
+```
+
+### 🎨 Branded Console Polish
+The CLI features a premium console output interface:
+* **Interactive Loading Spinner**: Displays live activity indicators during audit evaluation.
+* **Audit Run Dashboard**: Shows counts of scanned files alongside totals for Critical, High, Medium, and Low vulnerabilities.
+* **Visual Progress Bars**: Draws horizontal bar charts (e.g. `████████░░░░ 70/100`) mapped to pillar security score metrics.
+* **Boxed Findings**: Packages and aligns vulnerability descriptions, locations, and suggested HCL remediation code inside clean border cards.
+* **ANSI Colored Help Screens**: View colorized option descriptions and flags by running `dra-cli scan --help`.
 
 ---
 

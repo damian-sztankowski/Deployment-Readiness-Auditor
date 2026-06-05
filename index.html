@@ -42,20 +42,7 @@
             }
           }
         }
-      }
-
-      /**
-       * DEPLOYMENT KEY SHIM
-       * The server replaces the placeholder with the actual Cloud Run environment variable.
-       */
-      window.process = {
-        env: {
-          API_KEY: "__DRA_API_KEY_PLACEHOLDER__"
-        }
       };
-      
-      globalThis.process = window.process;
-
       try {
         const localTheme = localStorage.getItem('dra-theme');
         if (localTheme === 'dark' || (!localTheme && true)) {

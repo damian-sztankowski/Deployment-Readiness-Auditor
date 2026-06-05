@@ -1,12 +1,12 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { 
   Play, Upload, RefreshCw, Terminal, ChevronUp, Edit2, 
-  FileCode, FolderUp, Sparkles, ShieldCheck, Fingerprint
+  FileCode, FolderUp, Sparkles, ShieldCheck, Fingerprint, Settings
 } from 'lucide-react';
 import { anonymizeHcl } from '../services/dlpService';
 
 interface InputSectionProps {
-  onAnalyze: (code: string) => void;
+  onAnalyze: (code: string, options?: { provider?: string; modelUrl?: string; modelName?: string }) => void;
   isAnalyzing: boolean;
   minimized?: boolean;
   onToggleMinimize?: () => void;
@@ -25,6 +25,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [isReadingFiles, setIsReadingFiles] = useState(false);
 
+  // Self-hosted LLM configuration states
+  const [provider, setProvider] = useState<'gemini' | 'ollama' | 'lm-studio'>('gemini');
+  const [modelName, setModelName] = useState('');
+  const [modelUrl, setModelUrl] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+
   // Real-time DLP feedback
   const dlpStats = useMemo(() => {
     if (!inputCode.trim()) return null;
@@ -32,7 +38,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
   }, [inputCode]);
 
   const handleAnalyze = () => {
-    if (inputCode.trim()) onAnalyze(inputCode);
+    if (inputCode.trim()) {
+      onAnalyze(inputCode, {
+        provider,
+        modelName: modelName.trim() || undefined,
+        modelUrl: modelUrl.trim() || undefined
+      });
+    }
   };
 
   const loadExample = () => {
@@ -208,7 +220,82 @@ resource "google_compute_firewall" "allow_all" {
               spellCheck={false}
             />
 
-            <div className="absolute bottom-10 right-10 z-30 flex flex-col items-end gap-5">
+            {/* Model settings panel */}
+            {showSettings && (
+              <div className="absolute bottom-32 right-10 z-40 w-96 p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 animate-enter">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-white font-black text-xs uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <Settings className="w-4 h-4 text-indigo-500" />
+                  <span>LLM Engine Options</span>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">LLM Provider</label>
+                  <div className="flex flex-col gap-2 p-2 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setProvider('gemini'); setModelName(''); setModelUrl(''); }}
+                        className={`flex-1 py-2 rounded-lg text-[10px] font-black transition-all ${provider === 'gemini' ? 'bg-white dark:bg-slate-850 shadow text-indigo-700 dark:text-indigo-300' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        Gemini
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setProvider('ollama'); setModelName('gemma4:e2b'); setModelUrl('http://localhost:11434/api/generate'); }}
+                        className={`flex-1 py-2 rounded-lg text-[10px] font-black transition-all ${provider === 'ollama' ? 'bg-white dark:bg-slate-850 shadow text-indigo-700 dark:text-indigo-300' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        Ollama
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setProvider('lm-studio'); setModelName('gemma'); setModelUrl('http://127.0.0.1:9090/v1/chat/completions'); }}
+                        className={`flex-1 py-2 rounded-lg text-[10px] font-black transition-all ${provider === 'lm-studio' ? 'bg-white dark:bg-slate-850 shadow text-indigo-700 dark:text-indigo-300' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        LM Studio
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Model Name</label>
+                  <input
+                    type="text"
+                    value={modelName}
+                    onChange={(e) => setModelName(e.target.value)}
+                    placeholder={provider === 'gemini' ? 'gemini-3-pro-preview' : provider === 'ollama' ? 'gemma4:e2b' : 'gemma'}
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                {(provider === 'ollama' || provider === 'lm-studio') && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Endpoint URL</label>
+                    <input
+                      type="text"
+                      value={modelUrl}
+                      onChange={(e) => setModelUrl(e.target.value)}
+                      placeholder={provider === 'ollama' ? 'http://localhost:11434/api/generate' : 'http://127.0.0.1:9090/v1/chat/completions'}
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-500 transition-all text-slate-900 dark:text-white"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="absolute bottom-10 right-10 z-30 flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setShowSettings(!showSettings)}
+                className={`p-5 rounded-full border shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center 
+                  ${showSettings 
+                    ? 'bg-indigo-600 border-indigo-500 text-white shadow-indigo-500/20' 
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white'}`}
+                title="LLM Settings"
+              >
+                <Settings className={`w-6 h-6 ${showSettings ? 'animate-spin-slow' : ''}`} />
+              </button>
+
               <button
                 onClick={handleAnalyze}
                 disabled={isAnalyzing || !inputCode.trim() || isReadingFiles}

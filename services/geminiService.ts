@@ -73,90 +73,91 @@ const addLineNumbers = (code: string): string => {
   }).join('\n');
 };
 
-export const analyzeInfrastructure = async (inputCode: string): Promise<AuditResult> => {
+export const analyzeInfrastructure = async (
+  inputCode: string,
+  options?: { provider?: string; modelUrl?: string; modelName?: string }
+): Promise<AuditResult> => {
   if (!inputCode.trim()) {
     throw new Error("AUDIT_ERROR: Input configuration is empty.");
   }
 
-  const apiKey = process.env.API_KEY;
+  const provider = options?.provider || process.env.LLM_PROVIDER || 'gemini';
+  const modelUrl = options?.modelUrl || process.env.LLM_URL || 'http://127.0.0.1:9090/api/generate';
+  const modelName = options?.modelName || process.env.LLM_MODEL || 'gemma4:e2b';
 
-  if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
-    throw new Error("CONFIG_ERROR: API_KEY is missing. Check your environment variables.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  // DLP teraz dzieje się na serwerze!
+  const dlpResult = anonymizeHcl(inputCode);
+  const numberedCode = addLineNumbers(dlpResult.sanitizedCode);
 
   try {
-    // Enterprise DLP Pre-Processing
-    const dlpResult = anonymizeHcl(inputCode);
-    const numberedCode = addLineNumbers(dlpResult.sanitizedCode);
+    if (provider === 'ollama') {
+      const response = await fetch(modelUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: modelName,
+          prompt: `System: ${SYSTEM_INSTRUCTION}\n\nCode to audit:\n${numberedCode}`,
+          stream: false,
+          format: "json"
+        })
+      });
 
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: `Perform a deep, deterministic audit of the following aliased infrastructure code.\n\nInput Code:\n${numberedCode}`,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0, 
-        seed: 42,
-        thinkingConfig: { thinkingBudget: 16384 },
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            summary: { type: Type.STRING },
-            categories: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  score: { type: Type.NUMBER },
-                  status: { type: Type.STRING, enum: ["Safe", "Warning", "Critical"] },
-                  explanation: { type: Type.STRING }
-                },
-                required: ["name", "score", "status", "explanation"]
-              }
-            },
-            findings: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: { type: Type.STRING },
-                  severity: { type: Type.STRING, enum: ["Critical", "High", "Medium", "Low", "Info"] },
-                  category: { type: Type.STRING },
-                  title: { type: Type.STRING },
-                  description: { type: Type.STRING },
-                  remediation: { type: Type.STRING },
-                  fix: { type: Type.STRING },
-                  fileName: { type: Type.STRING },
-                  lineNumber: { type: Type.INTEGER },
-                  costSavings: { type: Type.STRING },
-                  compliance: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        standard: { type: Type.STRING },
-                        controlId: { type: Type.STRING },
-                        description: { type: Type.STRING },
-                        impact: { type: Type.STRING }
-                      },
-                      required: ["standard", "controlId", "description", "impact"]
-                    }
-                  }
-                },
-                required: ["severity", "category", "title", "description", "remediation", "id", "lineNumber", "fileName", "fix", "compliance"]
-              }
-            }
-          },
-          required: ["summary", "categories", "findings"]
-        }
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "");
+        throw new Error(`Model Engine Error: ${response.statusText} - ${errText}`);
       }
-    });
+      const data = await response.json();
+      let responseText = typeof data.response === 'string' ? data.response : JSON.stringify(data);
+      // Clean up markdown code blocks if the model wrapped the JSON
+      responseText = responseText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+      return JSON.parse(responseText);
+      
+    } else if (provider === 'openai' || provider === 'lm-studio') {
+      const response = await fetch(modelUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: modelName,
+          messages: [
+            { role: "system", content: SYSTEM_INSTRUCTION },
+            { role: "user", content: `Code to audit:\n${numberedCode}` }
+          ],
+          temperature: 0
+        })
+      });
 
-    const result = JSON.parse(response.text || "{}") as AuditResult;
-    return result;
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "");
+        throw new Error(`Model Engine Error: ${response.statusText} - ${errText}`);
+      }
+      const data = await response.json();
+      let responseText = data.choices?.[0]?.message?.content || "";
+      responseText = responseText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+      return JSON.parse(responseText);
+
+    } else {
+      // Domyślnie Gemini API
+      const apiKey = process.env.API_KEY;
+      if (!apiKey || apiKey === "" || apiKey === "__DRA_API_KEY_PLACEHOLDER__") {
+        throw new Error("CONFIG_ERROR: API_KEY is missing. Check your environment variables.");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: `Perform a deep, deterministic audit of the following aliased infrastructure code.\n\nInput Code:\n${numberedCode}`,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          temperature: 0, 
+          seed: 42,
+          thinkingConfig: { thinkingBudget: 16384 },
+          responseMimeType: "application/json",
+          responseSchema: { /* ... zostaw schemat bez zmian ... */ }
+        }
+      });
+
+      return JSON.parse(response.text || "{}") as AuditResult;
+    }
   } catch (error: any) {
     throw new Error(`SYSTEM_ERROR: ${error.message || "An unexpected engine failure occurred."}`);
   }
