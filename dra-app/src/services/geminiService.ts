@@ -243,8 +243,9 @@ export const analyzeInfrastructure = async (
       }
 
       const ai = new GoogleGenAI({ apiKey });
+      const targetModel = options?.modelName || process.env.LLM_MODEL || GEMINI_MODEL;
       const response = await ai.models.generateContent({
-        model: GEMINI_MODEL,
+        model: targetModel,
         contents: `Perform a deep, deterministic audit of the following aliased infrastructure code.\n\nInput Code:\n${numberedCode}`,
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
