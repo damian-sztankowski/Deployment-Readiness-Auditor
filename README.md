@@ -180,7 +180,7 @@ export const GEMINI_MODEL = "gemini-3-pro-preview";
 Then run this command to deploy solution on Cloud Run.
 ```bash
 gcloud run deploy dra-app \
-  --source . \
+  --source dra-app/ \
   --region us-central1 \
   --allow-unauthenticated \
   --port 8080
