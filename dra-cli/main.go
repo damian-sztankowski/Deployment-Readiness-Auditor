@@ -266,10 +266,12 @@ var scanCmd = &cobra.Command{
 
 		// --- EXECUTIVE SUMMARY ---
 		fmt.Println("\n📢 " + Bold + "EXECUTIVE SUMMARY:" + Reset)
+		fmt.Println()
 		fmt.Printf("%s\n\n", report.Summary)
 
 		// --- PILLAR SCORES WITH PROGRESS BARS ---
 		fmt.Println(Bold + "📊 ARCHITECTURE PILLAR SCORES (Google Cloud Framework):" + Reset)
+		fmt.Println()
 		for i, cat := range report.Categories {
 			statusIcon := Green + "✔" + Reset
 			if cat.Status == "Critical" {
@@ -288,6 +290,7 @@ var scanCmd = &cobra.Command{
 
 		// --- DETAILED FINDINGS ---
 		fmt.Println(Bold + "\n🚨 DETAILED FINDINGS LOG:" + Reset)
+		fmt.Println()
 		if len(report.Findings) == 0 {
 			fmt.Println(Green + " 🎉 Congratulations! No architectural violations detected." + Reset)
 		} else {
@@ -387,12 +390,12 @@ func drawBoxedFinding(index int, f Finding) {
 	paddedLoc := fmt.Sprintf("%-12s", "Location")
 	paddedDesc := fmt.Sprintf("%-12s", "Description")
 	paddedRem := fmt.Sprintf("%-12s", "Remediation")
-	fmt.Printf("  📍 %s: %s (Line %d)\n", Bold+paddedLoc+Reset, f.FileName, f.LineNumber)
-	fmt.Printf("  📝 %s: %s\n", Bold+paddedDesc+Reset, f.Description)
-	fmt.Printf("  🔧 %s: %s\n", Bold+paddedRem+Reset, f.Remediation)
+	fmt.Printf("  📍 %s: %s (Line %d)\n\n", Bold+paddedLoc+Reset, f.FileName, f.LineNumber)
+	fmt.Printf("  📝 %s: %s\n\n", Bold+paddedDesc+Reset, f.Description)
+	fmt.Printf("  🔧 %s: %s\n\n", Bold+paddedRem+Reset, f.Remediation)
 	if f.CostSavings != "" {
 		paddedFin := fmt.Sprintf("%-12s", "FinOps")
-		fmt.Printf("  💰 %s: %s%s%s\n", Bold+paddedFin+Reset, Green, f.CostSavings, Reset)
+		fmt.Printf("  💰 %s: %s%s%s\n\n", Bold+paddedFin+Reset, Green, f.CostSavings, Reset)
 	}
 	if len(f.Compliance) > 0 {
 		paddedComp := fmt.Sprintf("%-12s", "Compliance")
@@ -400,6 +403,7 @@ func drawBoxedFinding(index int, f Finding) {
 		for _, comp := range f.Compliance {
 			fmt.Printf("      • %s (%s): %s\n", Bold+comp.Standard+Reset, comp.ControlID, comp.Description)
 		}
+		fmt.Println()
 	}
 	if f.Fix != "" {
 		fmt.Printf("  %s%s%s\n", color, strings.Repeat("┈", borderWidth), Reset)
