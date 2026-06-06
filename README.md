@@ -58,7 +58,7 @@ The **Deployment Readiness Auditor (DRA)** is a Google Cloud-native, AI-assisted
 Before you begin, ensure you have the following:
 
 1.  **Google Gemini API Key**: Obtain one from the [Google AI Studio](https://aistudio.google.com/).
-2.  **Node.js & NPM**: Installed on your local machine (v18+ recommended).
+2.  **Node.js & NPM**: Installed on your local machine (v20+ recommended).
 3.  **GCP Project** (Optional for deployment): A project with billing enabled for Cloud Run.
 
 ---
