@@ -183,8 +183,8 @@ gcloud run deploy dra-app \
   --source dra-app/ \
   --region us-central1 \
   --allow-unauthenticated \
-  --port 8080
-  --set-env-vars API_KEY=PASTE_YOUR_GEMINI_API_KEY_HERE \
+  --port 8080 \
+  --set-env-vars API_KEY=PASTE_YOUR_GEMINI_API_KEY_HERE
 ```
 
 > [!TIP]
