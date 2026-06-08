@@ -1,8 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { AuditResult } from "../types";
+import { AuditResult, GEMINI_MODEL } from "../types";
 import { anonymizeHcl } from "./dlpService";
-
-export const GEMINI_MODEL = "gemini-3.5-flash";
+import dns from 'dns/promises';
+import { isIP } from 'net';
 
 const SYSTEM_INSTRUCTION = `
 ### ROLE & OBJECTIVE
@@ -120,7 +120,34 @@ const sanitizeAuditResult = (data: any): AuditResult => {
   return result;
 };
 
-const isPrivateUrl = (urlStr: string): boolean => {
+const isPrivateIp = (ip: string): boolean => {
+  if (ip.startsWith('10.') || ip.startsWith('192.168.')) return true;
+  if (ip.startsWith('127.')) return true;
+  if (ip.startsWith('169.254.')) return true;
+
+  if (ip.startsWith('172.')) {
+    const parts = ip.split('.');
+    if (parts.length === 4) {
+      const p2 = parseInt(parts[1], 10);
+      if (p2 >= 16 && p2 <= 31) return true;
+    }
+  }
+
+  const lowerIp = ip.toLowerCase();
+  if (
+    lowerIp === '::1' ||
+    lowerIp === '::' ||
+    lowerIp.startsWith('fc00:') ||
+    lowerIp.startsWith('fd00:') ||
+    lowerIp.startsWith('fe80:')
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+const isPrivateUrl = async (urlStr: string): Promise<boolean> => {
   try {
     const url = new URL(urlStr);
     const hostname = url.hostname.toLowerCase();
@@ -139,26 +166,26 @@ const isPrivateUrl = (urlStr: string): boolean => {
     if (isProduction) {
       if (
         hostname === 'localhost' ||
-        hostname === '127.0.0.1' ||
         hostname === '[::1]' ||
         hostname.endsWith('.local') ||
         hostname.endsWith('.internal')
       ) {
         return true;
       }
+
+      if (isIP(hostname)) {
+        return isPrivateIp(hostname);
+      }
       
-      const parts = hostname.split('.');
-      if (parts.length === 4) {
-        const p1 = parseInt(parts[0], 10);
-        const p2 = parseInt(parts[1], 10);
-        if (
-          p1 === 10 ||
-          (p1 === 172 && p2 >= 16 && p2 <= 31) ||
-          (p1 === 192 && p2 === 168) ||
-          (p1 === 169 && p2 === 254)
-        ) {
-          return true;
+      try {
+        const lookupResults = await dns.lookup(hostname, { all: true });
+        for (const res of lookupResults) {
+          if (isPrivateIp(res.address)) {
+            return true;
+          }
         }
+      } catch {
+        return true; // Safe fallback: block if resolution fails
       }
     }
     return false;
@@ -180,7 +207,7 @@ export const analyzeInfrastructure = async (
   const modelName = options?.modelName || process.env.LLM_MODEL || 'gemma4:e2b';
 
   // Mitigate SSRF: Validate client-provided modelUrl
-  if (options?.modelUrl && isPrivateUrl(options.modelUrl)) {
+  if (options?.modelUrl && (await isPrivateUrl(options.modelUrl))) {
     throw new Error("SECURITY_ERROR: Access to the specified LLM URL is restricted.");
   }
 

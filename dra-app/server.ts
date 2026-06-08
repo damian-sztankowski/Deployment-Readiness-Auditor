@@ -16,7 +16,53 @@ app.use(express.json({ limit: '10mb' }));
 // -----------------------------------------------------
 // TWOJE GŁÓWNE API (Dla Frontendu oraz dra-cli)
 // -----------------------------------------------------
-app.post('/api/audit', async (req, res) => {
+const authenticateRequest = async (req: any, res: any, next: any) => {
+    const isProduction = process.env.NODE_ENV === 'production' || !!process.env.K_SERVICE;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token) {
+        try {
+            const url = token.startsWith('ya29.')
+                ? `https://oauth2.googleapis.com/tokeninfo?access_token=${token}`
+                : `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                return res.status(403).json({ error: "Access denied. Invalid or expired Authorization token." });
+            }
+            return next();
+        } catch (err: any) {
+            return res.status(403).json({ error: `Access denied. Token validation failed: ${err.message}` });
+        }
+    }
+
+    if (!isProduction) {
+        return next();
+    }
+
+    const host = req.headers.host;
+    const referer = req.headers.referer;
+    const userAgent = req.headers['user-agent'] || '';
+
+    if (userAgent.startsWith('Go-http-client')) {
+        return res.status(401).json({ error: "Access denied. CLI requests must provide a GCP_IAM_TOKEN." });
+    }
+
+    if (referer) {
+        try {
+            const refererUrl = new URL(referer);
+            if (refererUrl.host === host) {
+                return next();
+            }
+        } catch {
+            // Fall through
+        }
+    }
+
+    return res.status(401).json({ error: "Access denied. Missing valid Authorization token." });
+};
+
+app.post('/api/audit', authenticateRequest, async (req, res) => {
     try {
         const { code, llmProvider, llmModel, llmUrl } = req.body;
         if (!code) {

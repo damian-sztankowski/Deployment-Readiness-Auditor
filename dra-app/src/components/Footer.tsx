@@ -1,8 +1,7 @@
 import React from 'react';
 import { Github, Linkedin, ExternalLink, Cpu, Globe, ShieldCheck, Sparkle, Coins, Database } from 'lucide-react';
 import { Logo } from './Logo';
-import { GEMINI_MODEL } from '../services/geminiService';
-import { AuditResult } from '../types';
+import { AuditResult, GEMINI_MODEL } from '../types';
 
 interface FooterProps {
   lastResult: AuditResult | null;
