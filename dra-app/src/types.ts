@@ -61,3 +61,5 @@ export interface HistoryItem {
   summary: string;
   result: AuditResult;
 }
+
+export const GEMINI_MODEL = "gemini-3.5-flash";

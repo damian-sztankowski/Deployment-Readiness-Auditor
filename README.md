@@ -74,13 +74,16 @@ cd deployment-readiness-auditor
 ```
 
 ### 2. Install and Build
+Navigate to the web application directory, then install and build the frontend assets:
 ```bash
+cd dra-app
 npm install
 npm run build
 ```
 This converts the `index.tsx` file into a browser-readable `index.js` file using **esbuild**.
 
 ### 3. Start the Development Server
+*(Run these commands from the `dra-app` directory)*
 
 #### Option A: Running with Google Gemini (Default)
 ```bash
@@ -233,7 +236,8 @@ Report example and analysis can be found here:
 - **Enterprise-Grade DLP Engine**: Implements a semantic data loss prevention engine before sending code payloads to any LLM provider.
   - Automatically sanitizes identities (emails), VPC/IP topographies, database names, and billing/GCP project resource identifiers into semantic aliases (e.g. `IP_RANGE_1`, `CLOUD_ID_2`).
   - Implements **Global High-Entropy Scanning** to scrub hardcoded credentials (such as Google API keys `AIzaSy...`, AWS Access Key IDs `AKIA...`, and PEM private key files) even if assigned to generic attribute names (like `value = "..."`).
-- **SSRF Outbound Protection**: In production and container environments (such as Cloud Run), the LLM routing proxy strictly validates external target URLs to prevent Server-Side Request Forgery (SSRF). Attempts to access internal subnets, local loopbacks, or the GCP Link-Local Instance Metadata Server (`169.254.169.254`) are intercepted and blocked.
+- **Hardened SSRF Outbound Protection**: In production and container environments (such as Cloud Run), the LLM routing proxy resolves custom domain names using the system resolver to check all mapped IP addresses. It blocks loops/requests resolving to private IP ranges (RFC 1918), local loopbacks (including custom DNS rebinding wrappers like `127.0.0.1.nip.io`), and the GCP Link-Local Instance Metadata Server (`169.254.169.254`/`metadata.google.internal`).
+- **Token-Based Backend Authentication**: When deployed in production environments, the `/api/audit` endpoint requires OIDC Identity or Access tokens (`GCP_IAM_TOKEN`) passed in the `Authorization` header, validating them against Google's TokenInfo service. Same-origin headers (`Host`/`Referer`) are checked to permit the hosted frontend Web UI to execute audits seamlessly.
 - **Vulnerability Isolation**: Local developer options remain active for offline environments, allowing loopback requests to local Ollama (`localhost:11434`) or LM Studio endpoints only when not executing in production or containerized environments.
 - **Zero-Knowledge Storage**: Audit history logs are preserved locally inside the client browser's `localStorage` and are never synced to any remote database.
 
