@@ -91,7 +91,11 @@ export const DiagramView: React.FC<DiagramViewProps> = ({ code }) => {
         setError(null);
       } catch (err) {
         console.error("Mermaid rendering failed:", err);
-        setError("Failed to render architecture diagram. The syntax returned by AI was invalid.");
+        try {
+          const rogueEl = document.getElementById(`d${id}`);
+          if (rogueEl) rogueEl.remove();
+        } catch (e) {}
+        setError("Unable to render architecture diagram.");
       }
     };
 
