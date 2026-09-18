@@ -5,9 +5,10 @@ import { Logo } from './Logo';
 interface SplashPageProps {
   onStart: () => void;
   onRunDemo: () => void;
+  onLearnMore: () => void;
 }
 
-export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) => {
+export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo, onLearnMore }) => {
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
 
@@ -138,7 +139,7 @@ export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo }) =>
 
                 {/* Learn More Button */}
                 <button 
-                    onClick={() => setIsLearnMoreOpen(true)}
+                    onClick={onLearnMore}
                     className="flex items-center justify-center gap-4 px-10 py-5 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] border border-slate-200 dark:border-slate-800/50 transition-all group"
                 >
                     <HelpCircle className="w-5 h-5 opacity-60 group-hover:opacity-100" />

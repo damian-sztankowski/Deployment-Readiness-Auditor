@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { LayoutGrid, Info, Moon, Sun, History, Sparkles, Terminal } from 'lucide-react';
+import { LayoutGrid, Info, Moon, Sun, History, Sparkles, Terminal, BookOpen } from 'lucide-react';
 import { Logo } from './Logo';
 
-export type ViewType = 'about' | 'features' | 'assessment' | 'cli';
+export type ViewType = 'about' | 'features' | 'docs' | 'cli' | 'assessment';
 
 interface HeaderProps {
   currentView: ViewType;
@@ -79,6 +79,20 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                     <Sparkles className="w-3.5 h-3.5" />
                     Features
+                </button>
+
+                <button 
+                    onClick={() => onNavigate('docs')}
+                    className={`
+                        flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all duration-300
+                        ${currentView === 'docs' 
+                        ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-md' 
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }
+                    `}
+                >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    Docs & Releases
                 </button>
 
                 <button 

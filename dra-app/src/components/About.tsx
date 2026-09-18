@@ -55,14 +55,14 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         <div className="flex-1 relative z-10 space-y-8 text-center md:text-left">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-black uppercase tracking-[0.2em]">
             <Layers className="w-3.5 h-3.5" />
-            Dual-Analysis Engine
+            AI Gatekeeper & Governance Engine
           </div>
           <h2 className="text-4xl md:text-6xl font-extrabold tracking-tighter leading-[1.05] text-white">
             Architecture Audit <br/>
             <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">Meets Compliance.</span>
           </h2>
           <p className="text-slate-400 text-lg leading-relaxed max-w-xl mx-auto md:mx-0">
-            The <strong>Deployment Readiness Auditor (DRA)</strong> leverages Gemini models to evaluate your Google Cloud infrastructure against the <span className="text-indigo-300 font-bold">Well-Architected Framework</span> and global regulatory benchmarks in a single pass.
+            The <strong>Deployment Readiness Auditor (DRA)</strong> evaluates Google Cloud Terraform code (<code className="text-indigo-300">*.tf</code>) and evaluated execution plans (<code className="text-indigo-300">tfplan.json</code>) against the <strong>Well-Architected Framework</strong> and 6 international cybersecurity standards before changes hit production.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
             <button 
@@ -119,9 +119,9 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
                     1
                 </div>
-                <h4 className="text-lg font-black uppercase tracking-tight">Prepare Code</h4>
+                <h4 className="text-lg font-black uppercase tracking-tight">Prepare Code or Plan</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                    Paste your Terraform (HCL) code directly into the editor, or upload individual files and entire project directories using the top toolbar.
+                    Paste your Terraform (HCL) code or evaluated execution plan (<code className="text-indigo-500">tfplan.json</code>) directly into the editor, or click <strong>Upload Project</strong> to load an entire directory.
                 </p>
             </div>
 
@@ -131,7 +131,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 </div>
                 <h4 className="text-lg font-black uppercase tracking-tight">Configure Engine</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                    Click the <strong>Settings Gear</strong> icon next to "Run Audit" to adjust your settings. Select between the cloud-hosted <strong>Gemini</strong> API or local self-hosted models (like <strong>Ollama</strong> or <strong>LM Studio</strong>).
+                    Click the <strong>Settings icon</strong> (slider toggle) in the editor to select your model (<code className="text-indigo-500">gemini-2.5-pro</code>, <code className="text-indigo-500">gemini-2.5-flash</code>) or connect to local self-hosted engines (like <strong>Ollama</strong> or <strong>LM Studio</strong>).
                 </p>
             </div>
 
@@ -139,9 +139,9 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
                     3
                 </div>
-                <h4 className="text-lg font-black uppercase tracking-tight">Analyze & Repair</h4>
+                <h4 className="text-lg font-black uppercase tracking-tight">Analyze & Remediate</h4>
                 <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                    Click <strong>Run Audit</strong>. The system pre-processes your code using the DLP Engine and generates a score matrix, FinOps savings, and compliance fixes.
+                    Click <strong>Run Audit</strong>. Review the Go/No-Go Deployment Verdict, Regulatory Compliance Matrix, FinOps waste savings, and export one-click Git patch bundles or CISO PDF briefs.
                 </p>
             </div>
         </div>
@@ -414,8 +414,28 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                 answer="DRA covers a broad spectrum of international and industry-specific frameworks, including the CIS Google Cloud Computing Foundation Benchmark, NIST 800-53 (Security and Privacy Controls), GDPR (General Data Protection Regulation), HIPAA (Health Insurance Portability and Accountability Act), and PCI DSS (Payment Card Industry Data Security Standard). Every finding identifies the specific control ID (e.g., CIS 1.2) to simplify compliance reporting."
              />
              <FAQItem
+                question="How does the Go/No-Go Deployment Verdict and Blast Radius work?"
+                answer="DRA synthesizes all architectural pillar scores, regulatory failures, and threat severities into an immediate gatekeeper decision: BLOCKED (critical security flaw or compliance violation detected), CONDITIONAL (remediable high risks present), or PRODUCTION READY. It also quantifies Blast Radius (CRITICAL, MODERATE, LOW) to warn engineers of potential cascading infrastructure outages before apply."
+             />
+             <FAQItem
+                question="Can I audit compiled Terraform execution plans (tfplan.json)?"
+                answer="Yes! In addition to pure .tf and .tfvars files, DRA natively evaluates tfplan.json files (generated via `terraform show -json tfplan.binary > tfplan.json`). The auditor inspects planned runtime mutations (change.after) to catch misconfigurations resulting from dynamic interpolations and module outputs before they are provisioned."
+             />
+             <FAQItem
+                question="How do I change or configure Gemini model versions?"
+                answer="You can set the model in 4 ways: (1) In Google Cloud Run, update the LLM_MODEL environment variable (e.g. LLM_MODEL=gemini-2.5-pro); (2) In the Web UI, open the Settings slider in the code editor and type your desired model; (3) In the CLI, pass --llm-model='gemini-2.5-pro'; or (4) When running locally, start the server with LLM_MODEL='gemini-2.5-pro' npm start."
+             />
+             <FAQItem
+                question="What is included in the Remediation Bundle and CISO PDF Brief?"
+                answer="The 'Remediate All' button exports a unified Git patch (dra-remediation.patch) that can be applied immediately with `git apply dra-remediation.patch`, along with a consolidated remediated-infrastructure.tf file. The CISO Executive PDF Brief exports a boardroom-ready, multi-page report complete with pillar scorecards, compliance tables, code fixes, and formal 3-party governance sign-off blocks."
+             />
+             <FAQItem
                 question="How does the 'Auto-Remediation' feature work?"
                 answer="For every identified risk, the auditor generates a corresponding HCL/Terraform code block that resolves the issue while adhering to best practices. This code is synthesized based on your existing resource definitions, meaning it includes your specific naming conventions and variable structures where possible."
+             />
+             <FAQItem
+                question="Can I integrate DRA into CI/CD pipelines as a quality gate?"
+                answer="Yes! The standalone Go CLI (`dra-cli`) can be added to GitHub Actions, GitLab CI, or Cloud Build pipelines. Use `--fail-on critical,high` or `--min-score 75` to break builds when thresholds are violated, and `--output sarif` to upload results directly to the GitHub Code Scanning Security tab."
              />
         </div>
 

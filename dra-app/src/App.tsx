@@ -7,6 +7,7 @@ import { LoadingAnimation } from './components/LoadingAnimation';
 import { SplashPage } from './components/SplashPage';
 import { About } from './components/About';
 import { Features } from './components/Features';
+import { InternalDocs } from './components/InternalDocs';
 import { CliInfo } from './components/CliInfo';
 import { HistorySidebar } from './components/HistorySidebar';
 import { OnboardingTour } from './components/OnboardingTour';
@@ -266,7 +267,14 @@ const handleAnalyze = async (code: string, options?: { provider?: string; modelU
 
       <div className="relative z-10 flex flex-col flex-grow w-full">
         {showSplash ? (
-          <SplashPage onStart={handleStart} onRunDemo={handleRunDemo} />
+          <SplashPage 
+            onStart={handleStart} 
+            onRunDemo={handleRunDemo} 
+            onLearnMore={() => {
+              setShowSplash(false);
+              setCurrentView('docs');
+            }}
+          />
         ) : (
           <>
             <Header 
@@ -293,6 +301,10 @@ const handleAnalyze = async (code: string, options?: { provider?: string; modelU
 
               {currentView === 'features' && (
                   <Features />
+              )}
+
+              {currentView === 'docs' && (
+                  <InternalDocs onStartAssessment={() => setCurrentView('assessment')} />
               )}
 
               {currentView === 'cli' && (
