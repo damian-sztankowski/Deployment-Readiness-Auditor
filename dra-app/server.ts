@@ -41,8 +41,21 @@ const authenticateRequest = async (req: any, res: any, next: any) => {
     const isProduction = process.env.NODE_ENV === 'production' || !!process.env.K_SERVICE;
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
+    const apiKey = req.headers['x-api-key'] || req.headers['x-goog-api-key'];
 
+    // 1. API Key validation (matches server API_KEY or DRA_API_KEY)
+    const serverApiKey = process.env.API_KEY || process.env.DRA_API_KEY;
+    if (apiKey && serverApiKey && (apiKey === serverApiKey || apiKey === process.env.DRA_API_KEY)) {
+        return next();
+    }
+
+    // 2. Bearer Token validation
     if (token) {
+        // Also allow passing API_KEY as Bearer token
+        if (serverApiKey && (token === serverApiKey || token === process.env.DRA_API_KEY)) {
+            return next();
+        }
+
         try {
             const url = token.startsWith('ya29.')
                 ? `https://oauth2.googleapis.com/tokeninfo?access_token=${token}`
@@ -66,7 +79,7 @@ const authenticateRequest = async (req: any, res: any, next: any) => {
     const userAgent = req.headers['user-agent'] || '';
 
     if (userAgent.startsWith('Go-http-client')) {
-        return res.status(401).json({ error: "Access denied. CLI requests must provide a GCP_IAM_TOKEN." });
+        return res.status(401).json({ error: "Access denied. CLI requests must provide a GCP_IAM_TOKEN or API key." });
     }
 
     if (referer) {

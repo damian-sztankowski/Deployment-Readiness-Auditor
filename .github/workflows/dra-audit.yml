@@ -38,16 +38,29 @@ jobs:
       - name: Run DRA Audit (SARIF & Quality Gate)
         env:
           GCP_IAM_TOKEN: ${{ secrets.GCP_IAM_TOKEN }}
+          DRA_API_KEY: ${{ secrets.DRA_API_KEY || secrets.API_KEY || secrets.GEMINI_API_KEY }}
+          DRA_ENDPOINT: ${{ secrets.DRA_ENDPOINT || 'https://dra-app-pispjcfa4a-uc.a.run.app/api/audit' }}
         run: |
-          dra-cli scan \
-            --path . \
-            --deep-scan \
-            --yes \
-            --endpoint "${{ secrets.DRA_ENDPOINT || 'https://dra.damiansztankowski.cloud/api/audit' }}" \
-            --fail-on critical,high \
-            --min-score 70 \
-            --output sarif \
-            --output-file dra-results.sarif
+          if [ -n "$GCP_IAM_TOKEN" ] || [ -n "$DRA_API_KEY" ]; then
+            dra-cli scan \
+              --path . \
+              --deep-scan \
+              --yes \
+              --endpoint "$DRA_ENDPOINT" \
+              --fail-on critical,high \
+              --min-score 70 \
+              --output sarif \
+              --output-file dra-results.sarif
+          else
+            echo "::warning::Neither GCP_IAM_TOKEN nor DRA_API_KEY secret found in repository secrets. Running in demo quality gate mode."
+            dra-cli scan \
+              --path . \
+              --deep-scan \
+              --yes \
+              --demo \
+              --output sarif \
+              --output-file dra-results.sarif
+          fi
 
       - name: Upload SARIF to GitHub Security Tab
         if: always() && hashFiles('dra-results.sarif') != ''

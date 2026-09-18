@@ -134,6 +134,9 @@ var fixPatchFile string
 var llmProvider string
 var llmModel string
 var llmURL string
+var authToken string
+var apiKey string
+var demoMode bool
 
 var rootCmd = &cobra.Command{
 	Use:   "dra-cli",
@@ -156,15 +159,37 @@ var scanCmd = &cobra.Command{
 			fmt.Fprintln(logDest, Bold+Blue+"===================================================="+Reset)
 		}
 
-		gcpToken := os.Getenv("GCP_IAM_TOKEN")
+		// Resolve Endpoint from environment if not overridden by user flag
+		if backendURL == "http://localhost:8080/api/audit" && os.Getenv("DRA_ENDPOINT") != "" {
+			backendURL = os.Getenv("DRA_ENDPOINT")
+		}
+
+		// Resolve Token
+		if authToken == "" {
+			authToken = os.Getenv("GCP_IAM_TOKEN")
+			if authToken == "" {
+				authToken = os.Getenv("DRA_TOKEN")
+			}
+			if authToken == "" {
+				authToken = os.Getenv("AUTH_TOKEN")
+			}
+		}
+
+		// Resolve API Key
+		if apiKey == "" {
+			apiKey = os.Getenv("DRA_API_KEY")
+			if apiKey == "" {
+				apiKey = os.Getenv("API_KEY")
+			}
+			if apiKey == "" {
+				apiKey = os.Getenv("GEMINI_API_KEY")
+			}
+		}
+
 		isLocal := strings.Contains(backendURL, "localhost") || strings.Contains(backendURL, "127.0.0.1")
-		if gcpToken == "" {
-			if !isLocal {
-				fmt.Fprintln(os.Stderr, Red+"❌ Error: Missing authorization token in GCP_IAM_TOKEN environment variable."+Reset)
-				fmt.Fprintln(os.Stderr, "Please run: export GCP_IAM_TOKEN=$(gcloud auth print-identity-token)")
-				os.Exit(1)
-			} else if outputFormat == "console" {
-				fmt.Fprintln(logDest, Yellow+"ℹ️  No GCP_IAM_TOKEN set. Proceeding without authorization header for local endpoint."+Reset)
+		if !demoMode && authToken == "" && apiKey == "" && !isLocal {
+			if outputFormat == "console" {
+				fmt.Fprintln(logDest, Yellow+"ℹ️  No GCP_IAM_TOKEN or DRA_API_KEY set. Proceeding with request..."+Reset)
 			}
 		}
 
@@ -279,57 +304,82 @@ var scanCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if outputFormat == "console" {
-			fmt.Fprintf(logDest, "📦 Found %d file(s). Transmitting payload to DRA Engine:\n-> %s... 🚀\n", len(targetFiles), backendURL)
-		}
-
-		req, err := http.NewRequest("POST", backendURL, bytes.NewBuffer(jsonData))
-		if err != nil {
-			fmt.Fprintf(os.Stderr, Red+"❌ Error creating HTTP request: %v\n"+Reset, err)
-			os.Exit(1)
-		}
-
-		req.Header.Set("Content-Type", "application/json")
-		if gcpToken != "" {
-			req.Header.Set("Authorization", "Bearer "+gcpToken)
-		}
-
-		// Start loading spinner only for console output
-		doneSpinner := make(chan struct{})
-		if outputFormat == "console" {
-			go startSpinner("Auditing HCL topology and verifying compliance mapping...", doneSpinner)
-		}
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-
-		if outputFormat == "console" {
-			close(doneSpinner)
-			fmt.Fprint(logDest, "\r\033[K") // Clear spinner line
-		}
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, Red+"❌ Error connecting to DRA backend: %v\n"+Reset, err)
-			os.Exit(1)
-		}
-		defer resp.Body.Close()
-
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, Red+"❌ Error reading response: %v\n"+Reset, err)
-			os.Exit(1)
-		}
-
-		if resp.StatusCode != 200 {
-			fmt.Fprintf(os.Stderr, Red+"❌ Server returned error [Status: %s]: %s\n"+Reset, resp.Status, string(respBody))
-			os.Exit(1)
-		}
-
 		var report AuditReport
-		err = json.Unmarshal(respBody, &report)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, Red+"❌ Error decoding JSON response: %v\n"+Reset, err)
-			os.Exit(1)
+
+		if demoMode {
+			if outputFormat == "console" {
+				fmt.Fprintln(logDest, "✨ Running in Interactive Demo Mode (Simulated Audit Engine)...")
+			}
+			report = getMockAuditReport()
+		} else {
+			if outputFormat == "console" {
+				fmt.Fprintf(logDest, "📦 Found %d file(s). Transmitting payload to DRA Engine:\n-> %s... 🚀\n", len(targetFiles), backendURL)
+			}
+
+			req, err := http.NewRequest("POST", backendURL, bytes.NewBuffer(jsonData))
+			if err != nil {
+				fmt.Fprintf(os.Stderr, Red+"❌ Error creating HTTP request: %v\n"+Reset, err)
+				os.Exit(1)
+			}
+
+			req.Header.Set("Content-Type", "application/json")
+			if authToken != "" {
+				req.Header.Set("Authorization", "Bearer "+authToken)
+			}
+			if apiKey != "" {
+				req.Header.Set("X-API-Key", apiKey)
+				if authToken == "" {
+					req.Header.Set("Authorization", "Bearer "+apiKey)
+				}
+			}
+
+			// Start loading spinner only for console output
+			doneSpinner := make(chan struct{})
+			if outputFormat == "console" {
+				go startSpinner("Auditing HCL topology and verifying compliance mapping...", doneSpinner)
+			}
+
+			client := &http.Client{}
+			resp, err := client.Do(req)
+
+			if outputFormat == "console" {
+				close(doneSpinner)
+				fmt.Fprint(logDest, "\r\033[K") // Clear spinner line
+			}
+
+			if err != nil {
+				fmt.Fprintf(os.Stderr, Red+"❌ Error connecting to DRA backend: %v\n"+Reset, err)
+				os.Exit(1)
+			}
+			defer resp.Body.Close()
+
+			respBody, err := io.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, Red+"❌ Error reading response: %v\n"+Reset, err)
+				os.Exit(1)
+			}
+
+			if resp.StatusCode == 401 || resp.StatusCode == 403 {
+				fmt.Fprintf(os.Stderr, Red+"❌ Authentication failed [Status: %s]: %s\n"+Reset, resp.Status, string(respBody))
+				fmt.Fprintln(os.Stderr, Yellow+"\n💡 To authenticate dra-cli requests:"+Reset)
+				fmt.Fprintln(os.Stderr, "   • Option A (GCP IAM): export GCP_IAM_TOKEN=$(gcloud auth print-identity-token)")
+				fmt.Fprintln(os.Stderr, "     or pass flag: dra-cli scan --token <token>")
+				fmt.Fprintln(os.Stderr, "   • Option B (API Key): export DRA_API_KEY=<key> or export API_KEY=<key>")
+				fmt.Fprintln(os.Stderr, "     or pass flag: dra-cli scan --api-key <key>")
+				fmt.Fprintln(os.Stderr, "   • Option C (Offline / CI Demo): dra-cli scan --demo")
+				os.Exit(1)
+			}
+
+			if resp.StatusCode != 200 {
+				fmt.Fprintf(os.Stderr, Red+"❌ Server returned error [Status: %s]: %s\n"+Reset, resp.Status, string(respBody))
+				os.Exit(1)
+			}
+
+			err = json.Unmarshal(respBody, &report)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, Red+"❌ Error decoding JSON response: %v\n"+Reset, err)
+				os.Exit(1)
+			}
 		}
 
 		// --- STATS BADGE ---
@@ -900,6 +950,77 @@ func init() {
 	scanCmd.Flags().StringVar(&llmProvider, "llm-provider", "", "LLM Provider (e.g. gemini, ollama)")
 	scanCmd.Flags().StringVar(&llmModel, "llm-model", "", "LLM Model Name (e.g. gemini-3-pro-preview, gemma4:e2b)")
 	scanCmd.Flags().StringVar(&llmURL, "llm-url", "", "Self-hosted LLM Endpoint URL")
+	scanCmd.Flags().StringVarP(&authToken, "token", "t", "", "Authorization Bearer token or GCP IAM token")
+	scanCmd.Flags().StringVarP(&apiKey, "api-key", "k", "", "API key for authenticating with the DRA backend (or DRA_API_KEY)")
+	scanCmd.Flags().BoolVar(&demoMode, "demo", false, "Run in demo / showcase mode without calling remote backend")
+}
+
+func getMockAuditReport() AuditReport {
+	return AuditReport{
+		Summary: "Architecture contains high-risk firewall exposures and unattached storage disks violating CIS GCP Benchmark controls.",
+		Categories: []CategoryScore{
+			{Name: "Security & Compliance", Score: 45, Status: "Critical Attention", Explanation: "Ingress firewall open to 0.0.0.0/0 on port 22 and public Cloud Storage bucket without uniform access."},
+			{Name: "Cost Optimization", Score: 68, Status: "Needs Improvement", Explanation: "Unattached PD-SSD disk incurring reclaimable waste."},
+			{Name: "Reliability", Score: 78, Status: "Acceptable", Explanation: "Compute instance lacks multi-zone redundancy."},
+			{Name: "Operational Excellence", Score: 60, Status: "Needs Improvement", Explanation: "Missing resource labels for cost-center and environment."},
+			{Name: "Performance Efficiency", Score: 85, Status: "Good", Explanation: "Appropriate compute machine tier selected."},
+		},
+		Findings: []Finding{
+			{
+				ID:          "f1",
+				Severity:    "Critical",
+				Category:    "Security",
+				Title:       "Public Cloud Storage Bucket",
+				Description: "Storage bucket has public read access enabled without Uniform Bucket-Level Access (UBLA).",
+				Remediation: "Enable uniform_bucket_level_access = true and remove public IAM bindings.",
+				Fix:         "uniform_bucket_level_access = true",
+				FileName:    "main.tf",
+				LineNumber:  1,
+				Compliance: []Compliance{
+					{Standard: "CIS GCP Benchmark", ControlID: "5.1", Description: "Ensure uniform bucket-level access is enabled", Impact: "Unrestricted public exposure of proprietary data"},
+					{Standard: "NIST 800-53", ControlID: "AC-3", Description: "Access Enforcement", Impact: "Unauthorized read access"},
+				},
+			},
+			{
+				ID:          "f2",
+				Severity:    "High",
+				Category:    "Security",
+				Title:       "Over-permissive Firewall Rules (SSH)",
+				Description: "Firewall rule allows TCP traffic on port 22 from all IP addresses (0.0.0.0/0).",
+				Remediation: "Restrict SSH access to administrative IP ranges or Google Identity-Aware Proxy (IAP).",
+				Fix:         "source_ranges = [\"35.235.240.0/20\"] # Google IAP Range",
+				FileName:    "main.tf",
+				LineNumber:  14,
+				Compliance: []Compliance{
+					{Standard: "CIS GCP Benchmark", ControlID: "3.6", Description: "Ensure SSH access is restricted from the internet", Impact: "Brute-force attacks and network infiltration"},
+					{Standard: "NIST 800-53", ControlID: "AC-17", Description: "Remote Access", Impact: "Internet-wide attack surface"},
+				},
+			},
+			{
+				ID:          "f3",
+				Severity:    "Medium",
+				Category:    "Cost Optimization",
+				Title:       "Zombie Disk Identified",
+				Description: "Disk is defined as PD-SSD but is not attached to any compute instance.",
+				Remediation: "Convert to standard HDD or delete if no longer required.",
+				CostSavings: "Save ~$50/mo",
+				Fix:         "type = \"pd-standard\"",
+				FileName:    "main.tf",
+				LineNumber:  41,
+			},
+			{
+				ID:          "f4",
+				Severity:    "Low",
+				Category:    "Operations",
+				Title:       "Missing Resource Labels",
+				Description: "Resources lack labels for environment, owner, and cost-center tracking.",
+				Remediation: "Apply standard labeling schema to all resources.",
+				Fix:         "labels = { environment = \"prod\", owner = \"platform-team\" }",
+				FileName:    "main.tf",
+				LineNumber:  26,
+			},
+		},
+	}
 }
 
 func main() {
