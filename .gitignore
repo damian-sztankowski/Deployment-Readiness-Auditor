@@ -40,3 +40,6 @@ dra-cli/bin/
 bin/
 *.exe
 *.test
+
+# Exploit / Scratch directories
+.exploit/

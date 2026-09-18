@@ -97,6 +97,35 @@ export const MOCK_AUDIT_RESULT: AuditResult = {
       lineNumber: 26
     }
   ],
+  diagram: `flowchart TD
+  subgraph Internet["Public Internet"]
+    User["Untrusted Traffic (0.0.0.0/0)"]
+  end
+
+  subgraph GCP["Google Cloud Project: Project-Aegis"]
+    subgraph VPC["VPC: prod-secure-vpc"]
+      FW["Firewall: allow_ssh\\n(Port 22 open to 0.0.0.0/0)"]
+      VM["Compute VM: admin-box\\n(e2-medium)"]
+      Disk["PD-SSD Disk: unused-disk-backup\\n(Unattached Zombie Disk)"]
+    end
+
+    subgraph Storage["Cloud Storage"]
+      Bucket["Bucket: corp-data-prod\\n(Public Read / No UBLA)"]
+    end
+  end
+
+  User -. Insecure SSH .-> FW
+  FW --> VM
+  User -. Direct Data Access .-> Bucket
+  VM -. Detached .-> Disk
+
+  classDef critical fill:#fee2e2,stroke:#ef4444,stroke-width:2px,color:#991b1b;
+  classDef warning fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#92400e;
+  classDef safe fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#065f46;
+
+  class FW,Bucket critical;
+  class Disk warning;
+  class VM safe;`,
   usage: {
     promptTokenCount: 1450,
     candidatesTokenCount: 890,
