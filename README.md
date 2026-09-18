@@ -73,48 +73,63 @@ DRA operates as a hybrid decoupled architecture supporting both interactive web 
 
 ```mermaid
 flowchart TD
-    subgraph Inputs["1. Infrastructure Inputs"]
-        TF["Terraform Code (*.tf, *.tfvars)"]
-        PLAN["Terraform Plan (*.json / tfplan.json)"]
+    subgraph S_Inputs["Layer 1: Infrastructure Inputs"]
+        TF["Terraform Code (.tf, .tfvars)"]
+        PLAN["Terraform Plan (tfplan.json)"]
         DIR["Multi-File Directory Upload"]
     end
 
-    subgraph ClientLayer["2. Client Interfaces"]
+    subgraph S_Client["Layer 2: Client Interfaces"]
         WEB["DRA Web UI (React + Tailwind)"]
         CLI["DRA CLI (Go Binary / CI-CD)"]
     end
 
-    subgraph Backend["3. DRA Serverless Backend (Cloud Run)"]
+    subgraph S_Backend["Layer 3: Serverless Backend (Cloud Run)"]
         RATE["Rate Limiter (DoW Protection)"]
         AUTH["IAM Token Validator"]
-        DLP["Entropy & Regex DLP Redactor<br/>(Sanitizes IPs, Keys, Project IDs)"]
+        DLP["Entropy & Regex DLP Redactor"]
         PROXY["AI Engine Dispatcher"]
     end
 
-    subgraph Intelligence["4. Audit Intelligence Engines"]
-        GEMINI["Google Gemini 2.5 Flash / Pro<br/>(Official GenAI SDK)"]
-        LOCAL["Local / Self-Hosted LLMs<br/>(Ollama / LM Studio)"]
+    subgraph S_AI["Layer 4: Audit Intelligence Engines"]
+        GEMINI["Google Gemini 2.5 (Official GenAI SDK)"]
+        LOCAL["Local LLMs (Ollama / LM Studio)"]
     end
 
-    subgraph OutputLayer["5. Governance & Artifact Outputs"]
+    subgraph S_Outputs["Layer 5: Governance & Artifact Outputs"]
         VERDICT["Executive Verdict Banner & Grade"]
-        TOPOLOGY["Mermaid Architecture Topology Map"]
-        COMPLIANCE["Multi-Framework Compliance Matrix"]
+        TOPOLOGY["Architecture Topology Map"]
+        COMPLIANCE["Compliance Matrix (6 Standards)"]
         BUNDLE["Remediation Bundle (.patch / .tf)"]
         PDF["CISO Executive PDF Brief"]
-        SARIF["SARIF 2.1.0 (GitHub Security Alerts)"]
+        SARIF["SARIF 2.1.0 (GitHub Security)"]
     end
 
-    Inputs --> ClientLayer
+    TF --> WEB
+    TF --> CLI
+    PLAN --> WEB
+    DIR --> WEB
+
     WEB --> RATE
     CLI --> RATE
     RATE --> AUTH
     AUTH --> DLP
     DLP --> PROXY
+
     PROXY --> GEMINI
     PROXY --> LOCAL
-    GEMINI --> OutputLayer
-    LOCAL --> OutputLayer
+
+    GEMINI --> VERDICT
+    GEMINI --> TOPOLOGY
+    GEMINI --> COMPLIANCE
+    GEMINI --> BUNDLE
+    GEMINI --> PDF
+
+    LOCAL --> VERDICT
+    LOCAL --> COMPLIANCE
+    LOCAL --> BUNDLE
+
+    CLI --> SARIF
 ```
 
 ---

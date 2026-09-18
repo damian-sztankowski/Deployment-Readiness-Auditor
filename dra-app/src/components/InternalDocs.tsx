@@ -13,30 +13,30 @@ interface InternalDocsProps {
 }
 
 const ARCHITECTURE_MERMAID = `flowchart TD
-    subgraph S_Inputs["1. Infrastructure Inputs"]
+    subgraph S_Inputs["Layer 1: Infrastructure Inputs"]
         TF["Terraform Code (.tf, .tfvars)"]
         PLAN["Terraform Plan (tfplan.json)"]
         DIR["Multi-File Directory Upload"]
     end
 
-    subgraph S_Client["2. Client Interfaces"]
+    subgraph S_Client["Layer 2: Client Interfaces"]
         WEB["DRA Web UI (React + Tailwind)"]
         CLI["DRA CLI (Go Binary / CI-CD)"]
     end
 
-    subgraph S_Backend["3. DRA Serverless Backend (Cloud Run)"]
+    subgraph S_Backend["Layer 3: Serverless Backend (Cloud Run)"]
         RATE["Rate Limiter (DoW Protection)"]
         AUTH["IAM Token Validator"]
         DLP["Entropy & Regex DLP Redactor"]
         PROXY["AI Engine Dispatcher"]
     end
 
-    subgraph S_AI["4. Audit Intelligence Engines"]
+    subgraph S_AI["Layer 4: Audit Intelligence Engines"]
         GEMINI["Google Gemini 2.5 (Official GenAI SDK)"]
         LOCAL["Local LLMs (Ollama / LM Studio)"]
     end
 
-    subgraph S_Outputs["5. Governance & Artifact Outputs"]
+    subgraph S_Outputs["Layer 5: Governance & Artifact Outputs"]
         VERDICT["Executive Verdict Banner & Grade"]
         TOPOLOGY["Architecture Topology Map"]
         COMPLIANCE["Compliance Matrix (6 Standards)"]
