@@ -39,17 +39,142 @@ This project requires access to cloud services (e.g., Azure AI Studio, Google Cl
 
 **Architect with Confidence. Audit with Intelligence.**
 
-The **Deployment Readiness Auditor (DRA)** is a Google Cloud-native, AI-assisted platform designed to analyze infrastructure-as-code (Terraform/HCL) before it hits production. It evaluates your deployment specification against the official **Google Cloud Well-Architected Framework** and maps risks to global regulatory standards like **NIST, CIS, GDPR, and HIPAA**.
+The **Deployment Readiness Auditor (DRA)** is an enterprise-grade, Google Cloud-native DevSecOps platform and CI/CD quality gatekeeper. It audits Infrastructure as Code (Terraform `.tf`, `.tfvars`, and evaluated execution plans `tfplan.json`) **before changes hit production environments**.
+
+DRA evaluates your infrastructure against the official **Google Cloud Well-Architected Framework** across 5 core architectural pillars:
+1. **Security & Compliance**
+2. **Cost Optimization (FinOps)**
+3. **Reliability & Disaster Recovery**
+4. **Operational Excellence**
+5. **Performance Efficiency**
+
+Simultaneously, DRA cross-examines configurations against major international cybersecurity and regulatory standards (**CIS GCP Benchmark v2.0, NIST SP 800-53 Rev. 5, EU GDPR Article 32, HIPAA Security Rule, PCI DSS v4.0, and SOC 2 Type II**), issues definitive Go/No-Go deployment verdicts, projects recurring monthly FinOps waste, and generates one-click remediation patch bundles.
 
 ---
 
 ## 🌟 Key Features
 
-- **Dual-Analysis Engine**: Simultaneously evaluates Architecture Best Practices and Regulatory Compliance.
-- **FinOps Intelligence**: Specifically identifies cost-saving opportunities with estimated monthly reclaimable budget.
-- **Auto-Remediation**: Generates precise HCL/Terraform code snippets to fix identified vulnerabilities.
-- **Professional Reporting**: Export comprehensive PDF audit briefs for stakeholders and security teams.
-- **Semantic Understanding**: Uses Gemini 3 Pro to understand architectural *intent*, not just syntax.
+- **Executive Deployment Gatekeeper**: Immediate Go/No-Go release verdicts (`🚫 BLOCKED`, `⚠️ CONDITIONAL`, `✅ PRODUCTION READY`) with blast radius indicators (`CRITICAL`, `MODERATE`, `LOW`) and maturity letter grades (`A+` to `F`).
+- **Regulatory Compliance Matrix**: Standard-by-standard interactive cards and searchable tables mapping findings directly to **CIS GCP, NIST 800-53, GDPR, HIPAA, PCI DSS, and SOC 2** controls.
+- **Boardroom-Ready CISO Multi-Page PDF Brief**: Multi-page executive PDF report featuring executive metrics, pillar scorecards, compliance tables, code fixes, and formal 3-party governance sign-off blocks.
+- **Adaptive Dual-Theme UX**: Modern light & dark theme ergonomics with high-contrast typography, elevated card surfaces, and accessible colorways.
+- **Automated Remediation Bundle ("Remediate All")**: One-click export of unified Git patches (`dra-remediation.patch` applicable via `git apply`) and consolidated HCL fixes (`remediated-infrastructure.tf`).
+- **Interactive Topology Map**: Automatically visualizes infrastructure topology and risk mapping using dynamic Mermaid diagrams with zoom, pan, and full-screen inspection.
+- **FinOps Intelligence & Monthly Waste Calculation**: Specifically pinpoints reclaimable cloud budget with monthly dollar waste estimates (\$/mo) and right-sizing recommendations.
+- **Terraform Plan JSON Support (`tfplan.json`)**: Audits pre-deployment execution plans (`terraform show -json`) by evaluating planned resource changes (`change.after`).
+- **DevSecOps & CI/CD Gatekeeping CLI (`dra-cli`)**: Standalone Go CLI with pipeline pass/fail thresholds (`--fail-on`, `--min-score`), SARIF 2.1.0 output for GitHub Security tab, and PR Markdown summaries.
+- **Zero-Knowledge DLP Anonymization & Rate Limiting**: Built-in pattern redactor for project IDs, GCP service account keys, and IP addresses, plus sliding-window DoW rate limiting.
+
+---
+
+## 🏗️ Internal System Architecture
+
+DRA operates as a hybrid decoupled architecture supporting both interactive web inspections and headless automated CI/CD pipeline gatekeeping:
+
+```mermaid
+flowchart TD
+    subgraph Inputs["1. Infrastructure Inputs"]
+        TF["Terraform Code (*.tf, *.tfvars)"]
+        PLAN["Terraform Plan (*.json / tfplan.json)"]
+        DIR["Multi-File Directory Upload"]
+    end
+
+    subgraph ClientLayer["2. Client Interfaces"]
+        WEB["DRA Web UI (React + Tailwind)"]
+        CLI["DRA CLI (Go Binary / CI-CD)"]
+    end
+
+    subgraph Backend["3. DRA Serverless Backend (Cloud Run)"]
+        RATE["Rate Limiter (DoW Protection)"]
+        AUTH["IAM Token Validator"]
+        DLP["Entropy & Regex DLP Redactor<br/>(Sanitizes IPs, Keys, Project IDs)"]
+        PROXY["AI Engine Dispatcher"]
+    end
+
+    subgraph Intelligence["4. Audit Intelligence Engines"]
+        GEMINI["Google Gemini 2.5 Flash / Pro<br/>(Official GenAI SDK)"]
+        LOCAL["Local / Self-Hosted LLMs<br/>(Ollama / LM Studio)"]
+    end
+
+    subgraph OutputLayer["5. Governance & Artifact Outputs"]
+        VERDICT["Executive Verdict Banner & Grade"]
+        TOPOLOGY["Mermaid Architecture Topology Map"]
+        COMPLIANCE["Multi-Framework Compliance Matrix"]
+        BUNDLE["Remediation Bundle (.patch / .tf)"]
+        PDF["CISO Executive PDF Brief"]
+        SARIF["SARIF 2.1.0 (GitHub Security Alerts)"]
+    end
+
+    Inputs --> ClientLayer
+    WEB --> RATE
+    CLI --> RATE
+    RATE --> AUTH
+    AUTH --> DLP
+    DLP --> PROXY
+    PROXY --> GEMINI
+    PROXY --> LOCAL
+    GEMINI --> OutputLayer
+    LOCAL --> OutputLayer
+```
+
+---
+
+## ⚙️ Configuring LLM Model Versions
+
+DRA gives you full control over the AI model powering your audits. You can configure the model version in **4 different ways**:
+
+### Option 1: On Google Cloud Run (Recommended for Hosted Web App)
+To change the default model for all users on your deployed Cloud Run service, set the `LLM_MODEL` environment variable:
+
+```bash
+# Using gcloud CLI:
+gcloud run services update dra-app \
+  --region us-central1 \
+  --project deployment-readiness-auditor \
+  --update-env-vars="LLM_MODEL=gemini-2.5-pro"
+```
+Or in **Google Cloud Console**:
+1. Open **Cloud Run > dra-app**.
+2. Click **"Edit & Deploy New Revision"**.
+3. Under **Variables & Secrets**, add `LLM_MODEL` with value `gemini-2.5-pro` (or `gemini-2.5-flash`).
+4. Click **Deploy**.
+
+### Option 2: Directly in the Web UI (Per-Audit Override)
+You can test different models on the fly without restarting anything:
+1. In the code input editor, click the **Settings icon** (slider toggle) in the bottom-right corner.
+2. Under **"Audit Engine Settings"**:
+   * Set **Provider** to **Gemini**.
+   * In **"Model Name"**, enter your desired model (e.g. `gemini-2.5-pro`, `gemini-2.5-flash`).
+3. Click **Run Audit**.
+
+### Option 3: In the CLI (`dra-cli`)
+When running automated terminal audits or CI/CD pipelines:
+```bash
+# Override Gemini model for a scan:
+./dra-cli/bin/dra-cli scan --path ./terraform --llm-model="gemini-2.5-pro"
+
+# Or audit with a local self-hosted model:
+./dra-cli/bin/dra-cli scan --path ./terraform \
+  --llm-provider="ollama" \
+  --llm-model="gemma4:e2b" \
+  --llm-url="http://localhost:11434/api/generate"
+```
+
+### Option 4: Local Server Environment Variable
+When running the development server locally:
+```bash
+cd dra-app
+LLM_MODEL="gemini-2.5-pro" API_KEY="your-gemini-api-key" npm start
+```
+
+### 🧠 Supported Model Identifiers
+
+| Model Identifier | Recommended Use Case | Speed & Cost |
+|---|---|---|
+| `gemini-2.5-flash` *(Default)* | Rapid developer feedback, standard audits, automated CI/CD gates | Ultra-fast & lowest cost |
+| `gemini-2.5-pro` | Complex multi-module architectures, high-stakes regulatory compliance | Deep reasoning & architecture insight |
+| `gemini-1.5-pro` | Extremely large Terraform codebases & extensive `tfplan.json` files | Long context & proven stability |
+| `gemma4:e2b` / `gemma` | Offline air-gapped environments via local Ollama or LM Studio | 100% local / Zero outbound data |
 
 ---
 
@@ -57,33 +182,32 @@ The **Deployment Readiness Auditor (DRA)** is a Google Cloud-native, AI-assisted
 
 Before you begin, ensure you have the following:
 
-1.  **Google Gemini API Key**: Obtain one from the [Google AI Studio](https://aistudio.google.com/).
-2.  **Node.js & NPM**: Installed on your local machine (v20+ recommended).
-3.  **GCP Project** (Optional for deployment): A project with billing enabled for Cloud Run.
+1. **Google Gemini API Key**: Obtain one from [Google AI Studio](https://aistudio.google.com/).
+2. **Node.js & NPM**: Installed on your local machine (v20+ recommended).
+3. **Go**: v1.21+ (only required if compiling `dra-cli` from source).
+4. **Google Cloud Project** (Optional): With billing enabled for serverless Cloud Run hosting.
 
 ---
 
-## 1. 💻 Local Development
+## 💻 Local Development
 
-Follow these exact steps to get the app running on your laptop:
+Follow these steps to get the app running locally:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/deployment-readiness-auditor.git
-cd deployment-readiness-auditor
+git clone https://github.com/damian-sztankowski/Deployment-Readiness-Auditor.git
+cd Deployment-Readiness-Auditor
 ```
 
 ### 2. Install and Build
-Navigate to the web application directory, then install and build the frontend assets:
 ```bash
 cd dra-app
 npm install
 npm run build
 ```
-This converts the `index.tsx` file into a browser-readable `index.js` file using **esbuild**.
+This bundles the TypeScript React application into optimized browser assets using **esbuild**.
 
 ### 3. Start the Development Server
-*(Run these commands from the `dra-app` directory)*
 
 #### Option A: Running with Google Gemini (Default)
 ```bash
@@ -91,7 +215,6 @@ API_KEY=PASTE_YOUR_GEMINI_API_KEY_HERE npm start
 ```
 
 #### Option B: Running with a Local Self-Hosted LLM (e.g. LM Studio / Ollama)
-You can configure the backend engine to default to a local/self-hosted model using environment variables:
 ```bash
 # For LM Studio (OpenAI Compatible):
 LLM_PROVIDER=lm-studio \
@@ -105,35 +228,29 @@ LLM_MODEL=gemma4:e2b \
 LLM_URL=http://localhost:11434/api/generate \
 npm start
 ```
-The terminal will provide a URL (usually `http://localhost:8080`). Open it in your browser! You can also customize your provider, model name, and endpoint URL dynamically in the web UI by clicking the **Gear icon (Settings)** next to the "Run Audit" button.
+Open **`http://localhost:8080`** (or `http://localhost:3000`) in your browser!
 
 ---
 
 ## 🛠️ Command Line Interface (CLI)
 
-The **DRA CLI (`dra-cli`)** lets you scan Terraform infrastructure files directly from your terminal or CI/CD pipelines.
+The **DRA CLI (`dra-cli`)** lets you scan Terraform infrastructure files directly from your terminal or automated pipelines.
 
 ### 1. Build and Install
-Compile the standalone Go binary from the project workspace:
 ```bash
-# Build the binary locally in ./dra-cli/bin/dra-cli
+# Build the standalone binary into ./dra-cli/bin/dra-cli
 make -C dra-cli build
 
-# Or build and install it to your system Go bin path
+# (Optional) Install binary into your system Go bin path
 make -C dra-cli install
 ```
 
 ### 2. Add to PATH
-Add the compiled binary directory to your current terminal environment:
 ```bash
 export PATH=$PATH:$(pwd)/dra-cli/bin
 ```
-*(Add this line to your `~.zshrc` or `~/.bashrc` to make it persistent across terminal sessions)*
 
 ### 3. Running Scans
-Execute the audit against any folder containing `.tf` files:
-
-#### Auditing with Gemini API (requires GCP_IAM_TOKEN env if deployed on GCP Cloud Run)
 ```bash
 # Standard local scan
 ./dra-cli/bin/dra-cli scan --path /path/to/terraform/code
@@ -142,119 +259,98 @@ Execute the audit against any folder containing `.tf` files:
 ./dra-cli/bin/dra-cli scan --path /path/to/terraform/code --deep-scan
 ```
 
-#### Auditing with Local Self-Hosted LLMs (bypasses GCP authorization checks)
+### 4. CI/CD Quality Gates & Automated Enforcement
 ```bash
-# Auditing via local LM Studio:
-./dra-cli/bin/dra-cli scan \
-  --path /path/to/terraform/code \
-  --llm-provider lm-studio \
-  --llm-model gemma-4-12b \
-  --llm-url http://127.0.0.1:9090/v1/chat/completions
+# 1. Enforce zero tolerance on Critical and High risks (fails build with exit code 1):
+./dra-cli/bin/dra-cli scan --path ./terraform --deep-scan --yes --fail-on critical,high
 
-# Auditing via local Ollama:
-./dra-cli/bin/dra-cli scan \
-  --path /path/to/terraform/code \
-  --llm-provider ollama \
-  --llm-model gemma4:e2b \
-  --llm-url http://localhost:11434/api/generate
+# 2. Enforce minimum architectural maturity score (e.g. 75/100):
+./dra-cli/bin/dra-cli scan --path ./terraform --min-score 75
+
+# 3. Export SARIF 2.1.0 report for the GitHub Security tab:
+./dra-cli/bin/dra-cli scan --path ./terraform --output sarif --output-file dra-results.sarif
+
+# 4. Generate an automated Git remediation patch:
+./dra-cli/bin/dra-cli scan --path ./terraform --fix-patch dra-remediation.patch
+git apply dra-remediation.patch
 ```
 
-### 🎨 Branded Console Polish
-The CLI features a premium console output interface:
-* **Interactive Loading Spinner**: Displays live activity indicators during audit evaluation.
-* **Audit Run Dashboard**: Shows counts of scanned files alongside totals for Critical, High, Medium, and Low vulnerabilities.
-* **Visual Progress Bars**: Draws horizontal bar charts (e.g. `████████░░░░ 70/100`) mapped to pillar security score metrics.
-* **Boxed Findings**: Packages and aligns vulnerability descriptions, locations, and suggested HCL remediation code inside clean border cards.
-* **ANSI Colored Help Screens**: View colorized option descriptions and flags by running `dra-cli scan --help`.
+A production-ready GitHub Action workflow is included in [`.github/workflows/dra-audit.yml`](.github/workflows/dra-audit.yml).
 
 ---
 
 ## ☁️ Deployment to Google Cloud Run
 
-> [!TIP]
-> Cloud Run is the best way to host DRA. It's serverless, scales to zero, and highly secure.
+Host DRA serverlessly on Cloud Run:
 
-### 1. Build and Deploy in One Command
-If you want to change your model, open the `services/geminiService.ts` file in the root directory. Look for this block:
-```javascript
-export const GEMINI_MODEL = "gemini-3-pro-preview";
-```
-
-Then run this command to deploy solution on Cloud Run.
 ```bash
 gcloud run deploy dra-app \
   --source dra-app/ \
   --region us-central1 \
   --allow-unauthenticated \
   --port 8080 \
-  --set-env-vars API_KEY=PASTE_YOUR_GEMINI_API_KEY_HERE
+  --set-env-vars API_KEY=PASTE_YOUR_GEMINI_API_KEY_HERE,LLM_MODEL=gemini-2.5-flash
 ```
 
 > [!TIP]
-> If you want only show capabilities of this tool, you don't have to provide ``API_KEY``. Simply ommit ``--set-env-vars API_KEY=`` and application will be deployed in showcase mode.
-
-### 2. Access the App
-Once finished, the command output will provide a **Service URL**. Click it to access your live Deployment Readiness Auditor!
-
+> **Showcase Mode:** If you omit the `API_KEY`, the application automatically operates in **Showcase Demo Mode**, enabling stakeholder walkthroughs without live API consumption.
 
 ---
 
 ## 🛠️ How to Use
 
-1.  **Input**: Paste your `.tf` or `.tfvars` code into the "Deployment Specification" editor. You can also update entire directory.
-2.  **Analyze**: Click **Run Global Audit**.
-3.  **Review**: 
-    - Use the **Pillar Matrix** to see which area needs most attention.
-    - Check the **FinOps Opportunities** section for quick budget wins.
-    - Click any **Standard Tag** (e.g., NIST 800-53 AC-3) to see the formal regulatory requirement and business impact.
-4.  **Remediate**: Expand findings to see the **Terraform Change** and copy the fix directly into your source code.
-5.  **Report**: Click **Export Professional Audit** to generate a PDF for your compliance record.
-
-### 📸 Gallery
-<p align="center">
-  <img src="https://storage.googleapis.com/gh-repo-media-files/images/splash-page.png" width="400" />
-  <img src="https://storage.googleapis.com/gh-repo-media-files/images/scan-infra.png" width="400" />
-  <img src="https://storage.googleapis.com/gh-repo-media-files/images/running-analysis.png" width="400" />
-  <img src="https://storage.googleapis.com/gh-repo-media-files/images/summary.png" width="400" />
-</p>
-
-<p align="center">
-  <img src="https://storage.googleapis.com/gh-repo-media-files/images/key-findings.png" width="400" />
-  <img src="https://storage.googleapis.com/gh-repo-media-files/images/model-info.png" width="400" />
-</p>
-
-### 📄 Project Report
-Report example and analysis can be found here:
-[**Download / View Project Report (PDF)**](https://storage.googleapis.com/gh-repo-media-files/examples/reports/DRA_Enterprise_Audit_1767377273234.pdf)
+1. **Input**: Paste your `.tf`, `.tfvars`, or `tfplan.json` code into the editor, or click **"Upload Project"** to load a full directory.
+2. **Analyze**: Click **"Run Audit"**.
+3. **Review**:
+   - Check the **Deployment Verdict Banner** for immediate Go/No-Go release decisions.
+   - Inspect the **Architecture Topology Map** for dependency graphs and critical risk locations.
+   - Use the **Regulatory Compliance Matrix** to view non-compliant controls across CIS, NIST, GDPR, HIPAA, and PCI DSS.
+   - Review **FinOps Opportunities** for reclaimable monthly budget.
+4. **Remediate**:
+   - Click **"Remediation Bundle"** to export a ready-to-apply Git patch (`git apply dra-remediation.patch`) or consolidated HCL file.
+5. **Report**:
+   - Click **"Export Enterprise Brief"** to generate a multi-page boardroom CISO audit PDF with formal governance sign-off blocks.
 
 ---
 
 ## 🔒 Security & Privacy
 
-- **No Persistence**: DRA does not store your code. Infrastructure analysis is ephemeral and exists only in memory during the execution phase.
-- **Hybrid API Proxy Architecture**: To safeguard API credentials, the browser UI routes all analyses through a local backend proxy (`/api/audit`), ensuring Google Gemini API keys are never exposed to client bundles or browser consoles.
-- **Enterprise-Grade DLP Engine**: Implements a semantic data loss prevention engine before sending code payloads to any LLM provider.
-  - Automatically sanitizes identities (emails), VPC/IP topographies, database names, and billing/GCP project resource identifiers into semantic aliases (e.g. `IP_RANGE_1`, `CLOUD_ID_2`).
-  - Implements **Global High-Entropy Scanning** to scrub hardcoded credentials (such as Google API keys `AIzaSy...`, AWS Access Key IDs `AKIA...`, and PEM private key files) even if assigned to generic attribute names (like `value = "..."`).
-- **Hardened SSRF Outbound Protection**: In production and container environments (such as Cloud Run), the LLM routing proxy resolves custom domain names using the system resolver to check all mapped IP addresses. It blocks loops/requests resolving to private IP ranges (RFC 1918), local loopbacks (including custom DNS rebinding wrappers like `127.0.0.1.nip.io`), and the GCP Link-Local Instance Metadata Server (`169.254.169.254`/`metadata.google.internal`).
-- **Token-Based Backend Authentication**: When deployed in production environments, the `/api/audit` endpoint requires OIDC Identity or Access tokens (`GCP_IAM_TOKEN`) passed in the `Authorization` header, validating them against Google's TokenInfo service. Same-origin headers (`Host`/`Referer`) are checked to permit the hosted frontend Web UI to execute audits seamlessly.
-- **Vulnerability Isolation**: Local developer options remain active for offline environments, allowing loopback requests to local Ollama (`localhost:11434`) or LM Studio endpoints only when not executing in production or containerized environments.
-- **Zero-Knowledge Storage**: Audit history logs are preserved locally inside the client browser's `localStorage` and are never synced to any remote database.
+- **Ephemeral Processing**: DRA does not persist your infrastructure code on any database.
+- **Client-Side Secret Shielding**: Google Gemini API keys are never bundled or exposed to the browser; all queries route securely through `/api/audit`.
+- **Enterprise-Grade DLP Engine**:
+  - Automatically sanitizes identities (emails), VPC/IP topographies, database names, and project identifiers into semantic aliases (e.g. `PROJECT_ID_1`, `IP_RANGE_2`).
+  - **Global High-Entropy Scanning**: Automatically scrubs hardcoded credentials (GCP API keys `AIzaSy...`, AWS keys `AKIA...`, and private keys) even when assigned to generic variables.
+- **Hardened SSRF Protection**: Outbound proxy resolves custom domain names to block private IP ranges (RFC 1918), local loopbacks, and the GCP Link-Local Instance Metadata Server (`169.254.169.254`).
+- **Sliding-Window Rate Limiting**: Built-in rate limiter protects against Denial of Wallet (DoW) with standard `Retry-After` headers.
 
 ---
 
+## 📝 Release Notes
+
+### v2.5.0 (Latest Milestone)
+* 🚦 **Executive Deployment Verdict Banner**: Added immediate Go/No-Go gatekeeper status, blast radius indicators, maturity letter grades, and 4 KPI summary cards.
+* 📜 **Multi-Framework Regulatory Compliance Matrix**: Added interactive standard-by-standard breakdown for CIS GCP Benchmark v2.0, NIST SP 800-53, EU GDPR, HIPAA, PCI DSS, and SOC 2 with real-time search.
+* 📄 **CISO Boardroom PDF Brief**: Completely overhauled multi-page PDF generation with dark cover page, clearance stamp, pillar scorecard, compliance matrix, FinOps waste breakdown, technical observations with HCL code snippets, and formal 3-party governance sign-off blocks.
+* 🎨 **Dual-Theme Design System**: Polished white/light theme ergonomics alongside obsidian dark mode with WCAG-compliant high-contrast typography.
+* 🩹 **Automated Remediation Bundle**: Added one-click export of unified Git patches (`dra-remediation.patch`) and consolidated HCL files (`remediated-infrastructure.tf`).
+* 🗺️ **Mermaid Topology Map**: Interactive cloud architecture dependency graph with zoom, pan, and full-screen inspection.
+* 📄 **Terraform Plan JSON (`tfplan.json`) Support**: Audit planned infrastructure changes before execution (`terraform show -json`).
+* 🤖 **CLI CI/CD Gatekeeping**: Automated `--fail-on` and `--min-score` flags, SARIF 2.1.0 output for GitHub Security alerts, and turnkey GitHub Action workflow.
+* 🛡️ **API Rate Limiting**: Sliding-window rate limiter protecting `/api/audit` against runaway usage.
+
+---
 
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE.md` for more information.
 
 ---
+
 <p align="center">
-  <a href="https://github.com/your-github-username">
+  <a href="https://github.com/damian-sztankowski">
     <img src="https://img.shields.io/badge/Architected%20by-Damian%20Sztankowski-blue?style=for-the-badge&logo=github" alt="Damian Sztankowski" />
   </a>
 </p>
 
 > [!NOTE]
 > **Independent Tool**: This project is a community contribution and is not officially endorsed or maintained by Google.
----

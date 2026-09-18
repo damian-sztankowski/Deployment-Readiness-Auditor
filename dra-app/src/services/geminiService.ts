@@ -53,6 +53,15 @@ You MUST iterate through EVERY resource block defined in the code and perform th
 - **Specificity**: Tie every finding to a specific 'fileName' and 'lineNumber'.
 - **Cost Optimization**: For cost estimations, use pricing from "us-central1" region.
 * **Remediation**: Provide a copy-pasteable HCL "fix" snippet for every finding.
+- **Topology Diagram**: In the 'diagram' field, provide a clean, valid Mermaid flowchart (using flowchart TD or flowchart LR) illustrating the audited architecture, resource relations (networks, subnets, instances, databases, buckets, firewalls), and highlight critical risks with descriptive node labels. Do not use markdown backticks or html in the diagram string.
+
+### 📄 TERRAFORM PLAN SUPPORT (tfplan.json)
+The input code may be standard HCL (.tf) OR a Terraform Plan JSON (tfplan.json / terraform show -json).
+If the input is a Terraform Plan JSON:
+- Inspect the 'resource_changes' array, analyzing change actions (e.g. create, update, delete).
+- Evaluate the 'change.after' configuration against the 5 Architecture Pillars.
+- For finding locations, reference the resource address (e.g. google_compute_instance.vm_instance) as the fileName if no physical file name is present.
+- Provide the remediated HCL fix snippet for the flagged resource.
 
 ### 🚫 NEGATIVE CONSTRAINTS
 - Do NOT incrementalize findings. Give me the full list NOW.
@@ -86,7 +95,8 @@ const sanitizeAuditResult = (data: any): AuditResult => {
   const result: AuditResult = {
     summary: typeof data?.summary === 'string' ? data.summary : 'No summary provided by the audit engine.',
     categories: Array.isArray(data?.categories) ? data.categories : [],
-    findings: Array.isArray(data?.findings) ? data.findings : []
+    findings: Array.isArray(data?.findings) ? data.findings : [],
+    diagram: typeof data?.diagram === 'string' && data.diagram.trim().length > 0 ? data.diagram.trim() : undefined
   };
 
   // Ensure each category has valid format
@@ -121,25 +131,35 @@ const sanitizeAuditResult = (data: any): AuditResult => {
 };
 
 const isPrivateIp = (ip: string): boolean => {
-  if (ip.startsWith('10.') || ip.startsWith('192.168.')) return true;
-  if (ip.startsWith('127.')) return true;
-  if (ip.startsWith('169.254.')) return true;
+  let cleanIp = ip.trim().toLowerCase();
 
-  if (ip.startsWith('172.')) {
-    const parts = ip.split('.');
+  // Normalize IPv4-mapped IPv6 address (e.g. ::ffff:127.0.0.1)
+  if (cleanIp.startsWith('::ffff:')) {
+    const mapped = cleanIp.substring(7);
+    if (isIP(mapped) === 4) {
+      cleanIp = mapped;
+    }
+  }
+
+  if (cleanIp.startsWith('0.')) return true;
+  if (cleanIp.startsWith('10.') || cleanIp.startsWith('192.168.')) return true;
+  if (cleanIp.startsWith('127.')) return true;
+  if (cleanIp.startsWith('169.254.')) return true;
+
+  if (cleanIp.startsWith('172.')) {
+    const parts = cleanIp.split('.');
     if (parts.length === 4) {
       const p2 = parseInt(parts[1], 10);
       if (p2 >= 16 && p2 <= 31) return true;
     }
   }
 
-  const lowerIp = ip.toLowerCase();
   if (
-    lowerIp === '::1' ||
-    lowerIp === '::' ||
-    lowerIp.startsWith('fc00:') ||
-    lowerIp.startsWith('fd00:') ||
-    lowerIp.startsWith('fe80:')
+    cleanIp === '::1' ||
+    cleanIp === '::' ||
+    cleanIp.startsWith('fc00:') ||
+    cleanIp.startsWith('fd00:') ||
+    cleanIp.startsWith('fe80:')
   ) {
     return true;
   }
@@ -147,50 +167,85 @@ const isPrivateIp = (ip: string): boolean => {
   return false;
 };
 
-const isPrivateUrl = async (urlStr: string): Promise<boolean> => {
+interface ValidatedUrlResult {
+  url: string;
+  hostHeader?: string;
+}
+
+const resolveAndValidateUrl = async (urlStr: string): Promise<ValidatedUrlResult> => {
   try {
     const url = new URL(urlStr);
     const hostname = url.hostname.toLowerCase();
     
-    // Always block local/GCP metadata server
+    // Always block local/GCP metadata server and standard loopbacks/internals
     if (
       hostname === '169.254.169.254' ||
       hostname === 'metadata.google.internal' ||
-      hostname === 'metadata'
+      hostname === 'metadata' ||
+      hostname === 'localhost' ||
+      hostname === '[::1]' ||
+      hostname.endsWith('.local') ||
+      hostname.endsWith('.internal')
     ) {
-      return true;
+      throw new Error("SECURITY_ERROR");
     }
-    
-    // In production or Cloud Run container environment, restrict private IP ranges and loopbacks
-    const isProduction = process.env.NODE_ENV === 'production' || !!process.env.K_SERVICE;
-    if (isProduction) {
-      if (
-        hostname === 'localhost' ||
-        hostname === '[::1]' ||
-        hostname.endsWith('.local') ||
-        hostname.endsWith('.internal')
-      ) {
-        return true;
-      }
 
-      if (isIP(hostname)) {
-        return isPrivateIp(hostname);
-      }
-      
+    let resolvedIp: string;
+
+    if (isIP(hostname)) {
+      resolvedIp = hostname;
+    } else {
       try {
         const lookupResults = await dns.lookup(hostname, { all: true });
+        if (!lookupResults || lookupResults.length === 0) {
+          throw new Error("SECURITY_ERROR");
+        }
+        // Validate all resolved IP addresses to prevent SSRF
         for (const res of lookupResults) {
           if (isPrivateIp(res.address)) {
-            return true;
+            throw new Error("SECURITY_ERROR");
           }
         }
+        // Use the first resolved IP
+        resolvedIp = lookupResults[0].address;
       } catch {
-        return true; // Safe fallback: block if resolution fails
+        throw new Error("SECURITY_ERROR"); // Safe fallback: block if resolution fails
       }
     }
+
+    if (isPrivateIp(resolvedIp)) {
+      throw new Error("SECURITY_ERROR");
+    }
+
+    // For HTTP, rewrite URL to use resolved IP to prevent DNS rebinding
+    if (url.protocol === 'http:') {
+      const originalHost = url.host; // includes port if present
+      
+      const rewrittenUrl = new URL(urlStr);
+      rewrittenUrl.hostname = resolvedIp.includes(':') ? `[${resolvedIp}]` : resolvedIp;
+      
+      return {
+        url: rewrittenUrl.toString(),
+        hostHeader: originalHost
+      };
+    }
+
+    // For HTTPS, do not rewrite to IP to prevent SSL/TLS handshake failures,
+    // as SSL/TLS verification itself prevents DNS rebinding attacks.
+    return {
+      url: urlStr
+    };
+  } catch (err: any) {
+    throw new Error("SECURITY_ERROR: Access to the specified LLM URL is restricted.");
+  }
+};
+
+const isPrivateUrl = async (urlStr: string): Promise<boolean> => {
+  try {
+    await resolveAndValidateUrl(urlStr);
     return false;
   } catch {
-    return true; // Safe fallback: treat malformed URLs as restricted
+    return true;
   }
 };
 
@@ -203,12 +258,18 @@ export const analyzeInfrastructure = async (
   }
 
   const provider = options?.provider || process.env.LLM_PROVIDER || 'gemini';
-  const modelUrl = options?.modelUrl || process.env.LLM_URL || 'http://127.0.0.1:9090/api/generate';
+  let modelUrl = options?.modelUrl || process.env.LLM_URL || 'http://127.0.0.1:9090/api/generate';
   const modelName = options?.modelName || process.env.LLM_MODEL || 'gemma4:e2b';
 
+  const extraHeaders: Record<string, string> = {};
+
   // Mitigate SSRF: Validate client-provided modelUrl
-  if (options?.modelUrl && (await isPrivateUrl(options.modelUrl))) {
-    throw new Error("SECURITY_ERROR: Access to the specified LLM URL is restricted.");
+  if (options?.modelUrl) {
+    const validated = await resolveAndValidateUrl(options.modelUrl);
+    modelUrl = validated.url;
+    if (validated.hostHeader) {
+      extraHeaders['Host'] = validated.hostHeader;
+    }
   }
 
   // DLP teraz dzieje się na serwerze!
@@ -219,7 +280,10 @@ export const analyzeInfrastructure = async (
     if (provider === 'ollama') {
       const response = await fetch(modelUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...extraHeaders
+        },
         body: JSON.stringify({
           model: modelName,
           prompt: `System: ${SYSTEM_INSTRUCTION}\n\nCode to audit:\n${numberedCode}`,
@@ -244,7 +308,10 @@ export const analyzeInfrastructure = async (
     } else if (provider === 'openai' || provider === 'lm-studio') {
       const response = await fetch(modelUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...extraHeaders
+        },
         body: JSON.stringify({
           model: modelName,
           messages: [
@@ -289,6 +356,7 @@ export const analyzeInfrastructure = async (
             type: Type.OBJECT,
             properties: {
               summary: { type: Type.STRING },
+              diagram: { type: Type.STRING },
               categories: {
                 type: Type.ARRAY,
                 items: {

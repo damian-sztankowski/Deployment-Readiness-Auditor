@@ -204,8 +204,8 @@ resource "google_compute_firewall" "allow_all" {
             <div className="flex items-center gap-3">
                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
                     <Upload className="w-3.5 h-3.5" />
-                    Upload .tf
-                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".tf" />
+                    Upload .tf / Plan
+                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".tf,.tfvars,.json" />
                 </label>
 
                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl bg-white dark:bg-[#1e293b]/40 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 transition-all cursor-pointer shadow-sm">
@@ -229,7 +229,7 @@ resource "google_compute_firewall" "allow_all" {
               id="code-editor-area"
               value={inputCode}
               onChange={(e) => setInputCode(e.target.value)}
-              placeholder={isReadingFiles ? "Reading files..." : "Paste pure Terraform (HCL) code here..."}
+              placeholder={isReadingFiles ? "Reading files..." : "Paste Terraform (HCL) code or tfplan.json here..."}
               className="w-full h-[540px] p-10 font-mono text-base text-slate-900 dark:text-slate-100 bg-transparent outline-none resize-none leading-relaxed placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-colors"
               spellCheck={false}
             />

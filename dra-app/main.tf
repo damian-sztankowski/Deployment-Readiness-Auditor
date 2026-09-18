@@ -40,4 +40,3 @@ resource "google_compute_firewall" "allow_all" {
   # so the DRA can still flag the security risk.
   source_ranges = ["0.0.0.0/0"]
 }
-}

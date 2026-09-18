@@ -44,6 +44,7 @@ export interface AuditResult {
   summary: string;
   categories: CategoryScore[];
   findings: Finding[];
+  diagram?: string; // Mermaid architecture topology flowchart
   usage?: UsageMetadata;
   model?: string;
   provider?: string;

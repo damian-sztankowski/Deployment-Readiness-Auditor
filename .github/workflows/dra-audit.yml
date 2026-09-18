@@ -1,0 +1,57 @@
+name: DRA Deployment Readiness Audit
+
+on:
+  pull_request:
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+  push:
+    branches: [ main, master ]
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Terraform Infrastructure Readiness Audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build DRA CLI
+        run: |
+          make -C dra-cli build
+          echo "$(pwd)/dra-cli/bin" >> $GITHUB_PATH
+
+      - name: Run DRA Audit (SARIF & Quality Gate)
+        env:
+          GCP_IAM_TOKEN: ${{ secrets.GCP_IAM_TOKEN }}
+        run: |
+          dra-cli scan \
+            --path . \
+            --deep-scan \
+            --yes \
+            --endpoint "${{ secrets.DRA_ENDPOINT || 'https://dra.damiansztankowski.cloud/api/audit' }}" \
+            --fail-on critical,high \
+            --min-score 70 \
+            --output sarif \
+            --output-file dra-results.sarif
+
+      - name: Upload SARIF to GitHub Security Tab
+        if: always() && hashFiles('dra-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: dra-results.sarif
+          category: dra-infrastructure-audit
