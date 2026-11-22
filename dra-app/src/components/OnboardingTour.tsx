@@ -9,7 +9,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ startTour }) => 
   useEffect(() => {
     if (!startTour) return;
 
-    const hasSeenTour = localStorage.getItem('dra-has-seen-tour-v3');
+    const hasSeenTour = localStorage.getItem('dra-has-seen-tour-v3.1');
     if (hasSeenTour) return;
 
     const driverObj = driver({
@@ -20,9 +20,9 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ startTour }) => 
         {
           element: '#input-section-container',
           popover: {
-            title: 'Welcome to DRA v3.0',
+            title: 'Welcome to DRA v3.1 Command Studio',
             description:
-              'Audit Terraform, OpenTofu, tfplan.json, GKE YAML, and Dockerfiles with Bidirectional Client-Side DLP and optional .dra.yaml org policies.',
+              'Audit Terraform, OpenTofu, tfplan.json, GKE YAML, and Dockerfiles with Bidirectional Client-Side DLP and .dra.yaml organization policies.',
             side: 'bottom',
             align: 'start'
           }
@@ -30,29 +30,19 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ startTour }) => 
         {
           element: '#action-buttons-group',
           popover: {
-            title: 'Multi-Stack Import & Examples',
+            title: 'Multi-Stack Import & Starter Samples',
             description:
-              'Upload single files, entire project folders (including .dra.yaml waivers), or click "Load Example" to inspect a sample specification.',
+              'Upload single files, project directories (including .dra.yaml waivers), or load the built-in Terraform or GKE/Docker starter templates.',
             side: 'left',
             align: 'start'
           }
         },
         {
-          element: '#code-editor-area',
-          popover: {
-            title: 'Line-Anchored Code & Policy Editor',
-            description:
-              'Synchronized line numbers let you click any finding card later to jump straight to the offending resource block.',
-            side: 'top',
-            align: 'center'
-          }
-        },
-        {
           element: '#analyze-fab-container',
           popover: {
-            title: 'Hybrid AST + AI Engine',
+            title: 'Gemini 4 Frontier & Offline AST Selector',
             description:
-              'Open Settings to choose Hybrid Gemini 2.5 + AST, zero-key Offline Deterministic AST, or local Ollama/LM Studio—then click Run Audit for live SSE streaming.',
+              'Pick Gemini 4 Hydrogen (fast default), Gemini 4 Carbon (deep frontier security), Gemini 3.8 Flash, zero-key Offline AST, or local Ollama—then run a live SSE audit.',
             side: 'top',
             align: 'end'
           }
@@ -62,7 +52,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ startTour }) => 
           popover: {
             title: 'Audit History & Drift Deltas',
             description:
-              'Compare any historical run as a baseline to track maturity score improvements and resolved critical blockers.',
+              'Compare any past scan as a baseline to track maturity score gains and resolved critical blockers.',
             side: 'bottom',
             align: 'end'
           }
@@ -70,15 +60,16 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ startTour }) => 
         {
           element: '#header-theme-btn',
           popover: {
-            title: 'Adaptive Light / Dark Theme',
-            description: 'Switch seamlessly between obsidian dark and high-contrast light modes.',
+            title: 'Alabaster Light & Obsidian Dark Themes',
+            description:
+              'Toggle between perceptually balanced OKLCH light and dark studio workspaces.',
             side: 'bottom',
             align: 'end'
           }
         }
       ],
       onDestroyed: () => {
-        localStorage.setItem('dra-has-seen-tour-v3', 'true');
+        localStorage.setItem('dra-has-seen-tour-v3.1', 'true');
       }
     });
 

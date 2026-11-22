@@ -12,6 +12,19 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
   height: 100%;
+
+  /* Perceptually uniform OKLCH Command Studio tokens (Light Mode) */
+  --dra-canvas: #f5f7fb;
+  --dra-canvas-oklch: oklch(97.4% 0.006 250);
+  --dra-surface: #ffffff;
+  --dra-surface-elevated: #f8fafc;
+  --dra-border: #cbd5e1;
+  --dra-border-subtle: #e2e8f0;
+  --dra-accent: #2563eb;
+  --dra-accent-strong: #1d4ed8;
+  --dra-accent-glow: oklch(58% 0.21 255 / 0.16);
+  --dra-focus-ring: #2563eb;
+
   --scrollbar-track: transparent;
   --scrollbar-thumb: #64748b;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
@@ -19,12 +32,28 @@
 
 :root.dark {
   color-scheme: dark;
+  --dra-canvas: #060a12;
+  --dra-canvas-oklch: oklch(14.2% 0.022 256);
+  --dra-surface: #0b111e;
+  --dra-surface-elevated: #10192b;
+  --dra-border: #1e2d45;
+  --dra-border-subtle: #162235;
+  --dra-accent: #38bdf8;
+  --dra-accent-strong: #2563eb;
+  --dra-accent-glow: oklch(72% 0.15 235 / 0.18);
+  --dra-focus-ring: #38bdf8;
   --scrollbar-thumb: #475569;
 }
 
 :root:not(.dark) {
   color-scheme: light;
   --scrollbar-thumb: #94a3b8;
+}
+
+@supports (background-color: oklch(97% 0.01 250)) {
+  body {
+    background-color: var(--dra-canvas-oklch);
+  }
 }
 
 @supports not (scrollbar-color: auto) {
@@ -47,12 +76,8 @@ body {
   padding: 0;
   overflow-x: hidden;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f8fafc;
-  transition: background-color 0.35s ease;
-}
-
-.dark body {
-  background-color: #020617;
+  background-color: var(--dra-canvas);
+  transition: background-color 0.25s ease;
 }
 
 #root {
@@ -61,7 +86,55 @@ body {
   min-height: 100%;
 }
 
-/* Native modal dialog scroll containment per modern-web-guidance */
+/* Visually hidden skip-link utility (reveals cleanly on keyboard focus) */
+.visually-hidden:not(:focus):not(:active) {
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.skip-link:focus-visible {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.625rem 1rem;
+  border-radius: 0.75rem;
+  background-color: #1d4ed8;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
+}
+
+/* Consistent keyboard focus indicators via :focus-visible */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+select:focus-visible,
+input:focus-visible,
+[tabindex]:not([tabindex='-1']):focus-visible {
+  outline: 2px solid var(--dra-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Programmatic SPA view heading target should not show focus ring when focused via JS */
+h1[tabindex='-1']:focus,
+h2[tabindex='-1']:focus {
+  outline: none;
+}
+
+/* Tabular numerals for scores, line numbers, token counts, and FinOps currencies */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Native modal dialog & popover scroll containment */
 dialog:modal {
   overscroll-behavior: contain;
 }
@@ -69,75 +142,168 @@ dialog:modal {
 dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
-  background-color: rgba(2, 6, 23, 0.78);
+  background-color: rgba(4, 9, 20, 0.76);
   backdrop-filter: blur(6px);
 }
 
-pre, code {
+[popover]::backdrop {
+  background-color: rgba(4, 9, 20, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+pre,
+code {
   color-scheme: dark;
 }
 
+/* Same-Document View Transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Mandatory reduced-motion reset for view transitions and decorative animations */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  .animate-enter,
+  .animate-float,
+  .animate-float-slow,
+  .animate-float-orbit-1,
+  .animate-float-orbit-2,
+  .animate-spin-slow,
+  .animate-logo-pulse,
+  .animate-morph,
+  .animate-morph-fast,
+  .animate-wiggle {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Forced Colors Mode (Windows High Contrast) structural borders */
+@media (forced-colors: active) {
+  .dra-surface-card,
+  button,
+  dialog,
+  [popover] {
+    border: 1px solid ButtonText;
+  }
+
+  button[aria-current='page'],
+  button[aria-selected='true'] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
+
 .animate-enter {
-  animation: enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes enter {
-  0% { opacity: 0; transform: translateY(16px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0px, 0px) scale(1); }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes morph {
-  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: rotate(0deg) scale(1); }
-  33% { border-radius: 40% 60% 50% 50% / 40% 40% 60% 60%; transform: rotate(120deg) scale(1.08); }
-  66% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; transform: rotate(240deg) scale(0.92); }
+  0%,
+  100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: rotate(0deg) scale(1);
+  }
+  33% {
+    border-radius: 40% 60% 50% 50% / 40% 40% 60% 60%;
+    transform: rotate(120deg) scale(1.06);
+  }
+  66% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    transform: rotate(240deg) scale(0.94);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-}
-
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0) rotate(0); }
-  50% { transform: translateY(-15px) rotate(5deg); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes float-orbit-1 {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-  33% { transform: translate3d(20px, -15px, 0) rotate(5deg); }
-  66% { transform: translate3d(-10px, 20px, 0) rotate(-5deg); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(10px, -8px, 0) rotate(4deg);
+  }
 }
 
 @keyframes float-orbit-2 {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-  33% { transform: translate3d(-20px, 15px, 0) rotate(-6deg); }
-  66% { transform: translate3d(15px, -20px, 0) rotate(6deg); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-10px, 8px, 0) rotate(-4deg);
+  }
 }
 
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes logo-pulse {
-  0%, 100% { opacity: 0.15; transform: scale(1); filter: blur(25px); }
-  50% { opacity: 0.45; transform: scale(1.3); filter: blur(40px); }
+  0%,
+  100% {
+    opacity: 0.14;
+    transform: scale(1);
+    filter: blur(22px);
+  }
+  50% {
+    opacity: 0.32;
+    transform: scale(1.18);
+    filter: blur(32px);
+  }
 }
 
 @keyframes wiggle {
-  0%, 100% { transform: rotate(-3deg); }
-  50% { transform: rotate(3deg); }
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
 }

@@ -96,7 +96,7 @@ export const CliInfo: React.FC = () => {
     { flag: '--output-file', short: '-', def: '""', desc: 'Write formatted report (SARIF 2.1.0, PR Markdown, JSON) to disk.' },
     { flag: '--fix-patch', short: '-', def: '""', desc: 'Generate a git apply --check verified POSIX unified diff (.patch).' },
     { flag: '--llm-provider', short: '-', def: '""', desc: 'Engine provider: gemini, static (zero-key AST), ollama, lm-studio.' },
-    { flag: '--llm-model', short: '-', def: '""', desc: 'Model override (e.g. gemini-2.5-flash, gemini-2.5-pro, gemma4:e2b).' },
+    { flag: '--llm-model', short: '-', def: '""', desc: 'Model override (e.g. gemini-4-hydrogen, gemini-4-carbon, gemini-3.8-flash, gemma4:e2b).' },
     { flag: '--llm-url', short: '-', def: '""', desc: 'Local self-hosted LLM URL (permitted in local dev; blocked by SSRF guard on Cloud Run).' },
     { flag: '--dlp', short: '-', def: 'true', desc: 'Run bidirectional client-side DLP before transmitting payloads.' },
     { flag: '--no-color', short: '-', def: 'false', desc: 'Disable ANSI colors & spinner (auto-detected when NO_COLOR, CI=true, or non-TTY).' },
@@ -108,16 +108,20 @@ export const CliInfo: React.FC = () => {
     <div className="animate-enter space-y-16 py-8">
       {/* Hero Header */}
       <div className="text-center max-w-3xl mx-auto space-y-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 dark:bg-sky-500/20 text-blue-700 dark:text-sky-300 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
           <Command className="w-3.5 h-3.5" aria-hidden="true" />
-          dra-cli v3.0.0 • POSIX &amp; CI/CD Native
+          dra-cli v3.1.0 • POSIX &amp; CI/CD Native
         </div>
-        <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+        <h1
+          id="main-heading"
+          tabIndex={-1}
+          className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter leading-none"
+        >
           DRA CLI Command Center
-        </h2>
-        <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
+        </h1>
+        <p className="text-slate-600 dark:text-slate-300 text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
           Gatekeep pull requests with client-side DLP, Git delta scanning,{' '}
-          <code className="text-indigo-500">.dra.yaml</code> waivers, SARIF 2.1.0 alerts, and verified <code>git apply</code> patches.
+          <code className="text-blue-600 dark:text-sky-400">.dra.yaml</code> waivers, SARIF 2.1.0 alerts, and verified <code>git apply</code> patches.
         </p>
       </div>
 

@@ -31,9 +31,9 @@ interface AboutProps {
 
 const FAQ_ITEMS = [
   {
-    question: 'How does DRA v3.0 improve upon both Checkov/TFLint and pure LLM auditors?',
+    question: 'How does DRA v3.1 improve upon both Checkov/TFLint and pure LLM auditors?',
     answer:
-      'Pure static linters miss cross-resource architectural flaws, while pure LLM wrappers can hallucinate line numbers or fall victim to prompt injection. DRA v3.0 runs a Hybrid Pipeline: a deterministic HCL/K8s/Docker AST pass anchors exact start/end lines, interpolates variables.tf + .tfvars, and enforces hard CIS GCP v2.0 score ceilings—then Gemini 2.5 synthesizes multi-hop attack paths and executive guidance.'
+      'Pure static linters miss cross-resource architectural flaws, while pure LLM wrappers can hallucinate line numbers or fall victim to prompt injection. DRA v3.1 runs a Hybrid Pipeline: a deterministic HCL/K8s/Docker AST pass anchors exact start/end lines, interpolates variables.tf + .tfvars, and enforces hard CIS GCP v2.0 score ceilings—then Gemini 4 Hydrogen (or Gemini 4 Carbon) synthesizes multi-hop attack paths and executive guidance.'
   },
   {
     question: 'How does Bidirectional Client-Side DLP protect proprietary cloud identifiers?',
@@ -81,23 +81,27 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.15),transparent)] pointer-events-none" />
 
         <div className="flex-1 relative z-10 space-y-8 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-black uppercase tracking-[0.2em]">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/15 border border-sky-400/25 text-sky-300 text-[10px] font-black uppercase tracking-[0.2em]">
             <Cpu className="w-3.5 h-3.5" aria-hidden="true" />
-            DRA v3.0 • Hybrid AST + AI Governance Platform
+            DRA v3.1 • Command Studio &amp; Gemini 4 Governance
           </div>
-          <h2 className="text-4xl md:text-6xl font-extrabold tracking-tighter leading-[1.05] text-white">
+          <h1
+            id="main-heading"
+            tabIndex={-1}
+            className="text-4xl md:text-6xl font-extrabold tracking-tighter leading-[1.05] text-white"
+          >
             Deterministic Precision <br />
-            <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-              Meets AI Reasoning.
+            <span className="bg-gradient-to-r from-sky-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">
+              Meets Gemini 4 Reasoning.
             </span>
-          </h2>
-          <p className="text-slate-400 text-lg leading-relaxed max-w-xl mx-auto md:mx-0">
-            The <strong>Deployment Readiness Auditor (DRA v3.0)</strong> audits{' '}
-            <code className="text-indigo-300">*.tf</code>,{' '}
-            <code className="text-indigo-300">*.tofu</code>,{' '}
-            <code className="text-indigo-300">tfplan.json</code>,{' '}
-            <code className="text-indigo-300">GKE YAML</code>, and{' '}
-            <code className="text-indigo-300">Dockerfiles</code> against the{' '}
+          </h1>
+          <p className="text-slate-300 text-lg leading-relaxed max-w-xl mx-auto md:mx-0">
+            The <strong>Deployment Readiness Auditor (DRA v3.1)</strong> audits{' '}
+            <code className="text-sky-300">*.tf</code>,{' '}
+            <code className="text-sky-300">*.tofu</code>,{' '}
+            <code className="text-sky-300">tfplan.json</code>,{' '}
+            <code className="text-sky-300">GKE YAML</code>, and{' '}
+            <code className="text-sky-300">Dockerfiles</code> against the{' '}
             <strong>Google Cloud Well-Architected Framework</strong>, 6 regulatory standards, and custom{' '}
             <code className="text-emerald-300">.dra.yaml</code> policies before changes hit production.
           </p>
@@ -132,7 +136,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
                     aria-hidden="true"
                   />
                   <span className="text-[10px] font-black uppercase tracking-widest text-emerald-200">
-                    Hybrid AST + Gemini 2.5
+                    Hybrid AST + Gemini 4
                   </span>
                 </div>
               </div>
@@ -173,7 +177,7 @@ export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
             </div>
             <h3 className="text-lg font-black uppercase tracking-tight">Select Hybrid or Offline Engine</h3>
             <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-              Choose <strong>Hybrid Gemini 2.5 + AST</strong>, zero-key{' '}
+              Choose <strong>Gemini 4 Hydrogen / Carbon + AST</strong>, zero-key{' '}
               <strong>Offline Deterministic AST</strong>, or local <strong>Ollama / LM Studio</strong>. Stream live SSE progress across DLP, AST, FinOps SKUs, Policy, and AI stages.
             </p>
           </div>

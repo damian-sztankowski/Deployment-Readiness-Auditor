@@ -1,5 +1,5 @@
 <div align="center">
-  <h1 align="center">✨ Deployment Readiness Auditor (DRA v3.0) ✨</h1>
+  <h1 align="center">✨ Deployment Readiness Auditor (DRA v3.1) ✨</h1>
   <p>
     <strong>
       <a href="https://dra.damiansztankowski.cloud/">🔴 View Live Demo</a>
@@ -8,8 +8,8 @@
   <p>
     <img src="https://img.shields.io/badge/Google%20Cloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white" alt="Google Cloud" />
     <img src="https://img.shields.io/badge/Terraform%20%26%20OpenTofu-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white" alt="Terraform & OpenTofu" />
-    <img src="https://img.shields.io/badge/Hybrid-AST%20%2B%20Gemini%202.5-blue?style=for-the-badge&logo=google-gemini&logoColor=white" alt="Hybrid AST + Gemini" />
-    <img src="https://img.shields.io/badge/CLI-Go%20v3.0-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go CLI" />
+    <img src="https://img.shields.io/badge/Hybrid-AST%20%2B%20Gemini%204-2563EB?style=for-the-badge&logo=google-gemini&logoColor=white" alt="Hybrid AST + Gemini 4" />
+    <img src="https://img.shields.io/badge/CLI-Go%20v3.1-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go CLI" />
   </p>
 </div>
 
@@ -31,15 +31,16 @@ DRA executes **Bidirectional Client-Side DLP** in both the browser and `dra-cli`
 
 **Architect with Confidence. Audit with Intelligence.**
 
-The **Deployment Readiness Auditor (DRA v3.0)** is an enterprise-grade, Google Cloud-native DevSecOps platform and CI/CD quality gatekeeper. It audits **Terraform (`.tf`), OpenTofu (`.tofu`), execution plans (`tfplan.json`), Kubernetes/GKE manifests (`.yaml`), and `Dockerfile`s** before changes reach production.
+The **Deployment Readiness Auditor (DRA v3.1)** is an enterprise-grade, Google Cloud-native DevSecOps platform and CI/CD quality gatekeeper. It audits **Terraform (`.tf`), OpenTofu (`.tofu`), execution plans (`tfplan.json`), Kubernetes/GKE manifests (`.yaml`), and `Dockerfile`s** before changes reach production.
 
 DRA evaluates workloads against the **Google Cloud Well-Architected Framework** (Security, Cost Optimization, Reliability, Operational Excellence, and Performance Efficiency) and maps findings directly to **CIS GCP Benchmark v2.0, NIST SP 800-53 Rev. 5, EU GDPR Art. 32, HIPAA, PCI DSS v4.0, and SOC 2 Type II**.
 
 ---
 
-## 🚀 What's New in v3.0
+## 🚀 What's New in v3.1 & v3.0
 
-- **🧠 Hybrid Deterministic AST + AI Engine**: Pairs a fast, prompt-injection-immune HCL/K8s/Docker static analyzer (exact start/end lines, variable & `.tfvars` interpolation, CIS GCP v2.0 baseline) with Gemini 2.5 cross-resource attack-path synthesis—plus a zero-key **Offline Deterministic Mode** (`static`).
+- **🖥️ Next-Gen Command Studio UI (v3.1)**: Collapsible desktop Command Rail, native HTML Popover mobile drawer, Same-Document SPA View Transitions, perceptual OKLCH Sapphire & Obsidian palette, and a **5-Mode Audit Workbench** (`Split Workbench` side-by-side editor + findings, `Executive Overview`, `Topology Canvas`, `FinOps & Compliance`, and `Full Report`).
+- **🧠 Gemini 4 Frontier Suite + Deterministic AST Engine**: Powered by **`gemini-4-hydrogen`** by default (with built-in presets for `gemini-4-carbon`, `gemini-4-neon`, `gemini-4-argon`, and `gemini-3.8-flash`), paired with a prompt-injection-immune HCL/K8s/Docker static analyzer—plus a zero-key **Offline Deterministic Mode** (`static`).
 - **⚡ Real-Time SSE Streaming Pipeline**: Live Server-Sent Events (`/api/audit/stream`) stream progress across DLP Redaction → Static AST → Regional FinOps SKUs → Org Policy → AI Synthesis.
 - **🩹 Side-by-Side Diff Viewer & `git apply`-Verified Patches**: Genuine POSIX unified Git patches (`dra-remediation.patch`) verified against `git apply --check`, paired with an interactive Before/After visual diff modal and click-to-jump line highlighting in the code editor.
 - **💰 Regional GCP Cloud Billing SKU Calculator**: Deterministic monthly baseline vs. optimized cost modeling across GCP regions (`us-central1`, `europe-west1`, `europe-west3`, `asia-northeast1`, etc.), `count` multipliers, Committed Use Discounts, and zombie disk detection.
@@ -60,15 +61,15 @@ flowchart TD
     end
 
     subgraph Clients["Layer 2: Client Interfaces (Bidirectional DLP)"]
-        WEB["Bundled Vite + React 19 Web UI (Offline-Ready)"]
-        CLI["dra-cli v3.0 (TTY/CI Aware + Git Delta)"]
+        WEB["Command Studio Vite + React 19 UI (Offline-Ready)"]
+        CLI["dra-cli v3.1 (TTY/CI Aware + Git Delta)"]
     end
 
     subgraph Backend["Layer 3: Hardened Cloud Run v2 Service"]
         SEC["OIDC / Constant-Time Auth & Proxy Rate Limiter"]
         AST["Deterministic AST & CIS GCP v2.0 Engine"]
         FIN["Regional GCP Billing SKU Calculator"]
-        AI["Gemini 2.5 / Local Ollama & LM Studio"]
+        AI["Gemini 4 Hydrogen & Carbon / Local Ollama"]
     end
 
     subgraph Outputs["Layer 4: Governance & Developer Action"]
@@ -107,7 +108,7 @@ cd dra-app
 npm ci
 npm run build
 
-# Option A: Full Hybrid Mode (Static AST + Google Gemini 2.5)
+# Option A: Full Hybrid Mode (Static AST + Google Gemini 4 Hydrogen)
 API_KEY="YOUR_GEMINI_API_KEY" npm start
 
 # Option B: Zero-Key Offline Deterministic AST Mode (100% local, $0 cost)

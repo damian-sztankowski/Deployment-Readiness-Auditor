@@ -137,4 +137,73 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-export const GEMINI_MODEL = 'gemini-2.5-flash';
+export type AuditWorkspaceMode =
+  | 'split'
+  | 'overview'
+  | 'topology'
+  | 'governance'
+  | 'full';
+
+export interface GeminiModelPreset {
+  id: string;
+  label: string;
+  badge: string;
+  description: string;
+}
+
+export const GEMINI_MODEL = 'gemini-4-hydrogen';
+
+export const GEMINI_MODEL_PRESETS: GeminiModelPreset[] = [
+  {
+    id: 'gemini-4-hydrogen',
+    label: 'Gemini 4 Hydrogen',
+    badge: 'Default • Fast',
+    description: 'Fastest Gemini 4 frontier model for agentic IaC audits & CI/CD gates (1M ctx)'
+  },
+  {
+    id: 'gemini-4-carbon',
+    label: 'Gemini 4 Carbon',
+    badge: 'Deep Frontier',
+    description: 'Maximum multi-hop security & regulatory compliance reasoning depth'
+  },
+  {
+    id: 'gemini-4-neon',
+    label: 'Gemini 4 Neon',
+    badge: 'Code & Arch',
+    description: 'Balanced frontier reasoning for multi-module Terraform & GKE refactors'
+  },
+  {
+    id: 'gemini-4-argon',
+    label: 'Gemini 4 Argon',
+    badge: 'Sparse MoE',
+    description: 'Low-cost enterprise compliance synthesis for large monorepo plans'
+  },
+  {
+    id: 'gemini-3.8-flash',
+    label: 'Gemini 3.8 Flash',
+    badge: '3.x Stable',
+    description: 'High-throughput Gemini 3.8 Flash model for rapid pipeline checks'
+  },
+  {
+    id: 'gemini-3.1-pro-preview',
+    label: 'Gemini 3.1 Pro',
+    badge: '3.x Pro',
+    description: 'Previous-generation Pro reasoning baseline'
+  }
+];
+
+export const formatModelDisplayName = (rawModel?: string): string => {
+  const id = (rawModel || GEMINI_MODEL).trim();
+  const preset = GEMINI_MODEL_PRESETS.find((p) => p.id === id);
+  if (preset) return preset.label;
+  if (id === 'dra-deterministic-ast-v3' || id === 'static') {
+    return 'Deterministic AST v3';
+  }
+  return id
+    .replace(/^gemini-/i, 'Gemini ')
+    .replace(/-preview$/i, ' Preview')
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
