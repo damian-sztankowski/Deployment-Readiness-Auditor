@@ -1,5 +1,15 @@
-import React, { useState } from 'react';
-import { ShieldCheck, ArrowRight, Lock, Activity, X, Brain, Wand2, ChevronRight, CheckCircle2, Sparkles, HelpCircle } from 'lucide-react';
+import React from 'react';
+import {
+  ShieldCheck,
+  ArrowRight,
+  Lock,
+  Activity,
+  Sparkles,
+  BookOpen,
+  Cpu,
+  Scale,
+  GitPullRequest
+} from 'lucide-react';
 import { Logo } from './Logo';
 
 interface SplashPageProps {
@@ -8,260 +18,147 @@ interface SplashPageProps {
   onLearnMore: () => void;
 }
 
-export const SplashPage: React.FC<SplashPageProps> = ({ onStart, onRunDemo, onLearnMore }) => {
-  const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
-  const [activeStep, setActiveStep] = useState(0);
-
-  const showcaseSteps = [
+export const SplashPage: React.FC<SplashPageProps> = ({
+  onStart,
+  onRunDemo,
+  onLearnMore
+}) => {
+  const featurePills = [
     {
-      title: "Pure HCL Analysis",
-      subtitle: "Beyond Basic Linting",
-      description: "DRA focuses exclusively on pure Terraform (HCL) to maintain deterministic mapping between your resources and the Google Cloud Well-Architected Framework.",
-      icon: Brain,
-      color: "text-purple-400",
-      bg: "bg-purple-500/10",
-      accent: "border-purple-500/20"
+      icon: Cpu,
+      text: 'HYBRID AST + GEMINI 2.5',
+      color: 'text-indigo-600 dark:text-indigo-400'
     },
     {
-      title: "Cloud Frameworks",
-      subtitle: "Official GCP Alignment",
-      description: "Every audit is measured against the 5 pillars of the Google Cloud Well-Architected Framework: Security, Reliability, Cost, Operations, and Performance.",
       icon: ShieldCheck,
-      color: "text-indigo-400",
-      bg: "bg-indigo-500/10",
-      accent: "border-indigo-500/20"
+      text: 'TERRAFORM • OPENTOFU • GKE • DOCKER',
+      color: 'text-violet-600 dark:text-violet-400'
     },
     {
-      title: "Compliance Mapping",
-      subtitle: "Regulatory Guardrails",
-      description: "Automatically map infrastructure flaws to international standards including CIS Benchmarks, NIST 800-53, GDPR, HIPAA, and SOC2.",
       icon: Lock,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10",
-      accent: "border-emerald-500/20"
+      text: 'BIDIRECTIONAL CLIENT-SIDE DLP',
+      color: 'text-emerald-600 dark:text-emerald-400'
     },
     {
-      title: "One-Click Fixes",
-      subtitle: "Instant Remediation",
-      description: "Don't just find problems—fix them. DRA generates production-ready Terraform (HCL) snippets to remediate every high-risk finding instantly.",
-      icon: Wand2,
-      color: "text-amber-400",
-      bg: "bg-amber-500/10",
-      accent: "border-amber-500/20"
+      icon: Activity,
+      text: 'REGIONAL GCP FINOPS SKUS',
+      color: 'text-amber-600 dark:text-amber-400'
+    },
+    {
+      icon: Scale,
+      text: '.DRA.YAML POLICY & WAIVERS',
+      color: 'text-cyan-600 dark:text-cyan-400'
+    },
+    {
+      icon: GitPullRequest,
+      text: 'GIT APPLY UNIFIED DIFFS',
+      color: 'text-rose-600 dark:text-rose-400'
     }
   ];
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-12 relative overflow-hidden bg-slate-50 dark:bg-[#020617] transition-colors duration-700">
-        
-        {/* Optimized Background based on reference screenshot */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          {/* Base Background Layers */}
-          <div className="absolute inset-0 bg-slate-50 dark:bg-[#020617]"></div>
-          
-          {/* Central Radial Lightening */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(241,245,249,1)_0%,rgba(248,250,252,0)_75%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(28,37,65,1)_0%,rgba(2,6,23,0)_75%)]"></div>
-
-          {/* Subtly tinted central glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[1200px] max-h-[1200px] bg-indigo-600/5 rounded-full blur-[160px] animate-pulse"></div>
-
-          {/* Precision Grid Overlay */}
-          <div className="absolute inset-0 opacity-[0.06] dark:opacity-[0.12]" style={{ 
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.2) 1px, transparent 1px)`,
+      {/* Ambient Grid & Glow Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-slate-50 dark:bg-[#020617]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(241,245,249,1)_0%,rgba(248,250,252,0)_75%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(28,37,65,1)_0%,rgba(2,6,23,0)_75%)]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[1200px] max-h-[1200px] bg-indigo-600/5 rounded-full blur-[160px] animate-pulse" />
+        <div
+          className="absolute inset-0 opacity-[0.06] dark:opacity-[0.12]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(0,0,0,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.2) 1px, transparent 1px)',
             backgroundSize: '40px 40px'
-          }}></div>
-          
-          {/* Edge Vingette */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_50%,rgba(248,250,252,1)_100%)] dark:bg-[radial-gradient(circle_at_50%_50%,transparent_50%,rgba(2,6,23,1)_100%)]"></div>
+          }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_50%,rgba(248,250,252,1)_100%)] dark:bg-[radial-gradient(circle_at_50%_50%,transparent_50%,rgba(2,6,23,1)_100%)]" />
+      </div>
+
+      {/* Main Hero Content */}
+      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center space-y-10">
+        <div className="flex justify-center mb-6">
+          <Logo
+            size="xl"
+            animate={true}
+            className="transform transition-transform duration-1000 scale-110"
+          />
         </div>
 
-        {/* Center Content */}
-        <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-10">
-            
-            {/* Logo Section */}
-            <div className="flex justify-center mb-8">
-                <div className="relative flex items-center justify-center">
-                    <Logo 
-                        size="xl" 
-                        animate={true}
-                        className="transform transition-transform duration-1000 scale-110" 
-                    />
-                </div>
-            </div>
+        <div className="space-y-6 animate-enter">
+          <div className="inline-flex flex-wrap items-center justify-center gap-2.5 px-6 py-2 rounded-full bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <span>DRA v3.0 • Hybrid Deterministic AST + AI Gatekeeper</span>
+          </div>
 
-            {/* Hero Typography */}
-            <div className="space-y-6 animate-enter">
-                <div className="inline-block relative">
-                    <span className="relative inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/50 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl backdrop-blur-md">
-                        Pure Terraform Auditor
-                    </span>
-                </div>
+          <div className="space-y-1">
+            <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black tracking-tighter text-slate-900 dark:text-white leading-[0.88]">
+              Deployment Readiness
+            </h1>
+            <p className="text-6xl sm:text-7xl md:text-8xl lg:text-[8.5rem] font-black tracking-tighter bg-gradient-to-r from-indigo-600 via-purple-500 to-cyan-500 dark:from-indigo-400 dark:via-purple-400 dark:to-cyan-400 bg-clip-text text-transparent leading-[0.9] bg-300% animate-gradient">
+              Auditor v3.0
+            </p>
+          </div>
 
-                <div className="space-y-0">
-                  <h1 className="text-7xl md:text-8xl lg:text-[10rem] font-black tracking-tighter text-slate-900 dark:text-white leading-[0.85]">
-                    Deployment Readiness
-                  </h1>
-                  <h2 className="text-7xl md:text-8xl lg:text-[10rem] font-black tracking-tighter bg-gradient-to-r from-indigo-600 via-purple-500 to-indigo-600 dark:from-indigo-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent leading-[0.85] bg-300% animate-gradient">
-                    Auditor
-                  </h2>
-                </div>
-                
-                <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
-                    Analyze your Google Cloud <span className="text-indigo-600 dark:text-indigo-400 font-bold mx-1">Terraform (HCL)</span> architecture against against the <span className="text-indigo-600 dark:text-indigo-400 font-bold mx-1">Google Cloud Framework</span> using specialized AI semantics.
-                </p>
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="animate-enter pt-12 flex flex-col md:flex-row items-center justify-center gap-6" style={{ animationDelay: '0.2s' }}>
-                
-                {/* Scan Infrastructure Button */}
-                <div className="relative group">
-                    <div className="absolute -inset-1.5 bg-indigo-500 rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                    <button 
-                        onClick={onStart}
-                        className="relative flex items-center justify-center gap-4 px-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-lg font-black tracking-tight transition-all duration-300 active:scale-95 shadow-2xl border border-indigo-400/20"
-                    >
-                        Scan Infrastructure
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                </div>
-
-                {/* Interactive Showcase Button */}
-                <button 
-                    onClick={onRunDemo}
-                    className="flex items-center justify-center gap-4 px-12 py-5 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-900 dark:text-white rounded-2xl text-lg font-black border border-slate-200 dark:border-slate-800/50 transition-all duration-300 group shadow-lg backdrop-blur-sm"
-                >
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                        <Sparkles className="w-4 h-4" />
-                    </div>
-                    Interactive Showcase
-                </button>
-
-                {/* Learn More Button */}
-                <button 
-                    onClick={onLearnMore}
-                    className="flex items-center justify-center gap-4 px-10 py-5 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] border border-slate-200 dark:border-slate-800/50 transition-all group"
-                >
-                    <HelpCircle className="w-5 h-5 opacity-60 group-hover:opacity-100" />
-                    Learn More
-                </button>
-            </div>
-
-            {/* Feature Pills */}
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-16 animate-enter" style={{ animationDelay: '0.4s' }}>
-                {[
-                    { icon: ShieldCheck, text: "PURE HCL SUPPORT", color: "text-indigo-600 dark:text-indigo-400" },
-                    { icon: Lock, text: "GCP COMPLIANCE", color: "text-emerald-600 dark:text-emerald-400" },
-                    { icon: Activity, text: "FINOPS AUDIT", color: "text-amber-600 dark:text-amber-400" }
-                ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-3 px-8 py-3 rounded-xl bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/50 text-[9px] font-black text-slate-500 uppercase tracking-widest cursor-default hover:bg-white/80 dark:hover:bg-slate-800/80 transition-colors shadow-2xl backdrop-blur-sm">
-                        <feature.icon className={`w-3.5 h-3.5 ${feature.color} opacity-80`} />
-                        {feature.text}
-                    </div>
-                ))}
-            </div>
+          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed font-medium">
+            Gatekeep <span className="text-indigo-600 dark:text-indigo-400 font-bold">Terraform, OpenTofu, tfplan.json, GKE YAML &amp; Dockerfiles</span> against the{' '}
+            <span className="text-indigo-600 dark:text-indigo-400 font-bold">Google Cloud Well-Architected Framework</span> with deterministic CIS GCP v2.0 rules, regional FinOps SKU pricing, <code className="text-xs px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 font-mono">.dra.yaml</code> waivers, and live Gemini 2.5 attack-path synthesis.
+          </p>
         </div>
 
-        {/* Learn More Modal */}
-        {isLearnMoreOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300">
-                <div 
-                    className="absolute inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity" 
-                    onClick={() => setIsLearnMoreOpen(false)}
-                />
-                
-                <div className="relative w-full max-w-5xl bg-slate-50 dark:bg-slate-900 rounded-[3rem] shadow-[0_32px_128px_rgba(0,0,0,0.8)] overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-500 flex flex-col md:flex-row min-h-[500px]">
-                    <button 
-                        onClick={() => setIsLearnMoreOpen(false)}
-                        className="absolute top-8 right-8 z-20 p-4 bg-white dark:bg-slate-800 hover:bg-red-500 hover:text-white text-slate-400 rounded-2xl transition-all duration-300 group shadow-lg border border-slate-200 dark:border-slate-700"
-                    >
-                        <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
-                    </button>
-                    
-                    {/* Sidebar Nav */}
-                    <div className="w-full md:w-80 bg-white dark:bg-slate-950 p-10 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 space-y-6">
-                        <div className="mb-10">
-                           <h3 className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2">Core Protocol</h3>
-                           <p className="text-2xl font-black text-slate-900 dark:text-white">Audit Pillars</p>
-                        </div>
-                        <div className="space-y-4">
-                            {showcaseSteps.map((step, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setActiveStep(i)}
-                                    className={`w-full flex items-center gap-5 p-5 rounded-2xl transition-all text-left group/nav
-                                        ${activeStep === i 
-                                            ? 'bg-slate-100 dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800' 
-                                            : 'hover:bg-slate-100/40 dark:hover:bg-slate-900/40 text-slate-500'}
-                                    `}
-                                >
-                                    <div className={`p-3 rounded-xl transition-colors ${activeStep === i ? step.bg + ' ' + step.color : 'bg-slate-200 dark:bg-slate-800'}`}>
-                                        <step.icon className="w-5 h-5" />
-                                    </div>
-                                    <span className={`text-sm font-black uppercase tracking-tight ${activeStep === i ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>
-                                        {step.title}
-                                    </span>
-                                    {activeStep === i && <ChevronRight className="w-4 h-4 ml-auto text-indigo-600 dark:text-indigo-400" />}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+        {/* CTA Row */}
+        <div
+          className="animate-enter pt-8 flex flex-col md:flex-row items-center justify-center gap-5"
+          style={{ animationDelay: '0.15s' }}
+        >
+          <div className="relative group w-full md:w-auto">
+            <div className="absolute -inset-1.5 bg-indigo-500 rounded-2xl blur-lg opacity-25 group-hover:opacity-45 transition duration-500" />
+            <button
+              type="button"
+              onClick={onStart}
+              className="relative w-full md:w-auto flex items-center justify-center gap-4 px-11 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-lg font-black tracking-tight transition-all duration-300 active:scale-95 shadow-2xl border border-indigo-400/20"
+            >
+              Launch Hybrid Auditor
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+            </button>
+          </div>
 
-                    {/* Content Area */}
-                    <div className="flex-1 p-12 md:p-20 flex flex-col justify-center relative overflow-hidden bg-white dark:bg-slate-900">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
-                        
-                        <div key={activeStep} className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-12">
-                            <div className={`w-24 h-24 rounded-3xl ${showcaseSteps[activeStep].bg} ${showcaseSteps[activeStep].color} flex items-center justify-center border ${showcaseSteps[activeStep].accent} shadow-2xl`}>
-                                {React.createElement(showcaseSteps[activeStep].icon, { className: "w-12 h-12" })}
-                            </div>
-                            
-                            <div className="space-y-8">
-                                <div>
-                                    <h4 className={`text-xs font-black uppercase tracking-[0.3em] mb-4 ${showcaseSteps[activeStep].color}`}>
-                                        {showcaseSteps[activeStep].subtitle}
-                                    </h4>
-                                    <h3 className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none mb-2">
-                                        {showcaseSteps[activeStep].title}
-                                    </h3>
-                                </div>
-                                <p className="text-slate-600 dark:text-slate-400 text-xl leading-relaxed max-w-lg font-medium">
-                                    {showcaseSteps[activeStep].description}
-                                </p>
-                            </div>
-
-                            <div className="pt-6 flex flex-wrap gap-4">
-                                <div className="flex items-center gap-3 px-6 py-3 bg-slate-100 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                    Production Ready
-                                </div>
-                                <div className="flex items-center gap-3 px-6 py-3 bg-slate-100 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                    AI Sovereignty
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-24 flex items-center justify-between">
-                             <div className="flex gap-2">
-                                {showcaseSteps.map((_, i) => (
-                                    <div 
-                                        key={i} 
-                                        className={`h-2 rounded-full transition-all duration-500 ${activeStep === i ? 'w-10 bg-indigo-600 dark:bg-indigo-500' : 'w-2 bg-slate-200 dark:bg-slate-800'}`} 
-                                    />
-                                ))}
-                             </div>
-                             <button 
-                                onClick={onStart}
-                                className="px-10 py-4 bg-indigo-600 text-white rounded-2xl text-base font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-indigo-500/30"
-                             >
-                                Get Started
-                             </button>
-                        </div>
-                    </div>
-                </div>
+          <button
+            type="button"
+            onClick={onRunDemo}
+            className="w-full md:w-auto flex items-center justify-center gap-4 px-10 py-5 bg-white dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-900 dark:text-white rounded-2xl text-lg font-black border border-slate-200 dark:border-slate-800 transition-all duration-300 group shadow-lg backdrop-blur-sm"
+          >
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+              <Sparkles className="w-4 h-4" aria-hidden="true" />
             </div>
-        )}
+            Interactive Showcase
+          </button>
+
+          <button
+            type="button"
+            onClick={onLearnMore}
+            className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-5 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-2xl text-xs font-black uppercase tracking-[0.25em] border border-slate-200 dark:border-slate-800 transition-all group"
+          >
+            <BookOpen className="w-4 h-4 opacity-70 group-hover:opacity-100" aria-hidden="true" />
+            v3.0 Docs &amp; Release Notes
+          </button>
+        </div>
+
+        {/* v3.0 Capability Pills */}
+        <div
+          className="flex flex-wrap items-center justify-center gap-3 pt-10 max-w-4xl mx-auto animate-enter"
+          style={{ animationDelay: '0.3s' }}
+        >
+          {featurePills.map((feature, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/70 text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest shadow-sm backdrop-blur-sm"
+            >
+              <feature.icon className={`w-3.5 h-3.5 ${feature.color}`} aria-hidden="true" />
+              {feature.text}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

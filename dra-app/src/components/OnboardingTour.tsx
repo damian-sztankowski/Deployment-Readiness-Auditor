@@ -9,20 +9,20 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ startTour }) => 
   useEffect(() => {
     if (!startTour) return;
 
-    // Check localStorage to see if user has already seen the tour
-    const hasSeenTour = localStorage.getItem('dra-has-seen-tour');
+    const hasSeenTour = localStorage.getItem('dra-has-seen-tour-v3');
     if (hasSeenTour) return;
 
     const driverObj = driver({
       showProgress: true,
-      popoverClass: 'driverjs-theme', // Custom class defined in index.html for dark mode
+      popoverClass: 'driverjs-theme',
       animate: true,
       steps: [
         {
           element: '#input-section-container',
           popover: {
-            title: 'Welcome to DRA',
-            description: 'This is your workspace. Paste your Terraform/JSON code here or use the file upload tools.',
+            title: 'Welcome to DRA v3.0',
+            description:
+              'Audit Terraform, OpenTofu, tfplan.json, GKE YAML, and Dockerfiles with Bidirectional Client-Side DLP and optional .dra.yaml org policies.',
             side: 'bottom',
             align: 'start'
           }
@@ -30,8 +30,9 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ startTour }) => 
         {
           element: '#action-buttons-group',
           popover: {
-            title: 'Import Options',
-            description: 'You can upload single files or entire folders. Click "Load Example" to see a demo analysis.',
+            title: 'Multi-Stack Import & Examples',
+            description:
+              'Upload single files, entire project folders (including .dra.yaml waivers), or click "Load Example" to inspect a sample specification.',
             side: 'left',
             align: 'start'
           }
@@ -39,8 +40,9 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ startTour }) => 
         {
           element: '#code-editor-area',
           popover: {
-            title: 'Code Editor',
-            description: 'Your code appears here. You can edit it manually before running the audit.',
+            title: 'Line-Anchored Code & Policy Editor',
+            description:
+              'Synchronized line numbers let you click any finding card later to jump straight to the offending resource block.',
             side: 'top',
             align: 'center'
           }
@@ -48,43 +50,44 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ startTour }) => 
         {
           element: '#analyze-fab-container',
           popover: {
-            title: 'Run Analysis',
-            description: 'Once you are ready, hit this button. The AI will audit your infrastructure against the Google Cloud Architecture Framework.',
+            title: 'Hybrid AST + AI Engine',
+            description:
+              'Open Settings to choose Hybrid Gemini 2.5 + AST, zero-key Offline Deterministic AST, or local Ollama/LM Studio—then click Run Audit for live SSE streaming.',
             side: 'top',
             align: 'end'
           }
         },
         {
-            element: '#header-history-btn',
-            popover: {
-              title: 'Audit History',
-              description: 'Access your previous scans here. History is saved locally in your browser.',
-              side: 'bottom',
-              align: 'end'
-            }
+          element: '#header-history-btn',
+          popover: {
+            title: 'Audit History & Drift Deltas',
+            description:
+              'Compare any historical run as a baseline to track maturity score improvements and resolved critical blockers.',
+            side: 'bottom',
+            align: 'end'
+          }
         },
         {
-            element: '#header-theme-btn',
-            popover: {
-              title: 'Dark Mode',
-              description: 'Toggle between light and dark themes to suit your preference.',
-              side: 'bottom',
-              align: 'end'
-            }
+          element: '#header-theme-btn',
+          popover: {
+            title: 'Adaptive Light / Dark Theme',
+            description: 'Switch seamlessly between obsidian dark and high-contrast light modes.',
+            side: 'bottom',
+            align: 'end'
+          }
         }
       ],
       onDestroyed: () => {
-        // Mark as seen when tour is skipped or finished
-        localStorage.setItem('dra-has-seen-tour', 'true');
+        localStorage.setItem('dra-has-seen-tour-v3', 'true');
       }
     });
 
-    // Small delay to ensure DOM is fully ready after splash screen exit
-    setTimeout(() => {
-        driverObj.drive();
-    }, 1000);
+    const timer = setTimeout(() => {
+      driverObj.drive();
+    }, 800);
 
+    return () => clearTimeout(timer);
   }, [startTour]);
 
-  return null; // This component does not render any visible UI itself
+  return null;
 };

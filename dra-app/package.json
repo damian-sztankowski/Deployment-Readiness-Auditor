@@ -10,8 +10,8 @@
     "build:client": "vite build",
     "build:server": "esbuild server.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/server.mjs --packages=external",
     "build": "npm run build:client && npm run build:server",
-    "start": "node dist/server.mjs",
-    "start:dev": "npm run build && node dist/server.mjs",
+    "start": "npm run build && node dist/server.mjs",
+    "start:prod": "node dist/server.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

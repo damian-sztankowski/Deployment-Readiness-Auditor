@@ -1,482 +1,400 @@
-import React, { useState } from 'react';
-import { 
-  Shield, Zap, Cloud, ArrowRight, AlertTriangle, TrendingUp, 
-  TrendingDown, ChevronDown, HelpCircle, Brain, FolderSearch, 
-  Code2, Gauge, ShieldCheck, Globe, FileCheck, Lock, Scale, 
-  BarChart3, Activity, Cpu, Layers, BookOpen, Landmark,
-  CheckCircle, MessageSquare, EyeOff, ServerOff, Key, Target,
-  Fingerprint, Database, Binary, ShieldAlert, Tag
+import React from 'react';
+import {
+  Shield,
+  Zap,
+  ArrowRight,
+  TrendingDown,
+  HelpCircle,
+  Brain,
+  Code2,
+  Gauge,
+  ShieldCheck,
+  Globe,
+  Lock,
+  Scale,
+  Activity,
+  Cpu,
+  Layers,
+  Landmark,
+  CheckCircle,
+  EyeOff,
+  ServerOff,
+  Fingerprint,
+  Binary,
+  ShieldAlert,
+  Tag
 } from 'lucide-react';
 
 interface AboutProps {
   onStartAssessment: () => void;
 }
 
-const FAQItem = ({ question, answer }: { question: string; answer: string }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="border-b border-slate-200 dark:border-slate-800 last:border-0">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-6 flex items-start md:items-center justify-between text-left focus:outline-none group transition-all"
-      >
-        <span className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors pr-4">
-          {question}
-        </span>
-        <div className={`mt-1 md:mt-0 p-1.5 rounded-xl transition-all duration-300 ${isOpen ? 'bg-indigo-600 text-white rotate-180 shadow-lg shadow-indigo-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-500'}`}>
-             <ChevronDown className="w-5 h-5" />
-        </div>
-      </button>
-      <div
-        className={`grid transition-all duration-300 ease-in-out ${
-          isOpen ? 'grid-rows-[1fr] opacity-100 pb-8' : 'grid-rows-[0fr] opacity-0'
-        }`}
-      >
-        <div className="overflow-hidden">
-            <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed max-w-4xl border-l-2 border-indigo-500/20 pl-6 ml-1">
-            {answer}
-            </p>
-        </div>
-      </div>
-    </div>
-  );
-};
+const FAQ_ITEMS = [
+  {
+    question: 'How does DRA v3.0 improve upon both Checkov/TFLint and pure LLM auditors?',
+    answer:
+      'Pure static linters miss cross-resource architectural flaws, while pure LLM wrappers can hallucinate line numbers or fall victim to prompt injection. DRA v3.0 runs a Hybrid Pipeline: a deterministic HCL/K8s/Docker AST pass anchors exact start/end lines, interpolates variables.tf + .tfvars, and enforces hard CIS GCP v2.0 score ceilings—then Gemini 2.5 synthesizes multi-hop attack paths and executive guidance.'
+  },
+  {
+    question: 'How does Bidirectional Client-Side DLP protect proprietary cloud identifiers?',
+    answer:
+      'Both the DRA Web UI and dra-cli execute anonymizeHcl locally BEFORE sending code over HTTP. High-entropy credentials (AIzaSy..., AKIA..., PEM private keys, tokens) are permanently scrubbed, while non-secret identifiers (project IDs, VPCs, emails, private IPs) are mapped to semantic aliases (e.g. CLOUD_ID_1, NETWORK_TOPOGRAPHY_1) kept only in client memory. When results return, non-secret aliases are restored locally so your HCL fixes work immediately without ever exposing real names to external LLMs.'
+  },
+  {
+    question: 'Which Infrastructure as Code formats are supported in v3.0?',
+    answer:
+      'DRA v3.0 audits Terraform (.tf, .tfvars), OpenTofu (.tofu), evaluated Terraform Plan JSON (tfplan.json via terraform show -json), Kubernetes & GKE manifests (.yaml/.yml), and container Dockerfiles—alongside .dra.yaml Organization Policy & Waiver files.'
+  },
+  {
+    question: 'Can DRA run 100% offline in air-gapped environments or without a Gemini API key?',
+    answer:
+      'Yes! Unlike earlier versions that relied on runtime CDN scripts, DRA v3.0 bundles all frontend assets locally via Vite + Tailwind CSS. You can select the built-in Deterministic AST Engine (zero API key, $0 cost, instant offline execution) or connect to local Ollama / LM Studio endpoints on localhost.'
+  },
+  {
+    question: 'How do .dra.yaml Organization Policies and Time-Bounded Risk Waivers work?',
+    answer:
+      'Platform teams can commit a .dra.yaml file defining requiredLabels (e.g. environment, owner, cost_center), allowedRegions (e.g. europe-west* for GDPR sovereignty), bannedMachinePrefixes (n1-, f1-), and expiring waivers (with approvedBy, reason, and ISO expires date). Valid unexpired waivers move findings into the Accepted Risk Waivers attestation section of the CISO PDF without blocking CI/CD; once expired, they automatically revert to active gate blockers.'
+  },
+  {
+    question: 'Are the generated .patch files compatible with git apply?',
+    answer:
+      'Yes. DRA v3.0 diffs remediated HCL blocks directly against your uploaded source files to emit standard POSIX unified diffs (diff --git a/... b/..., context lines, and exact hunk headers) verified against git apply --check, and previews them in an interactive Side-by-Side Diff modal.'
+  },
+  {
+    question: 'How accurate is the v3.0 FinOps Cloud Billing SKU Calculator?',
+    answer:
+      'Instead of relying solely on LLM string guesses, DRA v3.0 includes a deterministic GCP Cloud Billing SKU engine with regional pricing multipliers (us-central1, europe-west1, europe-west3, asia-northeast1, etc.), count multipliers, Committed Use Discount (CUD) targets, external IPv4 fees, and unattached Persistent Disk detection.'
+  },
+  {
+    question: 'How is DRA hardened for production Google Cloud Run deployments?',
+    answer:
+      'Production deployments serve static assets strictly from dist/public, enforce constant-time SHA-256 secret checks and google-auth-library OIDC audience/domain verification, sign multi-instance sessions with __Host-dra_session cookies, block IPv4/IPv6 SSRF & HTTP 302 redirects via net.BlockList, sanitize Mermaid SVGs in strict mode via DOMParser, and ship with a self-audited Cloud Run v2 + Secret Manager + Workload Identity Terraform stack in infra/terraform/.'
+  }
+];
 
 export const About: React.FC<AboutProps> = ({ onStartAssessment }) => {
   return (
     <div className="animate-enter space-y-32 py-16">
-      
-      {/* Hero Section: The Dual Engine */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 dark:bg-black text-white p-8 md:p-20 flex flex-col md:flex-row items-center gap-12 shadow-2xl border border-slate-800">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.15),transparent)] pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.15),transparent)] pointer-events-none" />
 
         <div className="flex-1 relative z-10 space-y-8 text-center md:text-left">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-black uppercase tracking-[0.2em]">
-            <Layers className="w-3.5 h-3.5" />
-            AI Gatekeeper & Governance Engine
+            <Cpu className="w-3.5 h-3.5" aria-hidden="true" />
+            DRA v3.0 • Hybrid AST + AI Governance Platform
           </div>
           <h2 className="text-4xl md:text-6xl font-extrabold tracking-tighter leading-[1.05] text-white">
-            Architecture Audit <br/>
-            <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">Meets Compliance.</span>
+            Deterministic Precision <br />
+            <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+              Meets AI Reasoning.
+            </span>
           </h2>
           <p className="text-slate-400 text-lg leading-relaxed max-w-xl mx-auto md:mx-0">
-            The <strong>Deployment Readiness Auditor (DRA)</strong> evaluates Google Cloud Terraform code (<code className="text-indigo-300">*.tf</code>) and evaluated execution plans (<code className="text-indigo-300">tfplan.json</code>) against the <strong>Well-Architected Framework</strong> and 6 international cybersecurity standards before changes hit production.
+            The <strong>Deployment Readiness Auditor (DRA v3.0)</strong> audits{' '}
+            <code className="text-indigo-300">*.tf</code>,{' '}
+            <code className="text-indigo-300">*.tofu</code>,{' '}
+            <code className="text-indigo-300">tfplan.json</code>,{' '}
+            <code className="text-indigo-300">GKE YAML</code>, and{' '}
+            <code className="text-indigo-300">Dockerfiles</code> against the{' '}
+            <strong>Google Cloud Well-Architected Framework</strong>, 6 regulatory standards, and custom{' '}
+            <code className="text-emerald-300">.dra.yaml</code> policies before changes hit production.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
-            <button 
-                onClick={onStartAssessment}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-900 rounded-2xl font-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
+            <button
+              type="button"
+              onClick={onStartAssessment}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-900 rounded-2xl font-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
             >
-                Start Audit
-                <ArrowRight className="w-5 h-5" />
+              Launch Hybrid Audit
+              <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </button>
-            <div className="flex items-center gap-3 px-6 py-4 rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-                <div className="flex -space-x-2">
-                    {[1, 2, 3].map(i => <div key={i} className={`w-6 h-6 rounded-full border-2 border-slate-900 bg-slate-700`} />)}
-                </div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Used by Cloud Architects</span>
-            </div>
           </div>
         </div>
 
-        {/* Visual: Framework Interaction */}
         <div className="flex-1 relative z-10 hidden lg:block">
-            <div className="relative w-full aspect-square max-w-md mx-auto">
-                <div className="absolute inset-0 bg-indigo-500/10 rounded-full animate-pulse blur-3xl"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-64 h-64 border-2 border-indigo-500/30 rounded-3xl rotate-12 flex items-center justify-center bg-slate-900/40 backdrop-blur">
-                         <div className="text-center -rotate-12">
-                             <Landmark className="w-12 h-12 text-indigo-400 mx-auto mb-2" />
-                             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Regulatory</span>
-                         </div>
-                    </div>
-                    <div className="absolute w-64 h-64 border-2 border-emerald-500/30 rounded-3xl -rotate-6 flex items-center justify-center bg-slate-900/40 backdrop-blur">
-                         <div className="text-center rotate-6">
-                             <ShieldCheck className="w-12 h-12 text-emerald-400 mx-auto mb-2" />
-                             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Well-Architected</span>
-                         </div>
-                    </div>
+          <div className="relative w-full aspect-square max-w-md mx-auto">
+            <div className="absolute inset-0 bg-indigo-500/10 rounded-full animate-pulse blur-3xl" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-64 h-64 border-2 border-indigo-500/30 rounded-3xl rotate-12 flex items-center justify-center bg-slate-900/40 backdrop-blur">
+                <div className="text-center -rotate-12">
+                  <Landmark className="w-12 h-12 text-indigo-400 mx-auto mb-2" aria-hidden="true" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">
+                    CIS • NIST • GDPR • SOC2
+                  </span>
                 </div>
+              </div>
+              <div className="absolute w-64 h-64 border-2 border-emerald-500/30 rounded-3xl -rotate-6 flex items-center justify-center bg-slate-900/40 backdrop-blur">
+                <div className="text-center rotate-6">
+                  <ShieldCheck
+                    className="w-12 h-12 text-emerald-400 mx-auto mb-2"
+                    aria-hidden="true"
+                  />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-200">
+                    Hybrid AST + Gemini 2.5
+                  </span>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
       </section>
 
-      {/* HOW TO START SECTION */}
-      <section className="space-y-12 max-w-6xl mx-auto py-8">
+      {/* How to Start */}
+      <section className="space-y-12 max-w-6xl mx-auto py-4">
         <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
-                <Layers className="w-3.5 h-3.5" />
-                Getting Started
-            </div>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">How to Start</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-base max-w-2xl mx-auto font-medium">Follow three simple steps to configure your Audit Engine settings and run infrastructure checks.</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+            <Layers className="w-3.5 h-3.5" aria-hidden="true" />
+            3-Step Workflow
+          </div>
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">
+            From IaC to Verified Git Patch in Seconds
+          </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 relative shadow-sm hover:border-indigo-500 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
-                    1
-                </div>
-                <h4 className="text-lg font-black uppercase tracking-tight">Prepare Code or Plan</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                    Paste your Terraform (HCL) code or evaluated execution plan (<code className="text-indigo-500">tfplan.json</code>) directly into the editor, or click <strong>Upload Project</strong> to load an entire directory.
-                </p>
+          <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 shadow-sm hover:border-indigo-500 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 flex items-center justify-center font-black text-sm">
+              1
             </div>
+            <h3 className="text-lg font-black uppercase tracking-tight">Ingest IaC &amp; .dra.yaml</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Paste or upload <code className="text-indigo-500">.tf</code>,{' '}
+              <code className="text-indigo-500">.tofu</code>,{' '}
+              <code className="text-indigo-500">tfplan.json</code>, Kubernetes YAML, or Dockerfiles—and optionally configure organizational guardrails &amp; waivers in the{' '}
+              <strong>Org Policy (.dra.yaml)</strong> tab.
+            </p>
+          </div>
 
-            <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 relative shadow-sm hover:border-indigo-500 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
-                    2
-                </div>
-                <h4 className="text-lg font-black uppercase tracking-tight">Configure Engine</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                    Click the <strong>Settings icon</strong> (slider toggle) in the editor to select your model (<code className="text-indigo-500">gemini-2.5-pro</code>, <code className="text-indigo-500">gemini-2.5-flash</code>) or connect to local self-hosted engines (like <strong>Ollama</strong> or <strong>LM Studio</strong>).
-                </p>
+          <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 shadow-sm hover:border-indigo-500 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 flex items-center justify-center font-black text-sm">
+              2
             </div>
+            <h3 className="text-lg font-black uppercase tracking-tight">Select Hybrid or Offline Engine</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Choose <strong>Hybrid Gemini 2.5 + AST</strong>, zero-key{' '}
+              <strong>Offline Deterministic AST</strong>, or local <strong>Ollama / LM Studio</strong>. Stream live SSE progress across DLP, AST, FinOps SKUs, Policy, and AI stages.
+            </p>
+          </div>
 
-            <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 relative shadow-sm hover:border-indigo-500 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-350 flex items-center justify-center font-black text-sm">
-                    3
-                </div>
-                <h4 className="text-lg font-black uppercase tracking-tight">Analyze & Remediate</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                    Click <strong>Run Audit</strong>. Review the Go/No-Go Deployment Verdict, Regulatory Compliance Matrix, FinOps waste savings, and export one-click Git patch bundles or CISO PDF briefs.
-                </p>
+          <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-4 shadow-sm hover:border-indigo-500 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 flex items-center justify-center font-black text-sm">
+              3
             </div>
+            <h3 className="text-lg font-black uppercase tracking-tight">Diff, Ask Architect &amp; Export</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Jump directly to flagged lines, inspect <strong>Side-by-Side Diffs</strong>, apply{' '}
+              <code className="text-emerald-500">dra-remediation.patch</code> via{' '}
+              <code>git apply</code>, consult the <strong>Principal Architect Co-Pilot</strong>, or export the multi-page CISO PDF Brief.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* DLP PRE-PROCESSOR FEATURE SECTION */}
+      {/* Bidirectional DLP Section */}
       <section className="relative py-12">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[150%] bg-indigo-500/5 dark:bg-indigo-500/10 skew-y-6 blur-3xl pointer-events-none -z-10"></div>
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
-            <div className="flex-1 space-y-8 order-2 lg:order-1">
-                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] shadow-sm">
-                    <ShieldAlert className="w-4 h-4" />
-                    Context-Aware Semantic Anonymization
-                </div>
-                <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight">
-                    Stateful DLP <br/>
-                    <span className="text-emerald-600 dark:text-emerald-400">Pre-Processor.</span>
-                </h2>
-                <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed font-medium">
-                    DRA includes a real-time <strong>Semantic DLP Engine</strong> that deterministicly masks sensitive data while preserving the architectural logic required for a high-fidelity audit.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {[
-                        { icon: Fingerprint, title: "Stateful Aliasing", desc: "Unique IDs map to consistent aliases (PROJECT_A), allowing AI to reason about resource relationships." },
-                        { icon: Binary, title: "Secret Scrubbing", desc: "API keys, private keys, and high-entropy tokens are fully redacted before transmission." },
-                        { icon: Globe, title: "Network Topology", desc: "VPC/Subnet names and IPs are hashed to semantic placeholders to protect routing logic." },
-                        { icon: Tag, title: "Tier Redaction", desc: "Critical indicators like 'Prod', 'Master', or 'Primary' are scrubbed from names and labels." }
-                    ].map((item, i) => (
-                        <div key={i} className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2 shadow-sm">
-                            <item.icon className="w-5 h-5 text-emerald-500" />
-                            <h4 className="text-sm font-black uppercase tracking-tight">{item.title}</h4>
-                            <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
-                        </div>
-                    ))}
-                </div>
+          <div className="flex-1 space-y-8 order-2 lg:order-1">
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] shadow-sm">
+              <ShieldAlert className="w-4 h-4" aria-hidden="true" />
+              Zero-Knowledge Client-Side Privacy
             </div>
-
-            <div className="flex-1 order-1 lg:order-2">
-                <div className="relative p-1 bg-gradient-to-br from-emerald-500/40 to-indigo-500/40 rounded-[3rem] shadow-2xl">
-                    <div className="bg-white dark:bg-slate-950 rounded-[calc(3rem-4px)] p-10 overflow-hidden relative">
-                         <div className="absolute top-0 right-0 p-8 opacity-10">
-                            <Binary className="w-40 h-40" />
-                         </div>
-                         <div className="space-y-6 relative z-10">
-                             <div className="space-y-2">
-                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                     <span>Source Infrastructure</span>
-                                     <span className="text-red-500">Sensitive</span>
-                                 </div>
-                                 <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl font-mono text-[11px] text-slate-500 border border-slate-100 dark:border-slate-800 line-through decoration-red-500/50">
-                                     project = "bank-prod-secure-123"<br/>
-                                     name    = "master-db-primary"<br/>
-                                     range   = "10.0.1.0/24"
-                                 </div>
-                             </div>
-                             <div className="flex justify-center">
-                                 <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center animate-bounce">
-                                     <ArrowRight className="w-5 h-5 rotate-90" />
-                                 </div>
-                             </div>
-                             <div className="space-y-2">
-                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-emerald-500">
-                                     <span>Semantic Specification</span>
-                                     <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Protected</span>
-                                 </div>
-                                 <div className="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl font-mono text-[11px] text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-inner">
-                                     project = "PROJECT_ID_1"<br/>
-                                     name    = "RESOURCE_NAME_A"<br/>
-                                     range   = "IP_RANGE_1"
-                                 </div>
-                             </div>
-                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-      </section>
-
-      {/* SOVEREIGNTY & PRIVACY CENTER */}
-      <section className="space-y-12">
-        <div className="max-w-3xl mx-auto text-center space-y-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">Security Sovereignty</h3>
-            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">Your Architecture, Your Sovereignty</h2>
-            <p className="text-slate-600 dark:text-slate-400">DRA is built on the principle of sovereign intelligence. Here is how we protect your proprietary infrastructure.</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-emerald-500 transition-colors shadow-sm">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                    <EyeOff className="w-7 h-7" />
-                </div>
-                <h4 className="text-xl font-black">Enterprise DLP Scrubbing</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    Automatically aliases IPs, cloud IDs, and domains. Includes <strong>Global High-Entropy Scanning</strong> to redact GCP API keys, AWS tokens, and PEM private keys, even when stored under generic variable names.
-                </p>
-            </div>
-            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-indigo-500 transition-colors shadow-sm">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                    <ShieldAlert className="w-7 h-7" />
-                </div>
-                <h4 className="text-xl font-black">SSRF Outbound Protection</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    In production and container environments (such as Cloud Run), the LLM routing proxy strictly validates external target URLs, blocking attempts to scan internal subnets or access the GCP Link-Local Metadata Server.
-                </p>
-            </div>
-            <div className="p-10 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 space-y-6 group hover:border-amber-500 transition-colors shadow-sm">
-                <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-all">
-                    <ServerOff className="w-7 h-7" />
-                </div>
-                <h4 className="text-xl font-black">Zero Retention & Local Storage</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                    DRA contains no backend database. Payloads are processed ephemerally in container memory and immediately purged. Audit history is stored exclusively in your browser's local storage.
-                </p>
-            </div>
-        </div>
-      </section>
-
-      {/* Layer 1: Google Cloud Well-Architected Framework */}
-      <section className="space-y-12">
-        <div className="max-w-3xl mx-auto text-center space-y-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">Foundation Layer</h3>
-            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">Google Cloud Well-Architected</h2>
-            <p className="text-slate-600 dark:text-slate-400">Our primary audit engine scores your resources against the five foundational pillars of Google's official architecture framework.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-            {[
-                { name: 'Operational Excellence', icon: Activity, color: 'text-blue-500', desc: 'Deployment automation, logging, and incident response readiness.' },
-                { name: 'Security & Compliance', icon: Shield, color: 'text-red-500', desc: 'IAM least-privilege, network hardening, and data protection.' },
-                { name: 'Reliability', icon: Zap, color: 'text-amber-500', desc: 'High availability, fault tolerance, and disaster recovery posture.' },
-                { name: 'Performance Efficiency', icon: Gauge, color: 'text-emerald-500', desc: 'Resource right-sizing and modern hardware selection.' },
-                { name: 'Cost Optimization', icon: TrendingDown, color: 'text-teal-500', desc: 'Quantifiable FinOps analysis and waste reduction.' }
-            ].map((pillar, i) => (
-                <div key={i} className="group p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-indigo-100 dark:hover:border-indigo-900 transition-all duration-300">
-                    <div className={`p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 w-fit mb-4 group-hover:scale-110 transition-transform ${pillar.color}`}>
-                        <pillar.icon className="w-6 h-6" />
-                    </div>
-                    <h4 className="text-sm font-black text-slate-900 dark:text-white mb-2 leading-tight">{pillar.name}</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{pillar.desc}</p>
-                </div>
-            ))}
-        </div>
-      </section>
-
-      {/* Layer 2: Regulatory & Industry Standards */}
-      <section className="space-y-12 py-12 border-y border-slate-100 dark:border-slate-800">
-        <div className="flex flex-col md:flex-row items-center gap-12">
-            <div className="flex-1 space-y-6">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600 dark:text-emerald-400">Compliance Layer</h3>
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight">Industry Standards & Regulatory Mapping</h2>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    DRA cross-references every Well-Architected finding with a deep registry of international compliance standards. 
-                    This ensures that architectural best practices also satisfy strict regulatory requirements for your specific industry or region.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                    {['Security', 'Privacy', 'Sovereignty', 'Finance', 'Health'].map(tag => (
-                        <span key={tag} className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[9px] font-black uppercase tracking-widest text-slate-500">{tag}</span>
-                    ))}
-                </div>
-            </div>
-
-            <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {[
-                    { id: 'CIS', name: 'CIS GCP Benchmark' },
-                    { id: 'NIST', name: 'NIST 800-53' },
-                    { id: 'GDPR', name: 'EU GDPR' },
-                    { id: 'FEDRAMP', name: 'FedRAMP' },
-                    { id: 'HIPAA', name: 'HIPAA' },
-                    { id: 'SOC2', name: 'SOC 2' },
-                    { id: 'PCI', name: 'PCI DSS' },
-                    { id: 'ISO', name: 'ISO 27001' },
-                    { id: 'BSI', name: 'BSI C5' }
-                ].map((std) => (
-                    <div key={std.id} className="p-4 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-600 transition-all flex flex-col gap-1 items-center justify-center text-center">
-                        <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tighter">{std.id}</span>
-                        <span className="text-[9px] font-medium text-slate-400 truncate w-full">{std.name}</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-      </section>
-
-      {/* Why AI? Section */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
-                    <Brain className="w-6 h-6" />
-                </div>
-                <h3 className="text-3xl font-bold text-slate-900 dark:text-white">Semantic vs Static Audit</h3>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Static analyzers check for specific strings or syntax. <strong>DRA understands architectural intent.</strong> 
-                    By using Gemini models, we can identify logical flaws—like cross-region data egress that violates sovereignty—even if the individual resources are "syntactically" valid.
-                </p>
-                <ul className="space-y-3">
-                    {[
-                        'Detects cross-resource relationship risks',
-                        'Understands environment context (Prod vs Dev)',
-                        'Maps logical flaws to specific NIST/CIS controls',
-                        'Generates valid Terraform code for remediations',
-                        'Eliminates "Severity Masking" by identifying all-tier risks in a single pass.'
-                    ].map((item, i) => (
-                        <li key={i} className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
-                            <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                            {item}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-            <div className="p-8 bg-slate-50 dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
-                 <Code2 className="absolute -right-4 -bottom-4 w-40 h-40 text-indigo-500/5 group-hover:text-indigo-500/10 transition-colors" />
-                 <h4 className="text-xl font-bold mb-6">How We Audit</h4>
-                 <div className="space-y-6 relative z-10">
-                    {[
-                        { step: '01', title: 'Stateful Anonymization', desc: 'Locally scrub Project IDs and Tier indicators while preserving logic topology.' },
-                        { step: '02', title: 'Relationship Analysis', desc: 'AI models evaluate resource interaction patterns and architectural intent.' },
-                        { step: '03', title: 'Standard Validation', desc: 'Risks are mapped to CIS, NIST, and Well-Architected Framework controls.' },
-                        { step: '04', title: 'Deterministic Fixes', desc: 'Precise Terraform remediations are generated for all identified gaps.' }
-                    ].map((step, i) => (
-                        <div key={i} className="flex gap-4">
-                            <span className="text-xs font-black text-indigo-500">{step.step}</span>
-                            <div>
-                                <h5 className="text-sm font-bold text-slate-800 dark:text-slate-200">{step.title}</h5>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">{step.desc}</p>
-                            </div>
-                        </div>
-                    ))}
-                 </div>
-            </div>
-      </section>
-
-      {/* Enhanced FAQ Section */}
-      <section id="faq-section" className="max-w-5xl mx-auto w-full space-y-16">
-        <div className="text-center space-y-4">
-          <div className="inline-flex p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl text-indigo-600 dark:text-indigo-400 mb-2">
-             <HelpCircle className="w-7 h-7" />
-          </div>
-          <h3 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">Readiness & Security FAQ</h3>
-          <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
-            Everything you need to know about the auditing process, data security, and compliance mapping.
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 p-8 md:p-12 shadow-sm transition-all">
-             <FAQItem
-                question="What makes this different from tools like Checkov, Terrascan, or TFLint?"
-                answer="Traditional static analysis tools rely on hardcoded regex or YAML-based policies that check for specific key-value pairs. DRA utilizes LLM-based semantic analysis via the selected Gemini model. This allows the auditor to understand the 'intent' and 'context' of your architecture. For example, DRA can identify that a specific load balancer configuration is under-provisioned for a production workload, or that an IAM role is too broad for the specific service accounts it interacts with, even if the HCL syntax itself is valid."
-             />
-             <FAQItem
-                question="How does the stateful DLP Pre-Processor protect my data?"
-                answer="Before your code is analyzed by any external LLM, the backend passes it through a multi-pass semantic redaction engine. First, it identifies sensitive strings (Project IDs, IP ranges, Tier names). Second, it maps these to consistent, non-sensitive aliases (e.g. PROJECT_ID_1). Finally, it runs a global high-entropy scanner to search for and redact GCP API keys, AWS Access Key IDs, and RSA/EC private keys, even if they are assigned to standard parameters like 'value' or 'text'. This maintains logic relationships for the AI audit while strictly guaranteeing data privacy."
-             />
-             <FAQItem
-                question="How does DRA prevent SSRF and secure self-hosted LLM endpoints?"
-                answer="When deployed in container or production environments (like Google Cloud Run), the DRA backend includes outbound URL validation. If a client attempts to supply a custom LLM URL that resolves to a private IP, local loopback, or the GCP Link-Local Metadata Server (169.254.169.254), the request is intercepted and blocked. This prevents unauthorized actors from using the auditor container to scan internal company networks or exfiltrate GCP IAM credentials."
-             />
-             <FAQItem
-                question="How accurate are the FinOps cost savings estimates?"
-                answer="The cost savings provided are heuristic estimates based on current Google Cloud pricing benchmarks known to the underlying Gemini model. While they are highly accurate for identifying 'waste' (like unattached PD-SSD disks or over-provisioned machine types), they should be treated as quantifiable targets rather than absolute billing projections. We recommend validating these findings with the official Google Cloud Pricing Calculator."
-             />
-             <FAQItem
-                question="Is my code used to train models?"
-                answer="Google Cloud Vertex/GenAI standard terms for enterprise access usually specify that data is NOT used for model training. DRA is designed for zero-retention ephemeral processing. No code is stored on our servers, and the pre-processor scrubbs identifying information before transmission."
-             />
-             <FAQItem
-                question="Does it support high-level designs or only Terraform/HCL?"
-                answer="DRA is built EXCLUSIVELY for pure Terraform (HCL) code. To maintain the highest audit fidelity and deterministic mapping to regulatory standards, we do not support technical descriptions, JSON exports, or other non-HCL formats. Please ensure you paste pure HCL code for analysis."
-             />
-             <FAQItem
-                question="Which regulatory standards are covered in the mapping?"
-                answer="DRA covers a broad spectrum of international and industry-specific frameworks, including the CIS Google Cloud Computing Foundation Benchmark, NIST 800-53 (Security and Privacy Controls), GDPR (General Data Protection Regulation), HIPAA (Health Insurance Portability and Accountability Act), and PCI DSS (Payment Card Industry Data Security Standard). Every finding identifies the specific control ID (e.g., CIS 1.2) to simplify compliance reporting."
-             />
-             <FAQItem
-                question="How does the Go/No-Go Deployment Verdict and Blast Radius work?"
-                answer="DRA synthesizes all architectural pillar scores, regulatory failures, and threat severities into an immediate gatekeeper decision: BLOCKED (critical security flaw or compliance violation detected), CONDITIONAL (remediable high risks present), or PRODUCTION READY. It also quantifies Blast Radius (CRITICAL, MODERATE, LOW) to warn engineers of potential cascading infrastructure outages before apply."
-             />
-             <FAQItem
-                question="Can I audit compiled Terraform execution plans (tfplan.json)?"
-                answer="Yes! In addition to pure .tf and .tfvars files, DRA natively evaluates tfplan.json files (generated via `terraform show -json tfplan.binary > tfplan.json`). The auditor inspects planned runtime mutations (change.after) to catch misconfigurations resulting from dynamic interpolations and module outputs before they are provisioned."
-             />
-             <FAQItem
-                question="How do I change or configure Gemini model versions?"
-                answer="You can set the model in 4 ways: (1) In Google Cloud Run, update the LLM_MODEL environment variable (e.g. LLM_MODEL=gemini-2.5-pro); (2) In the Web UI, open the Settings slider in the code editor and type your desired model; (3) In the CLI, pass --llm-model='gemini-2.5-pro'; or (4) When running locally, start the server with LLM_MODEL='gemini-2.5-pro' npm start."
-             />
-             <FAQItem
-                question="What is included in the Remediation Bundle and CISO PDF Brief?"
-                answer="The 'Remediate All' button exports a unified Git patch (dra-remediation.patch) that can be applied immediately with `git apply dra-remediation.patch`, along with a consolidated remediated-infrastructure.tf file. The CISO Executive PDF Brief exports a boardroom-ready, multi-page report complete with pillar scorecards, compliance tables, code fixes, and formal 3-party governance sign-off blocks."
-             />
-             <FAQItem
-                question="How does the 'Auto-Remediation' feature work?"
-                answer="For every identified risk, the auditor generates a corresponding HCL/Terraform code block that resolves the issue while adhering to best practices. This code is synthesized based on your existing resource definitions, meaning it includes your specific naming conventions and variable structures where possible."
-             />
-             <FAQItem
-                question="Can I integrate DRA into CI/CD pipelines as a quality gate?"
-                answer="Yes! The standalone Go CLI (`dra-cli`) can be added to GitHub Actions, GitLab CI, or Cloud Build pipelines. Use `--fail-on critical,high` or `--min-score 75` to break builds when thresholds are violated, and `--output sarif` to upload results directly to the GitHub Code Scanning Security tab."
-             />
-        </div>
-
-        <div className="bg-slate-50 dark:bg-slate-950/40 rounded-[2.5rem] border border-slate-200/60 dark:border-slate-800/60 p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-6">
-                <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm">
-                    <span className="text-slate-400 font-black uppercase tracking-widest text-[10px] absolute -top-2 left-4 bg-white px-2"></span>
-                    <ShieldAlert className="w-8 h-8 text-indigo-500" />
-                </div>
-                <div>
-                    <h4 className="text-xl font-bold text-slate-900 dark:text-white">Pure HCL Auditing Platform</h4>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">Focused exclusively on Google Cloud Terraform for maximum precision.</p>
-                </div>
-            </div>
-            <div className="flex gap-4">
-                <a 
-                    href="https://github.com/damian-sztankowski/Deployment-Readiness-Auditor" 
-                    target="_blank"
-                    className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-black hover:border-indigo-500 transition-all flex items-center gap-2"
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight">
+              Bidirectional Semantic <br />
+              <span className="text-emerald-600 dark:text-emerald-400">Client-Side DLP.</span>
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed font-medium">
+              In v3.0, sensitive identifiers never leave your browser or CLI in plaintext—yet your returned HCL fixes still contain your exact real resource names.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                {
+                  icon: Fingerprint,
+                  title: 'Client-Side Aliasing',
+                  desc: 'Project IDs, VPCs, and emails become CLOUD_ID_1 & NETWORK_TOPOGRAPHY_1 locally before HTTP transmission.'
+                },
+                {
+                  icon: Binary,
+                  title: 'Irreversible Secret Scrub',
+                  desc: 'GCP keys (AIzaSy...), AWS keys, PEM private keys, and passwords are permanently redacted.'
+                },
+                {
+                  icon: Globe,
+                  title: 'Local De-Aliasing',
+                  desc: 'Returned HCL fixes and Mermaid diagrams automatically restore non-secret aliases in browser/CLI memory.'
+                },
+                {
+                  icon: Scale,
+                  title: 'Auditable Waivers',
+                  desc: 'Time-bounded .dra.yaml risk exceptions are tracked cleanly without muting underlying visibility.'
+                }
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2 shadow-sm"
                 >
-                    View Source
-                    <ArrowRight className="w-4 h-4" />
-                </a>
+                  <item.icon className="w-5 h-5 text-emerald-500" aria-hidden="true" />
+                  <h4 className="text-sm font-black uppercase tracking-tight">{item.title}</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
             </div>
+          </div>
+
+          <div className="flex-1 order-1 lg:order-2 w-full">
+            <div className="relative p-1 bg-gradient-to-br from-emerald-500/40 to-indigo-500/40 rounded-[3rem] shadow-2xl">
+              <div className="bg-white dark:bg-slate-950 rounded-[calc(3rem-4px)] p-8 md:p-10 space-y-5">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <span>1. Local Editor Input</span>
+                    <span className="text-rose-500">Raw Identifiers &amp; Secret</span>
+                  </div>
+                  <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl font-mono text-[11px] text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800">
+                    project = &quot;bank-prod-123&quot;
+                    <br />
+                    network = &quot;swift-core-vpc&quot;
+                    <br />
+                    api_key = &quot;AIzaSyB-LiveKey99&quot;
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-indigo-500">
+                    <span>2. Sent Over Wire to Audit Engine</span>
+                    <span>Zero Raw PII/Secrets</span>
+                  </div>
+                  <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl font-mono text-[11px] text-indigo-600 dark:text-indigo-300 border border-indigo-500/20">
+                    project = &quot;CLOUD_ID_1&quot;
+                    <br />
+                    network = &quot;NETWORK_TOPOGRAPHY_1&quot;
+                    <br />
+                    api_key = &quot;[REDACTED_GCP_API_KEY]&quot;
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-emerald-500">
+                    <span>3. Restored Locally in Remediation Fix</span>
+                    <span className="flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" aria-hidden="true" /> Ready for git apply
+                    </span>
+                  </div>
+                  <div className="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl font-mono text-[11px] text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    project = &quot;bank-prod-123&quot;
+                    <br />
+                    network = &quot;swift-core-vpc&quot;
+                    <br />
+                    api_key = data.google_secret_manager_secret_version.app.secret_data
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-      
-      <div className="text-center pt-8 border-t border-slate-100 dark:border-slate-800">
-          <div className="flex items-center justify-center gap-4 mb-4">
-              <Shield className="w-5 h-5 text-slate-300" />
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
-              <Globe className="w-5 h-5 text-slate-300" />
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
-              <Lock className="w-5 h-5 text-slate-300" />
-          </div>
-          <p className="text-slate-400 text-xs max-w-lg mx-auto leading-relaxed">
-              Deployment Readiness Auditor (DRA) is an independent AI tool for Google Cloud Platform. 
-              Assessment findings are based on AI interpretations of the Google Cloud Well-Architected Framework and Industry Standards.
-          </p>
-      </div>
 
+      {/* 5 Well-Architected Pillars */}
+      <section className="space-y-12">
+        <div className="max-w-3xl mx-auto text-center space-y-4">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">
+            Foundation Layer
+          </h3>
+          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white">
+            Google Cloud Well-Architected
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400">
+            Every workload is scored across all five official pillars with configurable{' '}
+            <code>.dra.yaml</code> weights.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          {[
+            {
+              name: 'Operational Excellence',
+              icon: Activity,
+              color: 'text-blue-500',
+              desc: 'Mandatory governance labels, IaC modularity, and observability readiness.'
+            },
+            {
+              name: 'Security & Compliance',
+              icon: Shield,
+              color: 'text-red-500',
+              desc: 'Zero-trust VPC perimeters, least-privilege IAM, Secret Manager, and CIS v2.0.'
+            },
+            {
+              name: 'Reliability',
+              icon: Zap,
+              color: 'text-amber-500',
+              desc: 'Regional Cloud SQL HA, PITR backups, GCS versioning, and deletion protection.'
+            },
+            {
+              name: 'Performance Efficiency',
+              icon: Gauge,
+              color: 'text-emerald-500',
+              desc: 'Modern E2/N4/Axion C4A compute generations and Hyperdisk storage.'
+            },
+            {
+              name: 'Cost Optimization',
+              icon: TrendingDown,
+              color: 'text-teal-500',
+              desc: 'Regional GCP Billing SKU modeling, CUDs, Private Google Access, and zombie disk cleanup.'
+            }
+          ].map((pillar, i) => (
+            <div
+              key={i}
+              className="group p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all"
+            >
+              <div
+                className={`p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 w-fit mb-4 ${pillar.color}`}
+              >
+                <pillar.icon className="w-6 h-6" aria-hidden="true" />
+              </div>
+              <h4 className="text-sm font-black text-slate-900 dark:text-white mb-2">
+                {pillar.name}
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {pillar.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Native Exclusive Accordion FAQ (per modern-web-guidance `html` §5) */}
+      <section aria-labelledby="faq-heading" className="max-w-5xl mx-auto w-full space-y-12">
+        <div className="text-center space-y-4">
+          <div className="inline-flex p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl text-indigo-600 dark:text-indigo-400">
+            <HelpCircle className="w-7 h-7" aria-hidden="true" />
+          </div>
+          <h2
+            id="faq-heading"
+            className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter"
+          >
+            Architecture &amp; Security FAQ (v3.0)
+          </h2>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-6 md:p-12 divide-y divide-slate-200 dark:divide-slate-800 shadow-sm">
+          {FAQ_ITEMS.map((item, idx) => (
+            <details key={idx} name="dra-faq" className="group py-5 first:pt-0 last:pb-0">
+              <summary className="cursor-pointer list-none flex items-center justify-between gap-4 text-base md:text-lg font-bold text-slate-800 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                <span>{item.question}</span>
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 w-7 h-7 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-sm font-black group-open:bg-indigo-600 group-open:text-white group-open:rotate-45 transition-all"
+                >
+                  +
+                </span>
+              </summary>
+              <p className="mt-4 text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed border-l-2 border-indigo-500/30 pl-5">
+                {item.answer}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };
