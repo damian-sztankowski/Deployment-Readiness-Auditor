@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const CliVersion = "3.0.0"
+const CliVersion = "3.1.0"
 
 // --- DYNAMIC ANSI COLOR SUPPORT (POSIX NO_COLOR & TTY AWARE) ---
 var (
@@ -1053,7 +1053,7 @@ func init() {
 	scanCmd.Flags().StringVar(&outputFile, "output-file", "", "Path to write formatted report output")
 	scanCmd.Flags().StringVar(&fixPatchFile, "fix-patch", "", "Path to write verified Git unified patch (.patch)")
 	scanCmd.Flags().StringVar(&llmProvider, "llm-provider", "", "Engine provider: gemini, static, ollama, lm-studio")
-	scanCmd.Flags().StringVar(&llmModel, "llm-model", "", "LLM Model Name (e.g. gemini-2.5-flash, gemini-2.5-pro, gemma4:e2b)")
+	scanCmd.Flags().StringVar(&llmModel, "llm-model", "", "LLM Model Name (e.g. gemini-4-hydrogen, gemini-4-carbon, gemini-3.8-flash, gemma4:e2b)")
 	scanCmd.Flags().StringVar(&llmURL, "llm-url", "", "Self-hosted LLM Endpoint URL")
 	scanCmd.Flags().StringVarP(&authToken, "token", "t", "", "Authorization OIDC Bearer token (or GCP_IAM_TOKEN)")
 	scanCmd.Flags().StringVarP(&apiKey, "api-key", "k", "", "DRA Backend API key (or DRA_API_KEY)")

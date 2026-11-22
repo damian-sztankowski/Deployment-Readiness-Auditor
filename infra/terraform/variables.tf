@@ -35,7 +35,7 @@ variable "session_secret_id" {
 variable "llm_model" {
   description = "Default Gemini model identifier"
   type        = string
-  default     = "gemini-2.5-flash"
+  default     = "gemini-4-hydrogen"
 }
 
 variable "allow_public_invoker" {

@@ -1,5 +1,13 @@
 import React, { useRef, useState, useMemo } from 'react';
-import { AuditResult, Finding, GEMINI_MODEL, HistoryItem, Severity } from '../types';
+import {
+  AuditResult,
+  AuditWorkspaceMode,
+  Finding,
+  formatModelDisplayName,
+  GEMINI_MODEL,
+  HistoryItem,
+  Severity
+} from '../types';
 import { ScoreCard } from './ScoreCard';
 import { RiskCharts } from './RiskCharts';
 import { FindingsList } from './FindingsList';
@@ -22,7 +30,14 @@ import {
   Check,
   GitCompare,
   Scale,
-  X
+  X,
+  Columns2,
+  LayoutDashboard,
+  Network,
+  Landmark,
+  Layers,
+  AlertOctagon,
+  AlertTriangle
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -35,7 +50,22 @@ interface DashboardProps {
   comparedBaseline?: HistoryItem | null;
   onClearComparison?: () => void;
   onJumpToLine?: (fileName: string | undefined, line: number) => void;
+  workspaceMode?: AuditWorkspaceMode;
+  onWorkspaceModeChange?: (mode: AuditWorkspaceMode) => void;
+  editorSlot?: React.ReactNode;
 }
+
+const WORKSPACE_TABS: Array<{
+  id: AuditWorkspaceMode;
+  label: string;
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
+}> = [
+  { id: 'split', label: 'Split Workbench', icon: Columns2 },
+  { id: 'overview', label: 'Executive Overview', icon: LayoutDashboard },
+  { id: 'topology', label: 'Topology Canvas', icon: Network },
+  { id: 'governance', label: 'FinOps & Compliance', icon: Landmark },
+  { id: 'full', label: 'Full Report', icon: Layers }
+];
 
 export const Dashboard: React.FC<DashboardProps> = ({
   result,
@@ -44,7 +74,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   aliasMap,
   comparedBaseline,
   onClearComparison,
-  onJumpToLine
+  onJumpToLine,
+  workspaceMode = 'split',
+  onWorkspaceModeChange,
+  editorSlot
 }) => {
   const dashboardRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -53,6 +86,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [copilotFinding, setCopilotFinding] = useState<Finding | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+
+  const quickSummary = useMemo(() => {
+    const criticals = result.findings.filter((f) => f.severity === Severity.CRITICAL).length;
+    const highs = result.findings.filter((f) => f.severity === Severity.HIGH).length;
+    const avgScore =
+      result.categories.length > 0
+        ? Math.round(result.categories.reduce((acc, c) => acc + c.score, 0) / result.categories.length)
+        : 100;
+    const verdict: 'BLOCKED' | 'CONDITIONAL' | 'READY' =
+      criticals > 0 ? 'BLOCKED' : highs > 0 || avgScore < 75 ? 'CONDITIONAL' : 'READY';
+    const monthlySavings = result.finops?.potentialMonthlySavingsUsd ?? 0;
+
+    return { criticals, highs, avgScore, verdict, monthlySavings };
+  }, [result]);
 
   const deltaStats = useMemo(() => {
     if (!comparedBaseline) return null;
@@ -78,14 +125,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   }, [result, comparedBaseline]);
 
   const handleShareBrief = async () => {
-    const avgScore =
-      result.categories.length > 0
-        ? Math.round(result.categories.reduce((acc, c) => acc + c.score, 0) / result.categories.length)
-        : 100;
-    const criticals = result.findings.filter((f) => f.severity === Severity.CRITICAL).length;
-    const highs = result.findings.filter((f) => f.severity === Severity.HIGH).length;
-    const verdict =
-      criticals > 0 ? 'BLOCKED' : highs > 0 || avgScore < 75 ? 'CONDITIONAL' : 'READY';
+    const { avgScore, criticals, highs, verdict } = quickSummary;
 
     const md = [
       `# 🛡️ DRA Deployment Readiness Summary — ${verdict} (${avgScore}/100)`,
@@ -116,7 +156,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const drawEnterpriseLogo = (doc: jsPDF, x: number, y: number, size: number) => {
     const r = size / 2;
-    doc.setFillColor(79, 70, 229);
+    doc.setFillColor(37, 99, 235);
     doc.circle(x, y, r * 0.9, 'F');
 
     doc.setDrawColor(255, 255, 255);
@@ -126,16 +166,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
     doc.line(x - r / 3, y - r / 4, x, y - r / 2);
     doc.line(x, y - r / 2, x + r / 3, y - r / 4);
 
-    doc.setFillColor(34, 211, 238);
+    doc.setFillColor(56, 189, 248);
     doc.circle(x + r * 0.75, y - r * 0.75, r * 0.18, 'F');
     doc.setFillColor(16, 185, 129);
     doc.circle(x - r * 0.85, y + r * 0.45, r * 0.14, 'F');
   };
 
   const handleExportPDF = async () => {
-    setLoadingText('Synthesizing Executive Audit Instrument...');
+    setLoadingText('Synthesizing CISO PDF...');
     setIsExporting(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 350));
 
     try {
       const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
@@ -145,9 +185,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       const contentWidth = pageWidth - margin * 2;
 
       const theme = {
-        primary: [79, 70, 229] as [number, number, number],
-        primaryDark: [67, 56, 202] as [number, number, number],
-        slate950: [2, 6, 23] as [number, number, number],
+        primary: [37, 99, 235] as [number, number, number],
+        primaryDark: [29, 78, 216] as [number, number, number],
+        slate950: [6, 10, 18] as [number, number, number],
         slate900: [15, 23, 42] as [number, number, number],
         slate800: [30, 41, 59] as [number, number, number],
         slate700: [51, 65, 85] as [number, number, number],
@@ -163,15 +203,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         safeBg: [236, 253, 245] as [number, number, number]
       };
 
-      const criticals = result.findings.filter((f) => f.severity === Severity.CRITICAL).length;
-      const highs = result.findings.filter((f) => f.severity === Severity.HIGH).length;
-
-      const avgScore =
-        result.categories.length > 0
-          ? Math.round(
-              result.categories.reduce((acc, c) => acc + c.score, 0) / result.categories.length
-            )
-          : 100;
+      const { criticals, highs, avgScore, verdict } = quickSummary;
 
       let grade = 'A+';
       if (criticals > 0 || avgScore < 50) grade = 'F';
@@ -179,9 +211,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       else if (avgScore < 75) grade = 'C';
       else if (avgScore < 85) grade = 'B';
       else if (avgScore < 95) grade = 'A';
-
-      const verdict: 'BLOCKED' | 'CONDITIONAL' | 'READY' =
-        criticals > 0 ? 'BLOCKED' : highs > 0 || avgScore < 75 ? 'CONDITIONAL' : 'READY';
 
       let totalMonthlyWaste = result.finops?.potentialMonthlySavingsUsd || 0;
       if (totalMonthlyWaste === 0) {
@@ -221,11 +250,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       doc.setFont('helvetica', 'bold').setFontSize(24).setTextColor(255, 255, 255);
       doc.text('DEPLOYMENT READINESS', pageWidth / 2, 102, { align: 'center' });
-      doc.setFontSize(20).setTextColor(129, 140, 248);
-      doc.text('EXECUTIVE AUDIT BRIEF (v3.0)', pageWidth / 2, 112, { align: 'center' });
+      doc.setFontSize(20).setTextColor(56, 189, 248);
+      doc.text('EXECUTIVE AUDIT BRIEF (v3.1)', pageWidth / 2, 112, { align: 'center' });
       doc.setFont('helvetica', 'normal').setFontSize(9.5).setTextColor(...theme.slate400);
       doc.text(
-        'Hybrid Deterministic AST & AI Cloud Governance Protocol',
+        'Hybrid Deterministic AST & Gemini 4 Cloud Governance Protocol',
         pageWidth / 2,
         121,
         { align: 'center' }
@@ -266,17 +295,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
       doc.setFontSize(7).setFont('helvetica', 'bold').setTextColor(...theme.slate400);
       doc.text('AUDIT REPORT ID', col1X, metaBoxY + 11);
       doc.setFontSize(9).setTextColor(255, 255, 255).text(reportId, col1X, metaBoxY + 16.5);
-      doc.setFontSize(7).setTextColor(...theme.slate400).text('EVALUATION ENGINE', col2X, metaBoxY + 11);
+      doc
+        .setFontSize(7)
+        .setTextColor(...theme.slate400)
+        .text('EVALUATION ENGINE', col2X, metaBoxY + 11);
       doc
         .setFontSize(9)
         .setTextColor(255, 255, 255)
         .text(result.model || GEMINI_MODEL, col2X, metaBoxY + 16.5);
-      doc.setFontSize(7).setTextColor(...theme.slate400).text('GENERATION DATE', col1X, metaBoxY + 25.5);
+      doc
+        .setFontSize(7)
+        .setTextColor(...theme.slate400)
+        .text('GENERATION DATE', col1X, metaBoxY + 25.5);
       doc
         .setFontSize(9)
         .setTextColor(255, 255, 255)
         .text(new Date().toLocaleDateString('en-GB'), col1X, metaBoxY + 31);
-      doc.setFontSize(7).setTextColor(...theme.slate400).text('CLASSIFICATION', col2X, metaBoxY + 25.5);
+      doc
+        .setFontSize(7)
+        .setTextColor(...theme.slate400)
+        .text('CLASSIFICATION', col2X, metaBoxY + 25.5);
       doc
         .setFontSize(9)
         .setTextColor(248, 113, 113)
@@ -300,32 +338,79 @@ export const Dashboard: React.FC<DashboardProps> = ({
             ? theme.warningBg
             : theme.safeBg;
 
-      doc.setFillColor(...gateBg).setDrawColor(...gateColor).roundedRect(margin, currentY, cardWidth, cardHeight, 3, 3, 'FD');
-      doc.setFont('helvetica', 'bold').setFontSize(7).setTextColor(...gateColor).text('GATE VERDICT', margin + 5, currentY + 7);
+      doc
+        .setFillColor(...gateBg)
+        .setDrawColor(...gateColor)
+        .roundedRect(margin, currentY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc
+        .setFont('helvetica', 'bold')
+        .setFontSize(7)
+        .setTextColor(...gateColor)
+        .text('GATE VERDICT', margin + 5, currentY + 7);
       doc.setFontSize(11).text(verdict, margin + 5, currentY + 16);
 
-      doc.setFillColor(...theme.slate100).setDrawColor(...theme.slate200).roundedRect(margin + cardWidth + 3, currentY, cardWidth, cardHeight, 3, 3, 'FD');
-      doc.setFontSize(7).setTextColor(...theme.slate700).text('MATURITY GRADE', margin + cardWidth + 8, currentY + 7);
-      doc.setFontSize(11).setTextColor(...theme.primaryDark).text(`${grade} (${avgScore}/100)`, margin + cardWidth + 8, currentY + 16);
+      doc
+        .setFillColor(...theme.slate100)
+        .setDrawColor(...theme.slate200)
+        .roundedRect(margin + cardWidth + 3, currentY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc
+        .setFontSize(7)
+        .setTextColor(...theme.slate700)
+        .text('MATURITY GRADE', margin + cardWidth + 8, currentY + 7);
+      doc
+        .setFontSize(11)
+        .setTextColor(...theme.primaryDark)
+        .text(`${grade} (${avgScore}/100)`, margin + cardWidth + 8, currentY + 16);
 
-      doc.setFillColor(254, 242, 242).setDrawColor(252, 165, 165).roundedRect(margin + (cardWidth + 3) * 2, currentY, cardWidth, cardHeight, 3, 3, 'FD');
-      doc.setFontSize(7).setTextColor(...theme.danger).text('VULNERABILITIES', margin + (cardWidth + 3) * 2 + 5, currentY + 7);
-      doc.setFontSize(11).text(`${criticals} Crit · ${highs} High`, margin + (cardWidth + 3) * 2 + 5, currentY + 16);
+      doc
+        .setFillColor(254, 242, 242)
+        .setDrawColor(252, 165, 165)
+        .roundedRect(margin + (cardWidth + 3) * 2, currentY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc
+        .setFontSize(7)
+        .setTextColor(...theme.danger)
+        .text('VULNERABILITIES', margin + (cardWidth + 3) * 2 + 5, currentY + 7);
+      doc
+        .setFontSize(11)
+        .text(`${criticals} Crit · ${highs} High`, margin + (cardWidth + 3) * 2 + 5, currentY + 16);
 
-      doc.setFillColor(236, 253, 245).setDrawColor(167, 243, 208).roundedRect(margin + (cardWidth + 3) * 3, currentY, cardWidth, cardHeight, 3, 3, 'FD');
-      doc.setFontSize(7).setTextColor(...theme.safe).text('FINOPS MONTHLY WASTE', margin + (cardWidth + 3) * 3 + 5, currentY + 7);
-      doc.setFontSize(11).text(`$${Math.round(totalMonthlyWaste)}/mo`, margin + (cardWidth + 3) * 3 + 5, currentY + 16);
+      doc
+        .setFillColor(236, 253, 245)
+        .setDrawColor(167, 243, 208)
+        .roundedRect(margin + (cardWidth + 3) * 3, currentY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc
+        .setFontSize(7)
+        .setTextColor(...theme.safe)
+        .text('FINOPS MONTHLY WASTE', margin + (cardWidth + 3) * 3 + 5, currentY + 7);
+      doc
+        .setFontSize(11)
+        .text(`$${Math.round(totalMonthlyWaste)}/mo`, margin + (cardWidth + 3) * 3 + 5, currentY + 16);
 
       currentY += cardHeight + 10;
-      doc.setFontSize(12).setTextColor(...theme.slate900).setFont('helvetica', 'bold').text('1. Strategic Executive Summary', margin, currentY);
+      doc
+        .setFontSize(12)
+        .setTextColor(...theme.slate900)
+        .setFont('helvetica', 'bold')
+        .text('1. Strategic Executive Summary', margin, currentY);
       currentY += 5;
       const summaryLines = doc.splitTextToSize(result.summary, contentWidth - 14);
       const summaryBoxHeight = Math.max(summaryLines.length * 4.8 + 12, 24);
-      doc.setFillColor(248, 250, 252).setDrawColor(...theme.slate200).roundedRect(margin, currentY, contentWidth, summaryBoxHeight, 3, 3, 'FD');
-      doc.setFontSize(8.5).setTextColor(...theme.slate800).setFont('helvetica', 'normal').text(summaryLines, margin + 7, currentY + 7.5);
+      doc
+        .setFillColor(248, 250, 252)
+        .setDrawColor(...theme.slate200)
+        .roundedRect(margin, currentY, contentWidth, summaryBoxHeight, 3, 3, 'FD');
+      doc
+        .setFontSize(8.5)
+        .setTextColor(...theme.slate800)
+        .setFont('helvetica', 'normal')
+        .text(summaryLines, margin + 7, currentY + 7.5);
       currentY += summaryBoxHeight + 10;
 
-      doc.setFontSize(12).setTextColor(...theme.slate900).setFont('helvetica', 'bold').text('2. Architectural Pillar Performance Matrix', margin, currentY);
+      doc
+        .setFontSize(12)
+        .setTextColor(...theme.slate900)
+        .setFont('helvetica', 'bold')
+        .text('2. Architectural Pillar Performance Matrix', margin, currentY);
       currentY += 5;
       autoTable(doc, {
         startY: currentY,
@@ -363,7 +448,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         styles: { fontSize: 7.5, cellPadding: 4 }
       });
 
-      // Waived Risk Exceptions (if any)
       if (result.waivedFindings && result.waivedFindings.length > 0) {
         doc.addPage();
         drawPageHeader(
@@ -391,7 +475,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       for (let i = 2; i <= totalPages; i++) {
         doc.setPage(i);
         doc.setFontSize(7.5).setTextColor(...theme.slateMuted);
-        doc.text(`DRA v3.0  |  ID: ${reportId}`, margin, pageHeight - 8);
+        doc.text(`DRA v3.1  |  ID: ${reportId}`, margin, pageHeight - 8);
         doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 8, {
           align: 'right'
         });
@@ -405,131 +489,223 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }
   };
 
-  const formattedEngine = (result.model || GEMINI_MODEL)
-    .replace('gemini-', 'Gemini ')
-    .replace('dra-deterministic-ast-v3', 'Deterministic AST v3')
-    .replace('-preview', ' Preview')
-    .replace('flash', 'Flash')
-    .replace('pro', 'Pro');
+  const formattedEngine = formatModelDisplayName(result.model || GEMINI_MODEL);
+
+  const renderWaiversCard = () => {
+    if (!result.waivedFindings || result.waivedFindings.length === 0) return null;
+    return (
+      <div className="dra-surface-card p-6 rounded-2xl bg-amber-50/70 dark:bg-amber-950/15 border border-amber-300/80 dark:border-amber-800/40 space-y-4">
+        <div className="flex items-center gap-3">
+          <Scale className="w-5 h-5 text-amber-700 dark:text-amber-400" aria-hidden="true" />
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            Accepted Risk Waivers ({result.waivedFindings.length}) — Logged for CISO Attestation
+          </h3>
+        </div>
+        <div className="divide-y divide-amber-200/70 dark:divide-amber-900/30 text-xs">
+          {result.waivedFindings.map((wf) => (
+            <div key={wf.id} className="py-3 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  [{wf.severity}] {wf.title}
+                </span>
+                <p className="text-slate-600 dark:text-slate-400 mt-0.5">
+                  Justification: {wf.waiverReason}
+                </p>
+              </div>
+              <div className="text-right font-mono text-[11px] text-amber-800 dark:text-amber-300">
+                <div>Approved by: {wf.waiverApprovedBy || 'Security Lead'}</div>
+                {wf.waiverExpires && <div>Expires: {wf.waiverExpires}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div
-      ref={dashboardRef}
-      className="space-y-8 animate-enter bg-slate-50 dark:bg-slate-950/20 p-6 md:p-12 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-2xl"
-    >
-      {/* Top Header & Actions */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-slate-200 dark:border-slate-800 pb-8">
-        <div className="flex flex-wrap items-center gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <ShieldCheck
-                className="w-8 h-8 text-indigo-600 dark:text-indigo-400"
-                aria-hidden="true"
-              />
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
-                Audit Summary Report
-              </h2>
+    <div ref={dashboardRef} className="space-y-6 animate-enter">
+      {/* Studio Command & View Switcher Header Card */}
+      <div className="dra-surface-card bg-white dark:bg-[#0b111e] rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-studio space-y-4">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          {/* Left: Report Title & Telemetry Pills */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-600/10 dark:bg-sky-400/10 text-blue-600 dark:text-sky-400">
+              <ShieldCheck className="w-6 h-6" aria-hidden="true" />
             </div>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 font-medium">
-              <span className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-indigo-500" aria-hidden="true" />{' '}
-                {new Date().toLocaleDateString()}
+            <div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                  Deployment Readiness Telemetry
+                </h2>
+                {isDemo && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider">
+                    <Sparkles className="w-3 h-3" aria-hidden="true" />
+                    Showcase
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-600 dark:text-slate-400 mt-1">
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" aria-hidden="true" />
+                  {new Date().toLocaleDateString()}
+                </span>
+                <span>•</span>
+                <span className="font-semibold text-blue-700 dark:text-sky-300">
+                  {formattedEngine}
+                </span>
+                {typeof result.staticFindingsCount === 'number' && (
+                  <>
+                    <span>•</span>
+                    <span className="tabular-nums font-semibold text-emerald-700 dark:text-emerald-400">
+                      {result.staticFindingsCount} AST Rules Verified
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Action Toolbar */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCopilotFinding(null);
+                setCopilotOpen(true);
+              }}
+              className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-colors"
+            >
+              <Bot className="w-4 h-4 text-blue-600 dark:text-sky-400" aria-hidden="true" />
+              Ask Architect
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowRemediationModal(true)}
+              className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
+            >
+              <GitPullRequest className="w-4 h-4" aria-hidden="true" />
+              Diff &amp; Patch
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportPDF}
+              disabled={isExporting}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-sm transition-colors disabled:opacity-70"
+            >
+              {isExporting ? (
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <FileText className="w-4 h-4" aria-hidden="true" />
+              )}
+              {isExporting ? loadingText : 'Export CISO PDF'}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleShareBrief}
+              aria-label="Copy Markdown audit summary to clipboard"
+              title="Copy Markdown Executive Summary"
+              className="inline-flex items-center gap-1.5 p-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 hover:border-blue-500 transition-colors text-xs font-bold"
+            >
+              {shareCopied ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-500" aria-hidden="true" />
+                  <span className="text-emerald-700 dark:text-emerald-400 px-1">Copied</span>
+                </>
+              ) : (
+                <Share2 className="w-4 h-4" aria-hidden="true" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Multi-Mode Studio View Tabs */}
+        {onWorkspaceModeChange && (
+          <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between gap-4 overflow-x-auto">
+            <div
+              role="tablist"
+              aria-label="Audit workspace layout views"
+              className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-[#080d18] border border-slate-200/80 dark:border-slate-800"
+            >
+              {WORKSPACE_TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isSelected = workspaceMode === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    onClick={() => onWorkspaceModeChange(tab.id)}
+                    className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                      isSelected
+                        ? 'bg-white dark:bg-slate-800 text-blue-700 dark:text-sky-300 shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Compact KPI Summary Pill */}
+            <div className="tabular-nums hidden lg:flex items-center gap-3 text-xs font-semibold">
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-bold ${
+                  quickSummary.verdict === 'BLOCKED'
+                    ? 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/25'
+                    : quickSummary.verdict === 'CONDITIONAL'
+                      ? 'bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/25'
+                      : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25'
+                }`}
+              >
+                {quickSummary.verdict === 'BLOCKED' ? (
+                  <AlertOctagon className="w-3.5 h-3.5" aria-hidden="true" />
+                ) : quickSummary.verdict === 'CONDITIONAL' ? (
+                  <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
+                ) : (
+                  <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                )}
+                Gate: {quickSummary.verdict} ({quickSummary.avgScore}/100)
               </span>
-              <span className="px-3.5 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Engine: {formattedEngine}
-              </span>
-              {typeof result.staticFindingsCount === 'number' && (
-                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-widest">
-                  {result.staticFindingsCount} AST Rules Anchored
+              {quickSummary.monthlySavings > 0 && (
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 font-bold">
+                  -${quickSummary.monthlySavings.toFixed(0)}/mo Waste
                 </span>
               )}
             </div>
           </div>
-
-          {isDemo && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20">
-              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-              Showcase Mockup
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setCopilotFinding(null);
-              setCopilotOpen(true);
-            }}
-            className="flex items-center gap-2.5 px-5 py-3.5 bg-white dark:bg-slate-900 hover:border-indigo-500 border border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 rounded-2xl text-xs font-black uppercase tracking-wider shadow-sm transition-all"
-          >
-            <Bot className="w-4 h-4" aria-hidden="true" />
-            Ask Architect
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowRemediationModal(true)}
-            className="flex items-center gap-2.5 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-xl shadow-emerald-500/20 transition-all"
-          >
-            <GitPullRequest className="w-4 h-4" aria-hidden="true" />
-            Remediation Diff &amp; Patch
-          </button>
-
-          <button
-            type="button"
-            onClick={handleExportPDF}
-            disabled={isExporting}
-            className="flex items-center gap-2.5 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-xl shadow-indigo-500/20 transition-all disabled:opacity-70"
-          >
-            {isExporting ? (
-              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-            ) : (
-              <FileText className="w-4 h-4" aria-hidden="true" />
-            )}
-            {isExporting ? loadingText : 'Export CISO PDF'}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleShareBrief}
-            aria-label="Copy Markdown audit summary to clipboard"
-            title="Copy Markdown Executive Summary to clipboard"
-            className="flex items-center gap-2 p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-300 transition-all shadow-sm text-xs font-bold"
-          >
-            {shareCopied ? (
-              <>
-                <Check className="w-4 h-4 text-emerald-500" aria-hidden="true" />
-                <span className="text-emerald-600 dark:text-emerald-400">Copied Brief!</span>
-              </>
-            ) : (
-              <Share2 className="w-4 h-4" aria-hidden="true" />
-            )}
-          </button>
-        </div>
+        )}
       </div>
 
       {/* Historical Drift & Delta Comparison Banner */}
       {deltaStats && (
-        <div className="p-5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-indigo-600 text-white rounded-xl">
-              <GitCompare className="w-5 h-5" aria-hidden="true" />
+        <div className="dra-surface-card p-4 rounded-2xl bg-blue-50/90 dark:bg-sky-950/25 border border-blue-200 dark:border-sky-800/60 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="p-2 bg-blue-600 text-white rounded-xl">
+              <GitCompare className="w-4 h-4" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-sky-300">
                 Historical Drift Comparison vs Baseline ({deltaStats.baselineDate})
               </p>
-              <div className="flex flex-wrap items-center gap-4 mt-1 text-sm font-bold text-slate-800 dark:text-slate-200">
+              <div className="tabular-nums flex flex-wrap items-center gap-3 mt-0.5 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
                 <span>
                   Maturity Score: {deltaStats.prevScore} → {deltaStats.currScore}{' '}
                   <span
                     className={
-                      deltaStats.scoreDiff >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                      deltaStats.scoreDiff >= 0
+                        ? 'text-emerald-700 dark:text-emerald-400'
+                        : 'text-red-600 dark:text-red-400'
                     }
                   >
-                    ({deltaStats.scoreDiff >= 0 ? `+${deltaStats.scoreDiff}` : deltaStats.scoreDiff} pts)
+                    ({deltaStats.scoreDiff >= 0 ? `+${deltaStats.scoreDiff}` : deltaStats.scoreDiff}{' '}
+                    pts)
                   </span>
                 </span>
                 <span>•</span>
@@ -537,7 +713,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   Critical Blockers:{' '}
                   <span
                     className={
-                      deltaStats.critDiff <= 0 ? 'text-emerald-600' : 'text-rose-600'
+                      deltaStats.critDiff <= 0
+                        ? 'text-emerald-700 dark:text-emerald-400'
+                        : 'text-red-600 dark:text-red-400'
                     }
                   >
                     {deltaStats.critDiff > 0 ? `+${deltaStats.critDiff}` : deltaStats.critDiff}
@@ -556,7 +734,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               type="button"
               onClick={onClearComparison}
               aria-label="Clear baseline comparison"
-              className="p-2 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-500"
+              className="p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-sky-900/50 text-slate-600 dark:text-slate-300"
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -564,71 +742,141 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       )}
 
-      {/* Deployment Verdict Banner */}
-      <DeploymentVerdictBanner findings={result.findings} categories={result.categories} />
+      {/* MODE 1: SPLIT WORKBENCH (Side-by-Side Code Editor + Live Findings Inspector) */}
+      {workspaceMode === 'split' && (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+          {editorSlot && (
+            <div className="xl:col-span-6 xl:sticky xl:top-20">{editorSlot}</div>
+          )}
+          <div
+            className={`${
+              editorSlot ? 'xl:col-span-6' : 'xl:col-span-12'
+            } dra-surface-card bg-white dark:bg-[#0b111e] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-studio space-y-6`}
+          >
+            {/* Executive Summary Strip inside Workbench */}
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#080d18] border border-slate-200/80 dark:border-slate-800/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+              <span className="font-bold text-slate-900 dark:text-white mr-1.5">
+                Executive Verdict:
+              </span>
+              {result.summary}
+            </div>
 
-      {/* Scorecard & Risk Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch">
-        <div className="xl:col-span-5 h-full">
-          <ScoreCard findings={result.findings} summary={result.summary} />
-        </div>
-        <div className="xl:col-span-7 h-full">
-          <RiskCharts categories={result.categories} />
-        </div>
-      </div>
+            <FindingsList
+              findings={result.findings}
+              onJumpToLine={onJumpToLine}
+              onAskArchitect={(finding) => {
+                setCopilotFinding(finding);
+                setCopilotOpen(true);
+              }}
+            />
 
-      {/* Mermaid Topology Diagram */}
-      {result.diagram && (
-        <div className="w-full">
-          <DiagramView code={result.diagram} />
+            {renderWaiversCard()}
+          </div>
         </div>
       )}
 
-      {/* FinOps Cloud Billing Intelligence */}
-      <CostImpact findings={result.findings} finops={result.finops} />
-
-      {/* Regulatory Compliance Matrix */}
-      <ComplianceMatrix findings={result.findings} />
-
-      {/* Detailed Findings List */}
-      <div className="w-full">
-        <FindingsList
-          findings={result.findings}
-          onJumpToLine={onJumpToLine}
-          onAskArchitect={(finding) => {
-            setCopilotFinding(finding);
-            setCopilotOpen(true);
-          }}
-        />
-      </div>
-
-      {/* Accepted Organization Waivers (.dra.yaml) */}
-      {result.waivedFindings && result.waivedFindings.length > 0 && (
-        <div className="p-6 md:p-8 rounded-3xl bg-amber-50/60 dark:bg-amber-950/15 border border-amber-200/80 dark:border-amber-800/40 space-y-4">
-          <div className="flex items-center gap-3">
-            <Scale className="w-5 h-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-            <h3 className="text-lg font-black text-slate-900 dark:text-white">
-              Accepted Risk Waivers ({result.waivedFindings.length}) — Logged for CISO Attestation
-            </h3>
+      {/* MODE 2: EXECUTIVE OVERVIEW */}
+      {workspaceMode === 'overview' && (
+        <div className="space-y-6">
+          <DeploymentVerdictBanner findings={result.findings} categories={result.categories} />
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
+            <div className="xl:col-span-5">
+              <ScoreCard findings={result.findings} summary={result.summary} />
+            </div>
+            <div className="xl:col-span-7">
+              <RiskCharts categories={result.categories} />
+            </div>
           </div>
-          <div className="divide-y divide-amber-200/50 dark:divide-amber-900/30 text-xs">
-            {result.waivedFindings.map((wf) => (
-              <div key={wf.id} className="py-3 flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <span className="font-bold text-slate-900 dark:text-white">
-                    [{wf.severity}] {wf.title}
+          <div className="dra-surface-card bg-white dark:bg-[#0b111e] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-studio">
+            <FindingsList
+              findings={result.findings}
+              onJumpToLine={onJumpToLine}
+              onAskArchitect={(finding) => {
+                setCopilotFinding(finding);
+                setCopilotOpen(true);
+              }}
+            />
+          </div>
+          {renderWaiversCard()}
+        </div>
+      )}
+
+      {/* MODE 3: TOPOLOGY CANVAS */}
+      {workspaceMode === 'topology' && (
+        <div className="space-y-6">
+          {result.diagram ? (
+            <DiagramView code={result.diagram} />
+          ) : (
+            <div className="dra-surface-card p-12 text-center rounded-2xl bg-white dark:bg-[#0b111e] border border-slate-200 dark:border-slate-800 text-slate-500">
+              No Mermaid architecture diagram was generated for this specification.
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {result.categories.map((cat) => (
+              <div
+                key={cat.name}
+                className="dra-surface-card p-4 rounded-xl bg-white dark:bg-[#0b111e] border border-slate-200 dark:border-slate-800 space-y-2"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">
+                    {cat.name}
                   </span>
-                  <p className="text-slate-600 dark:text-slate-400 mt-0.5">
-                    Justification: {wf.waiverReason}
-                  </p>
+                  <span
+                    className={`tabular-nums text-xs font-mono font-black ${
+                      cat.status === 'Critical'
+                        ? 'text-red-600 dark:text-red-400'
+                        : cat.status === 'Warning'
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-emerald-600 dark:text-emerald-400'
+                    }`}
+                  >
+                    {cat.score}/100
+                  </span>
                 </div>
-                <div className="text-right font-mono text-[11px] text-amber-700 dark:text-amber-300">
-                  <div>Approved by: {wf.waiverApprovedBy || 'Security Lead'}</div>
-                  {wf.waiverExpires && <div>Expires: {wf.waiverExpires}</div>}
-                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                  {cat.explanation}
+                </p>
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* MODE 4: FINOPS & COMPLIANCE GOVERNANCE */}
+      {workspaceMode === 'governance' && (
+        <div className="space-y-6">
+          <CostImpact findings={result.findings} finops={result.finops} />
+          <ComplianceMatrix findings={result.findings} />
+          {renderWaiversCard()}
+        </div>
+      )}
+
+      {/* MODE 5: FULL UNIFIED REPORT */}
+      {workspaceMode === 'full' && (
+        <div className="space-y-6">
+          <DeploymentVerdictBanner findings={result.findings} categories={result.categories} />
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
+            <div className="xl:col-span-5">
+              <ScoreCard findings={result.findings} summary={result.summary} />
+            </div>
+            <div className="xl:col-span-7">
+              <RiskCharts categories={result.categories} />
+            </div>
+          </div>
+          {result.diagram && <DiagramView code={result.diagram} />}
+          <CostImpact findings={result.findings} finops={result.finops} />
+          <ComplianceMatrix findings={result.findings} />
+          <div className="dra-surface-card bg-white dark:bg-[#0b111e] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-studio">
+            <FindingsList
+              findings={result.findings}
+              onJumpToLine={onJumpToLine}
+              onAskArchitect={(finding) => {
+                setCopilotFinding(finding);
+                setCopilotOpen(true);
+              }}
+            />
+          </div>
+          {renderWaiversCard()}
         </div>
       )}
 

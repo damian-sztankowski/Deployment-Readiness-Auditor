@@ -40,7 +40,7 @@ const ARCHITECTURE_MERMAID = `flowchart TD
         SEC["OIDC / Constant-Time Auth & Proxy Rate Limiter"]
         AST["Deterministic AST & CIS GCP v2.0 Engine"]
         FIN["Regional GCP Cloud Billing SKU Calculator"]
-        AI["Gemini 2.5 / Local Ollama & LM Studio"]
+        AI["Gemini 4 Hydrogen & Carbon / Local Ollama"]
     end
 
     subgraph S_Outputs["Layer 4: Governance & Developer Action"]
@@ -85,13 +85,17 @@ export const InternalDocs: React.FC<InternalDocsProps> = ({ onStartAssessment })
       <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 text-white p-8 md:p-14 border border-slate-800 shadow-2xl">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="relative z-10 space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-black uppercase tracking-[0.2em]">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/15 border border-sky-400/25 text-sky-300 text-[10px] font-black uppercase tracking-[0.2em]">
             <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
-            DRA v3.0 Engineering Reference &amp; Release History
+            DRA v3.1 Engineering Reference &amp; Release History
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter">
-            DRA v3.0 Technical Manual <br />
-            <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-400 bg-clip-text text-transparent">
+          <h1
+            id="main-heading"
+            tabIndex={-1}
+            className="text-4xl md:text-6xl font-black tracking-tighter"
+          >
+            DRA v3.1 Technical Manual <br />
+            <span className="bg-gradient-to-r from-sky-400 via-blue-300 to-emerald-400 bg-clip-text text-transparent">
               &amp; Release Notes
             </span>
           </h1>
@@ -128,7 +132,7 @@ export const InternalDocs: React.FC<InternalDocsProps> = ({ onStartAssessment })
           { id: 'architecture', label: 'Architecture & Security', icon: Layers },
           { id: 'models', label: 'Hybrid & LLM Engines', icon: Cpu },
           { id: 'cicd', label: 'CI/CD, PR Bot & IaC', icon: Terminal },
-          { id: 'releases', label: 'Release Notes (v3.0.0)', icon: Tag }
+          { id: 'releases', label: 'Release Notes (v3.1.0)', icon: Tag }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -162,7 +166,7 @@ export const InternalDocs: React.FC<InternalDocsProps> = ({ onStartAssessment })
                 Hybrid AST + AI Scoring
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                Combines deterministic CIS GCP v2.0 AST checks (with variable interpolation and hard score ceilings) alongside Gemini 2.5 cross-resource attack-path reasoning.
+                Combines deterministic CIS GCP v2.0 AST checks (with variable interpolation and hard score ceilings) alongside Gemini 4 Hydrogen &amp; Carbon cross-resource attack-path reasoning.
               </p>
             </div>
 
@@ -290,17 +294,17 @@ export const InternalDocs: React.FC<InternalDocsProps> = ({ onStartAssessment })
               <Cpu className="w-6 h-6 text-indigo-500" aria-hidden="true" />
               <div>
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white">
-                  Supported Intelligence Engines (v3.0)
+                  Supported Intelligence Engines (v3.1)
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Run hybrid cloud AI, 100% zero-key deterministic AST, or local air-gapped LLMs.
+                  Run Gemini 4 frontier models, Gemini 3.8 Flash, 100% zero-key deterministic AST, or local air-gapped LLMs.
                 </p>
               </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-950/60 uppercase tracking-wider text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-slate-50 dark:bg-slate-950/60 uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
                   <tr>
                     <th className="p-4">Provider / Model ID</th>
                     <th className="p-4">Recommended Use Case</th>
@@ -310,30 +314,58 @@ export const InternalDocs: React.FC<InternalDocsProps> = ({ onStartAssessment })
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-700 dark:text-slate-300">
                   <tr>
-                    <td className="p-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                      gemini-2.5-flash
+                    <td className="p-4 font-mono font-bold text-blue-600 dark:text-sky-400">
+                      gemini-4-hydrogen
                     </td>
                     <td className="p-4">
-                      Hybrid AST + fast Gemini attack-path synthesis &amp; CI/CD quality gates
+                      Fastest Gemini 4 frontier model (1M context) for agentic IaC audits &amp; rapid CI/CD quality gates
                     </td>
-                    <td className="p-4">Low latency / Minimal token cost</td>
+                    <td className="p-4">Sub-second TTFT / Optimal cost</td>
                     <td className="p-4">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase">
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase">
                         Default
                       </span>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-4 font-mono font-bold text-purple-600 dark:text-purple-400">
-                      gemini-2.5-pro
+                    <td className="p-4 font-mono font-bold text-sky-600 dark:text-cyan-400">
+                      gemini-4-carbon
                     </td>
                     <td className="p-4">
-                      Complex multi-module architectures, deep regulatory &amp; Principal Architect Co-Pilot
+                      Deep frontier security reasoning for multi-module attack paths &amp; Principal Architect Co-Pilot
                     </td>
-                    <td className="p-4">Maximum reasoning depth</td>
+                    <td className="p-4">Maximum frontier reasoning depth</td>
                     <td className="p-4">
-                      <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase">
-                        Deep Audit
+                      <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-sky-400 text-[10px] font-black uppercase">
+                        Deep Frontier
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                      gemini-4-neon / gemini-4-argon
+                    </td>
+                    <td className="p-4">
+                      Multi-module Terraform exploration (Neon) &amp; sparse MoE monorepo compliance audits (Argon)
+                    </td>
+                    <td className="p-4">High throughput / Low token overhead</td>
+                    <td className="p-4">
+                      <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase">
+                        Gemini 4
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-mono font-bold text-slate-700 dark:text-slate-300">
+                      gemini-3.8-flash / gemini-3.1-pro-preview
+                    </td>
+                    <td className="p-4">
+                      Stable Gemini 3.x alternatives for existing enterprise pinned pipelines
+                    </td>
+                    <td className="p-4">Balanced speed &amp; stability</td>
+                    <td className="p-4">
+                      <span className="px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase">
+                        3.x Series
                       </span>
                     </td>
                   </tr>
@@ -454,8 +486,62 @@ terraform apply \\
       {activeTab === 'releases' && (
         <div className="space-y-12 animate-enter">
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-8 md:p-10 space-y-10">
-            {/* v3.0.0 */}
+            {/* v3.1.0 */}
             <div className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 rounded-full bg-blue-600/10 border border-blue-600/20 text-blue-700 dark:text-sky-300 text-xs font-black uppercase tracking-widest">
+                    v3.1.0 Studio &amp; Gemini 4 Release
+                  </span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">November 2026</span>
+                </div>
+                <span className="px-3 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                  Current Release
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  {
+                    title: 'Gemini 4 Frontier Model Suite (gemini-4-hydrogen Default)',
+                    desc: 'Upgraded default AI engine from legacy gemini-2.5-flash to Gemini 4 Hydrogen, with built-in presets for Gemini 4 Carbon, Neon, Argon, and Gemini 3.8 Flash—automatically omitting deprecated sampling parameters on 4.x/3.8 APIs.'
+                  },
+                  {
+                    title: 'Command Studio Shell & Collapsible Navigation Rail',
+                    desc: 'Redesigned application shell with a collapsible desktop Command Rail, native HTML popover mobile drawer, asymmetric live-telemetry splash hero, and SPA Same-Document View Transitions.'
+                  },
+                  {
+                    title: '5-Mode Audit Workbench (Side-by-Side Split View)',
+                    desc: 'Added Split Workbench (side-by-side IaC editor + live findings with zero-scroll Jump-to-Line), Executive Overview, Topology Canvas, FinOps & Compliance, and Full Report tabs.'
+                  },
+                  {
+                    title: 'Perceptual OKLCH Sapphire Palette & Forced-Colors Accessibility',
+                    desc: 'Replaced rainbow pink/purple borders with crisp OKLCH Sapphire & Obsidian surfaces, tabular numerals, skip-to-content navigation, :focus-visible rings, and Windows High Contrast support.'
+                  }
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="p-5 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-200/50 dark:border-slate-800 space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2
+                        className="w-4 h-4 text-blue-600 dark:text-sky-400 shrink-0"
+                        aria-hidden="true"
+                      />
+                      <h5 className="text-sm font-bold text-slate-900 dark:text-white">
+                        {item.title}
+                      </h5>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 pl-6 leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* v3.0.0 */}
+            <div className="space-y-6 pt-6 border-t border-slate-100 dark:border-slate-800">
               <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black uppercase tracking-widest">
@@ -463,9 +549,6 @@ terraform apply \\
                   </span>
                   <span className="text-xs font-bold text-slate-400">November 2026</span>
                 </div>
-                <span className="px-3 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest">
-                  Current Release
-                </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

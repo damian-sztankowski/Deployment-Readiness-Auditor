@@ -22,12 +22,12 @@ import {
 export const Features: React.FC = () => {
   const featureList = [
     {
-      title: 'Hybrid Deterministic AST + AI Engine',
+      title: 'Hybrid Deterministic AST + Gemini 4',
       description:
-        'Pairs prompt-injection-immune HCL/YAML/Docker AST static rules (exact line ranges & variable interpolation) with Gemini 2.5 cross-resource attack-path synthesis—plus a zero-key Offline AST Mode.',
+        'Pairs prompt-injection-immune HCL/YAML/Docker AST static rules (exact line ranges & variable interpolation) with Gemini 4 Hydrogen & Carbon cross-resource attack-path synthesis—plus a zero-key Offline AST Mode.',
       icon: Cpu,
-      color: 'text-indigo-500',
-      bg: 'bg-indigo-50 dark:bg-indigo-900/20'
+      color: 'text-blue-600 dark:text-sky-400',
+      bg: 'bg-blue-50 dark:bg-sky-900/20'
     },
     {
       title: 'Multi-Stack IaC Coverage',
@@ -90,8 +90,8 @@ export const Features: React.FC = () => {
       description:
         'Generates a dark-cover executive PDF instrument with KPI scorecards, compliance matrices, FinOps SKU tables, HCL fixes, accepted risk waivers, and 3-party sign-off blocks.',
       icon: FileText,
-      color: 'text-pink-500',
-      bg: 'bg-pink-50 dark:bg-pink-900/20'
+      color: 'text-sky-600 dark:text-sky-400',
+      bg: 'bg-sky-50 dark:bg-sky-900/20'
     },
     {
       title: 'Strict Sanitized Topology Map',
@@ -122,18 +122,22 @@ export const Features: React.FC = () => {
   return (
     <div className="animate-enter space-y-28 py-16">
       <div className="text-center max-w-3xl mx-auto space-y-6">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">
-          DRA v3.0 Platform Capabilities
-        </h3>
-        <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">
-          Hybrid AST + AI Cloud Gatekeeper
-        </h2>
-        <p className="text-slate-500 dark:text-slate-400 text-lg">
-          DRA v3.0 unites{' '}
-          <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+        <p className="text-[11px] font-black uppercase tracking-[0.35em] text-blue-600 dark:text-sky-400">
+          DRA v3.1 Platform Capabilities
+        </p>
+        <h1
+          id="main-heading"
+          tabIndex={-1}
+          className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter"
+        >
+          Hybrid AST + Gemini 4 Gatekeeper
+        </h1>
+        <p className="text-slate-600 dark:text-slate-300 text-lg">
+          DRA v3.1 unites{' '}
+          <span className="text-blue-600 dark:text-sky-400 font-bold">
             deterministic CIS GCP v2.0 AST verification
           </span>{' '}
-          with Gemini 2.5 cross-resource reasoning, regional FinOps SKU modeling, and enterprise policy governance.
+          with Gemini 4 Hydrogen &amp; Carbon cross-resource reasoning, regional FinOps SKU modeling, and enterprise policy governance.
         </p>
       </div>
 
@@ -192,7 +196,7 @@ export const Features: React.FC = () => {
                 {
                   step: '05',
                   title: 'AI Attack-Path Synthesis & Verified Diffs',
-                  desc: 'Gemini 2.5 (or local Ollama/LM Studio) synthesizes multi-hop risks and Mermaid diagrams, then restores local aliases and builds git apply patches.'
+                  desc: 'Gemini 4 Hydrogen / Carbon (or local Ollama/LM Studio) synthesizes multi-hop risks and Mermaid diagrams, then restores local aliases and builds git apply patches.'
                 }
               ].map((s, i) => (
                 <div key={i} className="flex gap-6 items-start group">

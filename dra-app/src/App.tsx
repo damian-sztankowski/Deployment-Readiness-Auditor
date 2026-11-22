@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Header, ViewType } from './components/Header';
+import React, { useState, useEffect, useCallback } from 'react';
+import { flushSync } from 'react-dom';
+import { CommandRail, Header, ViewType } from './components/Header';
 import { InputSection, InputAnalyzeOptions } from './components/InputSection';
 import { Dashboard } from './components/Dashboard';
 import { LoadingAnimation } from './components/LoadingAnimation';
@@ -13,12 +14,64 @@ import { OnboardingTour } from './components/OnboardingTour';
 import { Footer } from './components/Footer';
 import { MOCK_AUDIT_RESULT } from './services/mockData';
 import { anonymizeHcl, deanonymizeAuditResult } from './services/dlpService';
-import { AnalysisState, AuditResult, AuditStageEvent, HistoryItem } from './types';
+import {
+  AnalysisState,
+  AuditResult,
+  AuditStageEvent,
+  AuditWorkspaceMode,
+  GEMINI_MODEL,
+  HistoryItem
+} from './types';
 import { AlertOctagon, Terminal, RefreshCw, Key, ShieldX, Globe, Cpu } from 'lucide-react';
+
+const DEMO_SHOWCASE_HCL = `### FILE: main.tf ###
+resource "google_storage_bucket" "corporate_data" {
+  name                        = "corp-data-prod"
+  location                    = "US"
+  uniform_bucket_level_access = false
+}
+
+resource "google_compute_instance" "admin_box" {
+  name         = "admin-box"
+  machine_type = "n1-standard-4"
+  zone         = "us-central1-a"
+}
+
+resource "google_compute_firewall" "allow_all_ingress" {
+  name    = "allow-all-ingress"
+  network = "prod-secure-vpc"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+}
+
+# Missing environment, owner, and cost_center labels above (Ln 26)
+
+resource "google_compute_disk" "unused_disk_backup" {
+  name = "unused-disk-backup"
+  type = "pd-ssd"
+  zone = "us-central1-a"
+  size = 500
+}
+`;
+
+const VIEW_TITLES: Record<ViewType, string> = {
+  assessment: 'Audit Studio — DRA v3.1',
+  about: 'Overview & Zero-Knowledge DLP — DRA v3.1',
+  features: 'Platform Capabilities — DRA v3.1',
+  docs: 'Technical Manual & Releases — DRA v3.1',
+  cli: 'CLI & CI/CD Quality Gates — DRA v3.1'
+};
 
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [currentView, setCurrentView] = useState<ViewType>('assessment');
+  const [railCollapsed, setRailCollapsed] = useState(false);
+  const [workspaceMode, setWorkspaceMode] = useState<AuditWorkspaceMode>('split');
   const [isInputMinimized, setIsInputMinimized] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
@@ -32,6 +85,7 @@ const App: React.FC = () => {
   } | null>(null);
   const [comparedItem, setComparedItem] = useState<HistoryItem | null>(null);
   const [defaultProvider, setDefaultProvider] = useState<'gemini' | 'static'>('gemini');
+  const [previewModel, setPreviewModel] = useState<string>(GEMINI_MODEL);
 
   const [history, setHistory] = useState<HistoryItem[]>(() => {
     if (typeof window !== 'undefined') {
@@ -60,12 +114,66 @@ const App: React.FC = () => {
     stage: null
   });
 
+  // Same-Document SPA View Transition helper with mandatory post-navigation focus management
+  const runTransition = useCallback((mutate: () => void, moveFocusToHeading = false) => {
+    const doc = document as Document & {
+      startViewTransition?: (cb: () => void) => { finished: Promise<void> };
+    };
+    const focusHeading = () => {
+      if (!moveFocusToHeading) return;
+      requestAnimationFrame(() => {
+        document.getElementById('main-heading')?.focus({ preventScroll: true });
+      });
+    };
+
+    if (typeof doc.startViewTransition === 'function') {
+      try {
+        const vt = doc.startViewTransition(() => {
+          flushSync(mutate);
+        });
+        vt.finished.finally(focusHeading);
+        return;
+      } catch {
+        // Fallback when document is hidden or unsupported
+      }
+    }
+    mutate();
+    focusHeading();
+  }, []);
+
+  const handleNavigate = useCallback(
+    (nextView: ViewType) => {
+      if (nextView === currentView) return;
+      runTransition(() => {
+        setCurrentView(nextView);
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      }, true);
+    },
+    [currentView, runTransition]
+  );
+
+  const handleWorkspaceModeChange = useCallback(
+    (nextMode: AuditWorkspaceMode) => {
+      runTransition(() => {
+        setWorkspaceMode(nextMode);
+      }, false);
+    },
+    [runTransition]
+  );
+
+  useEffect(() => {
+    document.title = showSplash
+      ? 'DRA v3.1 — Cloud Deployment Readiness Studio'
+      : VIEW_TITLES[currentView];
+  }, [showSplash, currentView]);
+
   useEffect(() => {
     fetch('/api/status')
       .then((r) => (r.ok ? r.json() : null))
       .then((status) => {
         if (status && status.hasGeminiKey === false) {
           setDefaultProvider('static');
+          setPreviewModel('dra-deterministic-ast-v3');
         }
       })
       .catch(() => {
@@ -108,36 +216,52 @@ const App: React.FC = () => {
   };
 
   const restoreHistoryItem = (item: HistoryItem) => {
-    setIsDemoMode(false);
-    setAnalysis({ isLoading: false, error: null, result: item.result, stage: null });
-    setIsInputMinimized(true);
-    setCurrentView('assessment');
+    runTransition(() => {
+      setIsDemoMode(false);
+      setAnalysis({ isLoading: false, error: null, result: item.result, stage: null });
+      setIsInputMinimized(true);
+      setWorkspaceMode('overview');
+      setCurrentView('assessment');
+    }, true);
   };
 
   const handleRunDemo = async () => {
-    setShowSplash(false);
-    setIsDemoMode(true);
-    setIsInputMinimized(true);
-    setCurrentView('assessment');
-    setAnalysis({
-      isLoading: true,
-      error: null,
-      result: null,
-      stage: { stage: 'static', label: 'Loading Project-Aegis showcase telemetry...', progress: 55 }
-    });
+    runTransition(() => {
+      setShowSplash(false);
+      setIsDemoMode(true);
+      if (!inputCode.trim()) {
+        setInputCode(DEMO_SHOWCASE_HCL);
+      }
+      setIsInputMinimized(true);
+      setWorkspaceMode('overview');
+      setCurrentView('assessment');
+      setAnalysis({
+        isLoading: true,
+        error: null,
+        result: null,
+        stage: {
+          stage: 'static',
+          label: 'Loading Project-Aegis hybrid showcase telemetry...',
+          progress: 55
+        }
+      });
+    }, true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await new Promise((resolve) => setTimeout(resolve, 900));
     setAnalysis({ isLoading: false, error: null, result: MOCK_AUDIT_RESULT, stage: null });
   };
 
   const handleJumpToLine = (fileName: string | undefined, line: number) => {
     setIsInputMinimized(false);
     setHighlightedLine({ fileName, line });
+    if (workspaceMode !== 'split') {
+      setWorkspaceMode('split');
+    }
     setTimeout(() => {
       document
         .getElementById('input-section-container')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 80);
+        ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 60);
   };
 
   const handleAnalyze = async (code: string, options?: InputAnalyzeOptions) => {
@@ -145,7 +269,7 @@ const App: React.FC = () => {
     setIsInputMinimized(true);
     setHighlightedLine(null);
 
-    // 1. Bidirectional Client-Side DLP: scrub sensitive identifiers & secrets BEFORE network transmission!
+    // 1. Bidirectional Client-Side DLP: scrub sensitive identifiers & secrets BEFORE network transmission
     const clientDlp = anonymizeHcl(code);
     setActiveAliasMap(clientDlp.aliasMap);
 
@@ -236,12 +360,15 @@ const App: React.FC = () => {
   };
 
   const handleStart = () => {
-    if (isDemoMode) {
-      setIsDemoMode(false);
-      setAnalysis({ isLoading: false, error: null, result: null, stage: null });
-      setIsInputMinimized(false);
-    }
-    setShowSplash(false);
+    runTransition(() => {
+      if (isDemoMode) {
+        setIsDemoMode(false);
+        setAnalysis({ isLoading: false, error: null, result: null, stage: null });
+        setIsInputMinimized(false);
+      }
+      setShowSplash(false);
+      setCurrentView('assessment');
+    }, true);
   };
 
   const renderError = (error: string) => {
@@ -250,75 +377,73 @@ const App: React.FC = () => {
     const isConfigError = errorCode === 'CONFIG_ERROR';
 
     return (
-      <div className="max-w-4xl mx-auto mb-16 animate-enter">
-        <div className="bg-white dark:bg-[#0a0f1e] rounded-[2.5rem] border border-red-200 dark:border-red-900/40 shadow-3xl overflow-hidden">
-          <div className="px-10 py-8 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-[#0a0f1e] border-b border-red-100 dark:border-red-900/30 flex items-center gap-6">
-            <div className="p-4 bg-red-600 rounded-3xl shadow-xl shadow-red-500/20">
-              <AlertOctagon className="w-8 h-8 text-white" aria-hidden="true" />
+      <div className="max-w-4xl mx-auto mb-10 animate-enter">
+        <div className="dra-surface-card bg-white dark:bg-[#0b111e] rounded-2xl border border-red-300 dark:border-red-900/50 shadow-xl overflow-hidden">
+          <div className="px-6 sm:px-8 py-5 bg-red-50/80 dark:bg-red-950/25 border-b border-red-200 dark:border-red-900/40 flex items-center gap-4">
+            <div className="p-3 bg-red-600 rounded-xl shadow-sm">
+              <AlertOctagon className="w-6 h-6 text-white" aria-hidden="true" />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Audit Engine Halted
               </h3>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="text-red-600 dark:text-red-400 font-black text-[10px] uppercase tracking-[0.2em]">
-                  {errorCode}
-                </span>
-              </div>
+              <span className="text-red-700 dark:text-red-400 font-mono font-bold text-xs uppercase tracking-wider">
+                {errorCode}
+              </span>
             </div>
           </div>
 
-          <div className="p-10 space-y-8">
-            <div className="bg-slate-50 dark:bg-slate-900/60 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 flex gap-5">
-              <ShieldX className="w-6 h-6 text-red-500 opacity-60 shrink-0 mt-0.5" aria-hidden="true" />
-              <p className="text-base text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
+          <div className="p-6 sm:p-8 space-y-6">
+            <div className="bg-slate-50 dark:bg-slate-900/70 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex gap-3.5">
+              <ShieldX className="w-5 h-5 text-red-500 shrink-0 mt-0.5" aria-hidden="true" />
+              <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
                 {errorMsg}
               </p>
             </div>
 
             {isConfigError && (
-              <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40">
-                <div className="flex items-center gap-3 text-sm font-bold text-emerald-800 dark:text-emerald-300">
-                  <Cpu className="w-5 h-5 text-emerald-500" aria-hidden="true" />
+              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-300 dark:border-emerald-900/50">
+                <div className="flex items-center gap-2.5 text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-300">
+                  <Cpu className="w-5 h-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                   <span>
-                    No Gemini API_KEY configured? Run DRA's zero-key Deterministic AST Engine instead!
+                    No Gemini API_KEY configured? Run DRA&apos;s zero-key Deterministic AST Engine instead.
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleAnalyze(inputCode, { provider: 'static', policyYaml })}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold"
                 >
                   Run Offline AST Audit
                 </button>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                  <Terminal className="w-3.5 h-3.5" aria-hidden="true" />
-                  Secret Manager Injection
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  <Terminal className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" aria-hidden="true" />
+                  Cloud Run Secret Manager Injection
                 </h4>
-                <pre className="text-[10px] font-mono bg-slate-900 p-3 rounded-lg text-emerald-400 overflow-x-auto border border-slate-800">
+                <pre className="text-[11px] font-mono bg-slate-950 p-3 rounded-lg text-emerald-400 overflow-x-auto border border-slate-800">
                   <code>gcloud run services update ... --set-secrets API_KEY=dra-gemini-key:latest</code>
                 </pre>
               </div>
 
-              <div className="space-y-3 p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                  <Key className="w-3.5 h-3.5" aria-hidden="true" />
-                  Credential Access
+              <div className="space-y-2 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  <Key className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" aria-hidden="true" />
+                  Gemini 4 API Key Provisioning
                 </h4>
-                <div className="flex items-start gap-3">
-                  <Globe className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" aria-hidden="true" />
-                  <p className="text-xs text-slate-500">
-                    Verify your Gemini API key in{' '}
+                <div className="flex items-start gap-2.5">
+                  <Globe className="w-4 h-4 text-blue-600 dark:text-sky-400 mt-0.5 shrink-0" aria-hidden="true" />
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    Create or verify your Gemini API key in{' '}
                     <a
                       href="https://aistudio.google.com/app/apikey"
                       target="_blank"
                       rel="noreferrer"
-                      className="text-indigo-500 underline font-bold"
+                      className="text-blue-600 dark:text-sky-400 underline font-bold"
                     >
                       Google AI Studio
                     </a>
@@ -328,14 +453,14 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-4">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
               <button
                 type="button"
                 onClick={() => setAnalysis({ ...analysis, error: null })}
-                className="flex items-center gap-3 px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl transition-all shadow-xl shadow-red-500/20 text-[10px] uppercase tracking-widest"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs"
               >
-                <RefreshCw className="w-4 h-4" aria-hidden="true" />
-                Dismiss &amp; Edit
+                <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+                Dismiss &amp; Return to Editor
               </button>
             </div>
           </div>
@@ -344,33 +469,55 @@ const App: React.FC = () => {
     );
   };
 
+  const activeEngineForHeader = analysis.result?.model || previewModel;
+  const isSplitActiveWithResult = Boolean(analysis.result && workspaceMode === 'split');
+
   return (
-    <div className="flex-1 flex flex-col w-full bg-slate-50 dark:bg-[#020617] transition-colors duration-500 relative font-sans text-slate-900 dark:text-slate-100">
+    <div className="flex-1 flex flex-col w-full bg-[#f5f7fb] dark:bg-[#060a12] relative font-sans text-slate-900 dark:text-slate-100">
+      {/* Mandatory Keyboard Skip Link (first focusable node in DOM) */}
+      <a href="#main-heading" className="visually-hidden skip-link">
+        Skip to main content
+      </a>
+
       <OnboardingTour startTour={!showSplash} />
 
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-slate-50 dark:bg-[#020617]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(241,245,249,1)_0%,rgba(248,250,252,0)_75%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(28,37,65,1)_0%,rgba(2,6,23,0)_75%)]" />
-      </div>
-
-      <div className="relative z-10 flex flex-col flex-grow w-full">
-        {showSplash ? (
-          <SplashPage
-            onStart={handleStart}
-            onRunDemo={handleRunDemo}
-            onLearnMore={() => {
+      {showSplash ? (
+        <SplashPage
+          onStart={handleStart}
+          onRunDemo={handleRunDemo}
+          onLearnMore={() => {
+            runTransition(() => {
               setShowSplash(false);
               setCurrentView('docs');
-            }}
+            }, true);
+          }}
+        />
+      ) : (
+        <div className="flex min-h-screen w-full">
+          {/* Desktop Collapsible Left Command Rail */}
+          <CommandRail
+            currentView={currentView}
+            onNavigate={handleNavigate}
+            collapsed={railCollapsed}
+            onToggleCollapse={() => setRailCollapsed((c) => !c)}
+            onBackToSplash={() =>
+              runTransition(() => {
+                setShowSplash(true);
+              }, true)
+            }
           />
-        ) : (
-          <>
+
+          {/* Right Workspace Column */}
+          <div className="flex-1 flex flex-col min-w-0">
             <Header
               currentView={currentView}
-              onNavigate={setCurrentView}
+              onNavigate={handleNavigate}
               isDarkMode={isDarkMode}
               toggleTheme={() => setIsDarkMode(!isDarkMode)}
               onToggleHistory={() => setShowHistory(true)}
+              historyCount={history.length}
+              activeModel={activeEngineForHeader}
+              onRunDemo={handleRunDemo}
             />
 
             <HistorySidebar
@@ -383,84 +530,86 @@ const App: React.FC = () => {
               onCompare={(item) => setComparedItem(item)}
             />
 
-            <main className="flex-1 w-full max-w-[2200px] mx-auto px-6 sm:px-10 lg:px-16 2xl:px-24 py-12 md:py-16">
+            <main
+              id="main-workspace"
+              className="flex-1 w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8"
+            >
               {currentView === 'about' && (
-                <About onStartAssessment={() => setCurrentView('assessment')} />
+                <About onStartAssessment={() => handleNavigate('assessment')} />
               )}
               {currentView === 'features' && <Features />}
               {currentView === 'docs' && (
-                <InternalDocs onStartAssessment={() => setCurrentView('assessment')} />
+                <InternalDocs onStartAssessment={() => handleNavigate('assessment')} />
               )}
               {currentView === 'cli' && <CliInfo />}
 
-              <div className={currentView === 'assessment' ? 'block animate-enter' : 'hidden'}>
-                {isDemoMode && (
-                  <div className="max-w-5xl mx-auto mb-8 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-4 flex items-center justify-between text-indigo-600 dark:text-indigo-400 backdrop-blur-md">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-ping" />
-                      <span className="text-sm font-black uppercase tracking-widest">
-                        Interactive Showcase Mode Active
-                      </span>
+              {currentView === 'assessment' && (
+                <div className="space-y-6 animate-enter">
+                  {/* Compact Studio Page Header (replaces giant text-9xl banner so editor stays above the fold!) */}
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                      <h1
+                        id="main-heading"
+                        tabIndex={-1}
+                        className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight"
+                      >
+                        Hybrid Audit Studio
+                      </h1>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Deterministic CIS GCP v2.0 AST + regional FinOps SKU calculator +{' '}
+                        <strong className="text-blue-700 dark:text-sky-300">
+                          Gemini 4 Hydrogen
+                        </strong>{' '}
+                        attack-path synthesis.
+                      </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsDemoMode(false);
-                        setAnalysis({ isLoading: false, error: null, result: null, stage: null });
-                        setIsInputMinimized(false);
-                      }}
-                      className="text-xs font-bold underline underline-offset-4 hover:text-indigo-800"
-                    >
-                      Exit Showcase &amp; Run Live Audit
-                    </button>
+
+                    {isDemoMode && (
+                      <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-blue-600/10 dark:bg-sky-400/10 border border-blue-600/25 dark:border-sky-400/30 text-xs font-bold text-blue-800 dark:text-sky-300">
+                        <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-sky-400 animate-ping" aria-hidden="true" />
+                        <span>Project-Aegis Showcase Active</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsDemoMode(false);
+                            setAnalysis({ isLoading: false, error: null, result: null, stage: null });
+                            setIsInputMinimized(false);
+                          }}
+                          className="underline hover:opacity-80 ml-1"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
 
-                {!analysis.result && !analysis.isLoading && (
-                  <div className="max-w-5xl mx-auto mb-16 text-center">
-                    <h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-slate-900 dark:text-white mb-8 tracking-tighter leading-[0.85]">
-                      Architect with
-                      <br />
-                      <span className="bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent inline-block pb-2">
-                        Confidence.
-                      </span>
-                    </h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-xl md:text-2xl leading-relaxed max-w-4xl mx-auto font-medium">
-                      Hybrid deterministic AST + AI readiness gatekeeper for{' '}
-                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">
-                        Google Cloud Terraform, OpenTofu &amp; GKE
-                      </span>
-                      .
-                    </p>
-                  </div>
-                )}
+                  {/* Standalone Editor (shown before audit runs, or as minimized bar in non-Split views) */}
+                  {!isSplitActiveWithResult && (
+                    <InputSection
+                      code={inputCode}
+                      onCodeChange={setInputCode}
+                      policyYaml={policyYaml}
+                      onPolicyChange={setPolicyYaml}
+                      onAnalyze={handleAnalyze}
+                      isAnalyzing={analysis.isLoading}
+                      minimized={isInputMinimized && Boolean(analysis.result)}
+                      onToggleMinimize={() => setIsInputMinimized(!isInputMinimized)}
+                      onRunDemo={handleRunDemo}
+                      highlightedLine={highlightedLine}
+                      defaultProvider={defaultProvider}
+                      onModelPreviewChange={setPreviewModel}
+                    />
+                  )}
 
-                <div className="mb-16 transition-all duration-700 ease-in-out">
-                  <InputSection
-                    code={inputCode}
-                    onCodeChange={setInputCode}
-                    policyYaml={policyYaml}
-                    onPolicyChange={setPolicyYaml}
-                    onAnalyze={handleAnalyze}
-                    isAnalyzing={analysis.isLoading}
-                    minimized={isInputMinimized}
-                    onToggleMinimize={() => setIsInputMinimized(!isInputMinimized)}
-                    onRunDemo={handleRunDemo}
-                    highlightedLine={highlightedLine}
-                    defaultProvider={defaultProvider}
-                  />
-                </div>
+                  {analysis.isLoading && (
+                    <div className="py-4">
+                      <LoadingAnimation stageEvent={analysis.stage} />
+                    </div>
+                  )}
 
-                {analysis.isLoading && (
-                  <div className="mb-12">
-                    <LoadingAnimation stageEvent={analysis.stage} />
-                  </div>
-                )}
+                  {analysis.error && renderError(analysis.error)}
 
-                {analysis.error && renderError(analysis.error)}
-
-                {analysis.result && (
-                  <div className="mb-24 mt-16">
+                  {analysis.result && (
                     <Dashboard
                       result={analysis.result}
                       isDemo={isDemoMode}
@@ -469,16 +618,36 @@ const App: React.FC = () => {
                       comparedBaseline={comparedItem}
                       onClearComparison={() => setComparedItem(null)}
                       onJumpToLine={handleJumpToLine}
+                      workspaceMode={workspaceMode}
+                      onWorkspaceModeChange={handleWorkspaceModeChange}
+                      editorSlot={
+                        workspaceMode === 'split' ? (
+                          <InputSection
+                            code={inputCode}
+                            onCodeChange={setInputCode}
+                            policyYaml={policyYaml}
+                            onPolicyChange={setPolicyYaml}
+                            onAnalyze={handleAnalyze}
+                            isAnalyzing={analysis.isLoading}
+                            minimized={false}
+                            onRunDemo={handleRunDemo}
+                            highlightedLine={highlightedLine}
+                            defaultProvider={defaultProvider}
+                            compact={true}
+                            onModelPreviewChange={setPreviewModel}
+                          />
+                        ) : undefined
+                      }
                     />
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </main>
 
             <Footer lastResult={analysis.result} />
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

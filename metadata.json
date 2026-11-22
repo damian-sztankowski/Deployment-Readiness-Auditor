@@ -1,6 +1,6 @@
 {
-  "name": "Deployment Readiness Auditor (DRA v3.0)",
-  "version": "3.0.0",
-  "description": "Hybrid Deterministic AST + AI DevSecOps readiness gatekeeper for Google Cloud Terraform, OpenTofu, tfplan.json, GKE YAML, and Dockerfiles.",
+  "name": "Deployment Readiness Auditor (DRA v3.1)",
+  "version": "3.1.0",
+  "description": "Hybrid Deterministic AST + Gemini 4 DevSecOps readiness gatekeeper and Command Studio for Google Cloud Terraform, OpenTofu, tfplan.json, GKE YAML, and Dockerfiles.",
   "requestFramePermissions": []
 }

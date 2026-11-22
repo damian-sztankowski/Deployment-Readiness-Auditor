@@ -18,9 +18,15 @@ import {
   signSessionToken,
   verifySessionCookieValue
 } from '../../server';
-import { AuditResult, Severity } from '../types';
+import {
+  AuditResult,
+  formatModelDisplayName,
+  GEMINI_MODEL,
+  GEMINI_MODEL_PRESETS,
+  Severity
+} from '../types';
 
-describe('DRA v3.0 Core Security & Engine Suite', () => {
+describe('DRA v3.1 Core Security & Engine Suite', () => {
   describe('Bidirectional DLP Engine', () => {
     it('permanently scrubs secrets while reversibly aliasing project/VPC/email identifiers', () => {
       const sampleHcl = `
@@ -257,6 +263,20 @@ resource "google_storage_bucket" "b" {
       const sig = signSessionToken('abc123token');
       expect(verifySessionCookieValue(`abc123token.${sig}`)).toBe(true);
       expect(verifySessionCookieValue(`abc123token.tampered`)).toBe(false);
+    });
+  });
+
+  describe('Gemini 4 Frontier Model Presets & Formatter', () => {
+    it('defaults to gemini-4-hydrogen and exposes Gemini 4 & 3.8 presets without legacy 2.5 defaults', () => {
+      expect(GEMINI_MODEL).toBe('gemini-4-hydrogen');
+      const ids = GEMINI_MODEL_PRESETS.map((p) => p.id);
+      expect(ids).toContain('gemini-4-hydrogen');
+      expect(ids).toContain('gemini-4-carbon');
+      expect(ids).toContain('gemini-4-neon');
+      expect(ids).toContain('gemini-3.8-flash');
+      expect(ids).not.toContain('gemini-2.5-flash');
+      expect(formatModelDisplayName('gemini-4-hydrogen')).toBe('Gemini 4 Hydrogen');
+      expect(formatModelDisplayName('dra-deterministic-ast-v3')).toBe('Deterministic AST v3');
     });
   });
 });
