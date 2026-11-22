@@ -1,0 +1,45 @@
+# ============================================================================
+# DRA v3.0 Organization Policy-as-Code & Risk Waiver Configuration (.dra.yaml)
+# Copy to `.dra.yaml` in your Terraform repository root.
+# ============================================================================
+
+organization: "Enterprise Cloud Platform"
+
+# Enforce mandatory FinOps & incident-ownership labels on taggable GCP resources
+requiredLabels:
+  - environment
+  - owner
+  - cost_center
+
+# Enforce geographic data-residency boundaries (wildcards supported)
+allowedRegions:
+  - us-central1
+  - europe-west*
+
+# Block legacy / inefficient Compute Engine machine families
+bannedMachinePrefixes:
+  - n1-
+  - f1-
+  - g1-
+
+# Custom pillar weights when computing composite architectural readiness
+pillarWeights:
+  Security: 2.0
+  Reliability: 1.5
+  Cost: 1.2
+  Operational: 1.0
+  Performance: 1.0
+
+# Organization-specific natural-language guardrails evaluated during AI synthesis
+customRules:
+  - "All production Cloud SQL instances must enable availability_type = REGIONAL and PITR backups."
+  - "Compute VMs must never attach external IPv4 access_config blocks; use Cloud NAT and IAP."
+
+# Time-bounded risk exceptions (logged in CISO PDF under Accepted Risk Exceptions;
+# expired waivers automatically revert to active CI/CD gate findings!)
+waivers:
+  - id: "CIS 4.8"
+    resource: "google_compute_instance.legacy_appliance"
+    reason: "Vendor kernel image validation scheduled for Q2 cutover"
+    approvedBy: "ciso@example.com"
+    expires: "2027-06-30"

@@ -1,0 +1,54 @@
+name: DRA Platform CI (Build & Test)
+
+on:
+  pull_request:
+  push:
+    branches: [ production, main ]
+
+jobs:
+  dra-app:
+    name: Web & Hybrid Engine (TypeScript + Vitest + Vite Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dra-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: dra-app/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Typecheck
+        run: npm run typecheck
+
+      - name: Run Vitest Security & Engine Suite
+        run: npm test
+
+      - name: Build Production SPA & Server Bundle
+        run: npm run build
+
+  dra-cli:
+    name: Go CLI Gatekeeper (Unit Tests & Binary Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dra-cli
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: dra-cli/go.sum
+
+      - name: Run Go Unit Tests (with Race Detector)
+        run: make test
+
+      - name: Compile dra-cli Binary
+        run: make build

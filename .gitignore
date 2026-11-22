@@ -7,15 +7,20 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependencies & Build Outputs
+node_modules/
+dra-app/node_modules/
+dist/
+dra-app/dist/
+dist-ssr/
+dra-app/index.js
+dra-app/index.js.map
 *.local
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -30,16 +35,22 @@ dist-ssr
 
 # Terraform Artifacts & States
 .terraform/
+**/.terraform/
 *.tfstate
-*.tfstate.backup
+*.tfstate.*
 *.tfvars
 *.tfvars.json
+!*.tfvars.example
+crash.log
 
-# Compiled Binaries
+# Compiled Binaries & Coverage
 dra-cli/bin/
 bin/
 *.exe
 *.test
+coverage/
+dra-results.sarif
+*.patch
 
-# Exploit / Scratch directories
+# Scratch directories
 .exploit/

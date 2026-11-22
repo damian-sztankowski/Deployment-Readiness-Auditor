@@ -8,15 +8,19 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 )
 
-// --- ANSI COLORS ---
-const (
+const CliVersion = "3.0.0"
+
+// --- DYNAMIC ANSI COLOR SUPPORT (POSIX NO_COLOR & TTY AWARE) ---
+var (
 	Reset  = "\033[0m"
 	Red    = "\033[31m"
 	Green  = "\033[32m"
@@ -24,6 +28,41 @@ const (
 	Blue   = "\033[34m"
 	Bold   = "\033[1m"
 )
+
+func isTerminalFile(f *os.File) bool {
+	if f == nil {
+		return false
+	}
+	fi, err := f.Stat()
+	if err != nil {
+		return false
+	}
+	return (fi.Mode() & os.ModeCharDevice) != 0
+}
+
+func shouldEnableColor(noColorFlag bool) bool {
+	if noColorFlag {
+		return false
+	}
+	if _, exists := os.LookupEnv("NO_COLOR"); exists {
+		return false
+	}
+	if strings.EqualFold(os.Getenv("TERM"), "dumb") {
+		return false
+	}
+	return isTerminalFile(os.Stdout)
+}
+
+func configureColors(enable bool) {
+	if !enable {
+		Reset = ""
+		Red = ""
+		Green = ""
+		Yellow = ""
+		Blue = ""
+		Bold = ""
+	}
+}
 
 // --- JSON STRUCTURES ---
 type Compliance struct {
@@ -34,17 +73,22 @@ type Compliance struct {
 }
 
 type Finding struct {
-	ID          string       `json:"id"`
-	Severity    string       `json:"severity"`
-	Category    string       `json:"category"`
-	Title       string       `json:"title"`
-	Description string       `json:"description"`
-	Remediation string       `json:"remediation"`
-	Fix         string       `json:"fix"`
-	FileName    string       `json:"fileName"`
-	LineNumber  int          `json:"lineNumber"`
-	CostSavings string       `json:"costSavings"`
-	Compliance  []Compliance `json:"compliance"`
+	ID              string       `json:"id"`
+	Severity        string       `json:"severity"`
+	Category        string       `json:"category"`
+	Title           string       `json:"title"`
+	Description     string       `json:"description"`
+	Remediation     string       `json:"remediation"`
+	Fix             string       `json:"fix"`
+	OriginalSnippet string       `json:"originalSnippet,omitempty"`
+	FileName        string       `json:"fileName"`
+	LineNumber      int          `json:"lineNumber"`
+	EndLineNumber   int          `json:"endLineNumber,omitempty"`
+	CostSavings     string       `json:"costSavings"`
+	Source          string       `json:"source,omitempty"`
+	Waived          bool         `json:"waived,omitempty"`
+	WaiverReason    string       `json:"waiverReason,omitempty"`
+	Compliance      []Compliance `json:"compliance"`
 }
 
 type CategoryScore struct {
@@ -54,11 +98,23 @@ type CategoryScore struct {
 	Explanation string `json:"explanation"`
 }
 
+type FinOpsSummary struct {
+	Region                       string  `json:"region"`
+	EstimatedCurrentMonthlyUsd   float64 `json:"estimatedCurrentMonthlyUsd"`
+	EstimatedOptimizedMonthlyUsd float64 `json:"estimatedOptimizedMonthlyUsd"`
+	PotentialMonthlySavingsUsd   float64 `json:"potentialMonthlySavingsUsd"`
+	AnnualSavingsUsd             float64 `json:"annualSavingsUsd"`
+}
+
 type AuditReport struct {
-	Summary    string          `json:"summary"`
-	Categories []CategoryScore `json:"categories"`
-	Findings   []Finding       `json:"findings"`
-	Diagram    string          `json:"diagram,omitempty"`
+	Summary        string          `json:"summary"`
+	Categories     []CategoryScore `json:"categories"`
+	Findings       []Finding       `json:"findings"`
+	WaivedFindings []Finding       `json:"waivedFindings,omitempty"`
+	FinOps         *FinOpsSummary  `json:"finops,omitempty"`
+	Diagram        string          `json:"diagram,omitempty"`
+	Model          string          `json:"model,omitempty"`
+	Provider       string          `json:"provider,omitempty"`
 }
 
 // --- SARIF 2.1.0 STRUCTURES ---
@@ -72,6 +128,7 @@ type SarifArtifactLocation struct {
 
 type SarifRegion struct {
 	StartLine int `json:"startLine"`
+	EndLine   int `json:"endLine,omitempty"`
 }
 
 type SarifPhysicalLocation struct {
@@ -102,6 +159,7 @@ type SarifRule struct {
 
 type SarifDriver struct {
 	Name           string      `json:"name"`
+	Version        string      `json:"version"`
 	InformationURI string      `json:"informationUri"`
 	Rules          []SarifRule `json:"rules"`
 }
@@ -122,32 +180,155 @@ type SarifReport struct {
 }
 
 // --- CLI FLAGS ---
-var scanPath string
-var backendURL string
-var deepScan bool
-var autoApprove bool
-var failOn string
-var minScore int
-var outputFormat string
-var outputFile string
-var fixPatchFile string
-var llmProvider string
-var llmModel string
-var llmURL string
-var authToken string
-var apiKey string
-var demoMode bool
+var (
+	scanPath     string
+	backendURL   string
+	deepScan     bool
+	autoApprove  bool
+	failOn       string
+	minScore     int
+	outputFormat string
+	outputFile   string
+	fixPatchFile string
+	llmProvider  string
+	llmModel     string
+	llmURL       string
+	authToken    string
+	apiKey       string
+	demoMode     bool
+	enableDlp    bool
+	noColor      bool
+	timeoutSec   int
+	policyPath   string
+	changedOnly  bool
+	gitBaseRef   string
+)
+
+func isSupportedIacFile(name string) bool {
+	lower := strings.ToLower(filepath.Base(name))
+	if lower == ".dra.yaml" || lower == "dra.yaml" || lower == ".dra.yml" || lower == "dra.yml" {
+		return false
+	}
+	return strings.HasSuffix(lower, ".tf") ||
+		strings.HasSuffix(lower, ".tofu") ||
+		strings.HasSuffix(lower, ".tfvars") ||
+		strings.HasSuffix(lower, "plan.json") ||
+		strings.HasSuffix(lower, ".yaml") ||
+		strings.HasSuffix(lower, ".yml") ||
+		lower == "dockerfile" ||
+		strings.HasPrefix(lower, "dockerfile.")
+}
+
+func collectGitChangedFiles(rootPath, baseRef string) ([]string, error) {
+	ref := baseRef
+	if ref == "" {
+		ref = "HEAD~1"
+	}
+	cmd := exec.Command("git", "-C", rootPath, "diff", "--name-only", "--diff-filter=ACMRTUXB", ref)
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	var matched []string
+	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+		full := filepath.Join(rootPath, trimmed)
+		if _, err := os.Stat(full); err == nil && isSupportedIacFile(trimmed) {
+			matched = append(matched, full)
+		}
+	}
+	return matched, nil
+}
+
+func loadPolicyFile(explicitPath, scanDir string) string {
+	candidates := []string{}
+	if explicitPath != "" {
+		candidates = append(candidates, explicitPath)
+	} else {
+		candidates = append(candidates,
+			filepath.Join(scanDir, ".dra.yaml"),
+			filepath.Join(scanDir, "dra.yaml"),
+			".dra.yaml",
+			"dra.yaml",
+		)
+	}
+	for _, p := range candidates {
+		data, err := os.ReadFile(p)
+		if err == nil && len(bytes.TrimSpace(data)) > 0 {
+			return string(data)
+		}
+	}
+	return ""
+}
+
+func doRequestWithRetry(client *http.Client, url string, payload []byte, headers map[string]string) (*http.Response, []byte, error) {
+	maxAttempts := 3
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+		if err != nil {
+			return nil, nil, err
+		}
+		for k, v := range headers {
+			req.Header.Set(k, v)
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			if attempt == maxAttempts {
+				return nil, nil, err
+			}
+			time.Sleep(time.Duration(attempt*2) * time.Second)
+			continue
+		}
+
+		body, readErr := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if readErr != nil {
+			return resp, nil, readErr
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests && attempt < maxAttempts {
+			waitSec := attempt * 3
+			if ra := resp.Header.Get("Retry-After"); ra != "" {
+				if parsed, err := strconv.Atoi(ra); err == nil && parsed > 0 && parsed <= 60 {
+					waitSec = parsed
+				}
+			}
+			time.Sleep(time.Duration(waitSec) * time.Second)
+			continue
+		}
+
+		return resp, body, nil
+	}
+	return nil, nil, fmt.Errorf("request exhausted retry attempts")
+}
 
 var rootCmd = &cobra.Command{
-	Use:   "dra-cli",
-	Short: "Deployment Readiness Auditor CLI",
-	Long:  "CLI for semantic analysis of Terraform code against Google Cloud Architecture Framework.",
+	Use:     "dra-cli",
+	Version: CliVersion,
+	Short:   "Deployment Readiness Auditor CLI (v3.0)",
+	Long:    "Hybrid Deterministic AST & AI readiness gatekeeper for Google Cloud Terraform, OpenTofu, and Kubernetes.",
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print DRA CLI version information",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("dra-cli version %s\n", CliVersion)
+	},
 }
 
 var scanCmd = &cobra.Command{
 	Use:   "scan",
-	Short: "Scans a specified directory with Terraform code",
+	Short: "Scan Infrastructure as Code files against Well-Architected & compliance benchmarks",
 	Run: func(cmd *cobra.Command, args []string) {
+		enableColors := shouldEnableColor(noColor)
+		configureColors(enableColors)
+		interactiveTTY := isTerminalFile(os.Stdout) && isTerminalFile(os.Stderr) && os.Getenv("CI") == ""
+
 		logDest := os.Stdout
 		if outputFormat != "console" {
 			logDest = os.Stderr
@@ -155,99 +336,91 @@ var scanCmd = &cobra.Command{
 
 		if outputFormat == "console" {
 			fmt.Fprintln(logDest, Bold+Blue+"===================================================="+Reset)
-			fmt.Fprintln(logDest, Bold+"     Deployment Readiness Auditor (DRA) CLI         "+Reset)
+			fmt.Fprintf(logDest, Bold+"   Deployment Readiness Auditor (DRA) CLI v%s\n"+Reset, CliVersion)
 			fmt.Fprintln(logDest, Bold+Blue+"===================================================="+Reset)
 		}
 
-		// Resolve Endpoint from environment if not overridden by user flag
 		if backendURL == "http://localhost:8080/api/audit" && os.Getenv("DRA_ENDPOINT") != "" {
 			backendURL = os.Getenv("DRA_ENDPOINT")
 		}
 
-		// Resolve Token
 		if authToken == "" {
-			authToken = os.Getenv("GCP_IAM_TOKEN")
-			if authToken == "" {
-				authToken = os.Getenv("DRA_TOKEN")
-			}
-			if authToken == "" {
-				authToken = os.Getenv("AUTH_TOKEN")
+			for _, envKey := range []string{"GCP_IAM_TOKEN", "DRA_TOKEN", "AUTH_TOKEN"} {
+				if v := os.Getenv(envKey); v != "" {
+					authToken = v
+					break
+				}
 			}
 		}
 
-		// Resolve API Key
 		if apiKey == "" {
-			apiKey = os.Getenv("DRA_API_KEY")
-			if apiKey == "" {
-				apiKey = os.Getenv("API_KEY")
-			}
-			if apiKey == "" {
-				apiKey = os.Getenv("GEMINI_API_KEY")
-			}
-		}
-
-		isLocal := strings.Contains(backendURL, "localhost") || strings.Contains(backendURL, "127.0.0.1")
-		if !demoMode && authToken == "" && apiKey == "" && !isLocal {
-			if outputFormat == "console" {
-				fmt.Fprintln(logDest, Yellow+"ℹ️  No GCP_IAM_TOKEN or DRA_API_KEY set. Proceeding with request..."+Reset)
+			for _, envKey := range []string{"DRA_API_KEY", "API_KEY", "GEMINI_API_KEY"} {
+				if v := os.Getenv(envKey); v != "" {
+					apiKey = v
+					break
+				}
 			}
 		}
 
-		var targetFiles []string
-
-		// --- FILE COLLECTION LOGIC ---
 		fi, err := os.Stat(scanPath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, Red+"❌ Error accessing path '%s': %v\n"+Reset, scanPath, err)
 			os.Exit(1)
 		}
 
+		var targetFiles []string
+
 		if !fi.IsDir() {
 			targetFiles = append(targetFiles, scanPath)
-		} else if deepScan {
-			if !autoApprove {
-				fmt.Fprint(os.Stderr, Yellow+"⚠️  WARNING: Deep scan will analyze all subdirectories.\nThis may consume significant AI token quota. Continue? [y/N]: "+Reset)
-				reader := bufio.NewReader(os.Stdin)
-				response, _ := reader.ReadString('\n')
-				response = strings.TrimSpace(strings.ToLower(response))
-				if response != "y" && response != "yes" {
-					fmt.Fprintln(os.Stderr, Red+"🛑 Scan aborted by user."+Reset)
-					os.Exit(0)
-				}
+		} else if changedOnly {
+			changed, gitErr := collectGitChangedFiles(scanPath, gitBaseRef)
+			if gitErr != nil {
+				fmt.Fprintf(os.Stderr, Yellow+"⚠️  Unable to resolve git diff against '%s' (%v); falling back to directory scan.\n"+Reset, gitBaseRef, gitErr)
+			} else {
+				targetFiles = changed
 			}
-			if outputFormat == "console" {
-				fmt.Fprintln(logDest, "🕵️  Running deep scan...")
-			}
+		}
 
-			err := filepath.WalkDir(scanPath, func(path string, d os.DirEntry, err error) error {
-				if err != nil {
-					return err
-				}
-				if d.IsDir() && strings.HasPrefix(d.Name(), ".") && d.Name() != "." {
-					return filepath.SkipDir
-				}
-				if !d.IsDir() {
-					name := strings.ToLower(d.Name())
-					if strings.HasSuffix(name, ".tf") || strings.HasSuffix(name, ".tfvars") || strings.HasSuffix(name, "plan.json") {
-						targetFiles = append(targetFiles, path)
+		if len(targetFiles) == 0 && fi.IsDir() && !changedOnly {
+			if deepScan {
+				if !autoApprove && isTerminalFile(os.Stdin) && os.Getenv("CI") == "" {
+					fmt.Fprint(os.Stderr, Yellow+"⚠️  Deep scan will analyze all subdirectories. Continue? [y/N]: "+Reset)
+					reader := bufio.NewReader(os.Stdin)
+					response, _ := reader.ReadString('\n')
+					response = strings.TrimSpace(strings.ToLower(response))
+					if response != "y" && response != "yes" {
+						fmt.Fprintln(os.Stderr, Red+"🛑 Scan aborted by user."+Reset)
+						os.Exit(0)
 					}
 				}
-				return nil
-			})
-			if err != nil {
-				fmt.Fprintf(os.Stderr, Red+"❌ Error during deep scan: %v\n"+Reset, err)
-				os.Exit(1)
-			}
-		} else {
-			files, err := os.ReadDir(scanPath)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, Red+"❌ Error reading directory '%s': %v\n"+Reset, scanPath, err)
-				os.Exit(1)
-			}
-			for _, file := range files {
-				if !file.IsDir() {
-					name := strings.ToLower(file.Name())
-					if strings.HasSuffix(name, ".tf") || strings.HasSuffix(name, ".tfvars") || strings.HasSuffix(name, "plan.json") {
+				err := filepath.WalkDir(scanPath, func(path string, d os.DirEntry, err error) error {
+					if err != nil {
+						return err
+					}
+					if d.IsDir() {
+						name := d.Name()
+						if (strings.HasPrefix(name, ".") && name != ".") || name == "node_modules" || name == "dist" || name == "vendor" {
+							return filepath.SkipDir
+						}
+						return nil
+					}
+					if isSupportedIacFile(d.Name()) {
+						targetFiles = append(targetFiles, path)
+					}
+					return nil
+				})
+				if err != nil {
+					fmt.Fprintf(os.Stderr, Red+"❌ Error during deep scan: %v\n"+Reset, err)
+					os.Exit(1)
+				}
+			} else {
+				files, err := os.ReadDir(scanPath)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, Red+"❌ Error reading directory '%s': %v\n"+Reset, scanPath, err)
+					os.Exit(1)
+				}
+				for _, file := range files {
+					if !file.IsDir() && isSupportedIacFile(file.Name()) {
 						targetFiles = append(targetFiles, filepath.Join(scanPath, file.Name()))
 					}
 				}
@@ -255,44 +428,52 @@ var scanCmd = &cobra.Command{
 		}
 
 		if len(targetFiles) == 0 {
-			fmt.Fprintf(os.Stderr, Yellow+"⚠️  No Terraform (.tf) or plan (.json) files found at '%s'.\n"+Reset, scanPath)
+			fmt.Fprintf(os.Stderr, Yellow+"⚠️  No supported IaC files (.tf, .tofu, tfplan.json, K8s .yaml, Dockerfile) found at '%s'.\n"+Reset, scanPath)
 			os.Exit(0)
 		}
 
 		var combinedCode strings.Builder
 		combinedCode.WriteString("# --- MULTI-FILE PROJECT ---\n\n")
 
-		for _, path := range targetFiles {
-			relPath, err := filepath.Rel(scanPath, path)
-			if err != nil {
-				relPath = filepath.Base(path)
+		for _, p := range targetFiles {
+			relPath := filepath.Base(p)
+			if fi.IsDir() {
+				if r, relErr := filepath.Rel(scanPath, p); relErr == nil {
+					relPath = filepath.ToSlash(r)
+				}
 			}
-
-			localFile, err := os.Open(path)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, Red+"❌ Error opening file %s: %v\n"+Reset, path, err)
+			content, readErr := os.ReadFile(p)
+			if readErr != nil {
+				fmt.Fprintf(os.Stderr, Red+"❌ Error reading %s: %v\n"+Reset, p, readErr)
 				os.Exit(1)
 			}
-
-			content, err := io.ReadAll(localFile)
-			localFile.Close()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, Red+"❌ Error reading file content: %v\n"+Reset, err)
-				os.Exit(1)
-			}
-
 			combinedCode.WriteString(fmt.Sprintf("### FILE: %s ###\n%s\n\n", relPath, string(content)))
 		}
 
+		rawPayloadCode := strings.TrimSpace(combinedCode.String())
+		var dlpRes DlpResult
+		if enableDlp {
+			dlpRes = AnonymizeHCL(rawPayloadCode)
+			rawPayloadCode = dlpRes.SanitizedCode
+		}
+
+		policyDir := scanPath
+		if !fi.IsDir() {
+			policyDir = filepath.Dir(scanPath)
+		}
+		policyYamlContent := loadPolicyFile(policyPath, policyDir)
+
 		type AuditRequest struct {
 			Code        string `json:"code"`
+			PolicyYaml  string `json:"policyYaml,omitempty"`
 			LlmProvider string `json:"llmProvider,omitempty"`
 			LlmModel    string `json:"llmModel,omitempty"`
 			LlmUrl      string `json:"llmUrl,omitempty"`
 		}
 
 		auditReq := AuditRequest{
-			Code:        strings.TrimSpace(combinedCode.String()),
+			Code:        rawPayloadCode,
+			PolicyYaml:  policyYamlContent,
 			LlmProvider: llmProvider,
 			LlmModel:    llmModel,
 			LlmUrl:      llmURL,
@@ -308,87 +489,74 @@ var scanCmd = &cobra.Command{
 
 		if demoMode {
 			if outputFormat == "console" {
-				fmt.Fprintln(logDest, "✨ Running in Interactive Demo Mode (Simulated Audit Engine)...")
+				fmt.Fprintln(logDest, "✨ Running in Demo Mode (Simulated Hybrid Audit Engine)...")
 			}
 			report = getMockAuditReport()
 		} else {
 			if outputFormat == "console" {
-				fmt.Fprintf(logDest, "📦 Found %d file(s). Transmitting payload to DRA Engine:\n-> %s... 🚀\n", len(targetFiles), backendURL)
+				fmt.Fprintf(logDest, "📦 Auditing %d file(s) (%d sensitive fields scrubbed locally) -> %s\n", len(targetFiles), dlpRes.RedactionCount, backendURL)
 			}
 
-			req, err := http.NewRequest("POST", backendURL, bytes.NewBuffer(jsonData))
-			if err != nil {
-				fmt.Fprintf(os.Stderr, Red+"❌ Error creating HTTP request: %v\n"+Reset, err)
-				os.Exit(1)
+			headers := map[string]string{
+				"Content-Type": "application/json",
+				"User-Agent":   "dra-cli/" + CliVersion,
 			}
-
-			req.Header.Set("Content-Type", "application/json")
 			if authToken != "" {
-				req.Header.Set("Authorization", "Bearer "+authToken)
+				headers["Authorization"] = "Bearer " + authToken
 			}
 			if apiKey != "" {
-				req.Header.Set("X-API-Key", apiKey)
+				headers["X-API-Key"] = apiKey
 				if authToken == "" {
-					req.Header.Set("Authorization", "Bearer "+apiKey)
+					headers["Authorization"] = "Bearer " + apiKey
 				}
 			}
 
-			// Start loading spinner only for console output
 			doneSpinner := make(chan struct{})
-			if outputFormat == "console" {
-				go startSpinner("Auditing HCL topology and verifying compliance mapping...", doneSpinner)
+			if outputFormat == "console" && interactiveTTY {
+				go startSpinner("Auditing AST blocks, FinOps SKUs, and compliance controls...", doneSpinner)
 			}
 
-			client := &http.Client{}
-			resp, err := client.Do(req)
+			client := &http.Client{
+				Timeout: time.Duration(timeoutSec) * time.Second,
+			}
+			resp, respBody, reqErr := doRequestWithRetry(client, backendURL, jsonData, headers)
 
-			if outputFormat == "console" {
+			if outputFormat == "console" && interactiveTTY {
 				close(doneSpinner)
-				fmt.Fprint(logDest, "\r\033[K") // Clear spinner line
+				fmt.Fprint(logDest, "\r\033[K")
 			}
 
-			if err != nil {
-				fmt.Fprintf(os.Stderr, Red+"❌ Error connecting to DRA backend: %v\n"+Reset, err)
-				os.Exit(1)
-			}
-			defer resp.Body.Close()
-
-			respBody, err := io.ReadAll(resp.Body)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, Red+"❌ Error reading response: %v\n"+Reset, err)
+			if reqErr != nil {
+				fmt.Fprintf(os.Stderr, Red+"❌ Error connecting to DRA backend: %v\n"+Reset, reqErr)
 				os.Exit(1)
 			}
 
-			if resp.StatusCode == 401 || resp.StatusCode == 403 {
-				fmt.Fprintf(os.Stderr, Red+"❌ Authentication failed [Status: %s]: %s\n"+Reset, resp.Status, string(respBody))
-				fmt.Fprintln(os.Stderr, Yellow+"\n💡 To authenticate dra-cli requests:"+Reset)
-				fmt.Fprintln(os.Stderr, "   • Option A (GCP IAM): export GCP_IAM_TOKEN=$(gcloud auth print-identity-token)")
-				fmt.Fprintln(os.Stderr, "     or pass flag: dra-cli scan --token <token>")
-				fmt.Fprintln(os.Stderr, "   • Option B (API Key): export DRA_API_KEY=<key> or export API_KEY=<key>")
-				fmt.Fprintln(os.Stderr, "     or pass flag: dra-cli scan --api-key <key>")
-				fmt.Fprintln(os.Stderr, "   • Option C (Offline / CI Demo): dra-cli scan --demo")
+			if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+				fmt.Fprintf(os.Stderr, Red+"❌ Authentication failed [%s]: %s\n"+Reset, resp.Status, string(respBody))
+				fmt.Fprintln(os.Stderr, Yellow+"\n💡 Authenticate dra-cli using one of:"+Reset)
+				fmt.Fprintln(os.Stderr, "   • OIDC Identity Token: export GCP_IAM_TOKEN=$(gcloud auth print-identity-token)")
+				fmt.Fprintln(os.Stderr, "   • Backend API Key:     export DRA_API_KEY=<your-key>")
+				fmt.Fprintln(os.Stderr, "   • Offline CI Demo:     dra-cli scan --demo")
 				os.Exit(1)
 			}
 
-			if resp.StatusCode != 200 {
-				fmt.Fprintf(os.Stderr, Red+"❌ Server returned error [Status: %s]: %s\n"+Reset, resp.Status, string(respBody))
+			if resp.StatusCode != http.StatusOK {
+				fmt.Fprintf(os.Stderr, Red+"❌ Server returned error [%s]: %s\n"+Reset, resp.Status, string(respBody))
 				os.Exit(1)
 			}
 
-			err = json.Unmarshal(respBody, &report)
-			if err != nil {
+			if err := json.Unmarshal(respBody, &report); err != nil {
 				fmt.Fprintf(os.Stderr, Red+"❌ Error decoding JSON response: %v\n"+Reset, err)
 				os.Exit(1)
 			}
+
+			if enableDlp {
+				DeanonymizeReport(&report, dlpRes.AliasMap)
+			}
 		}
 
-		// --- STATS BADGE ---
-		criticalCount := 0
-		highCount := 0
-		mediumCount := 0
-		lowCount := 0
-		infoCount := 0
-
+		// --- SEVERITY TALLY ---
+		criticalCount, highCount, mediumCount, lowCount, infoCount := 0, 0, 0, 0, 0
 		for _, f := range report.Findings {
 			switch f.Severity {
 			case "Critical":
@@ -405,72 +573,20 @@ var scanCmd = &cobra.Command{
 		}
 
 		var finalOutput string
-
 		switch strings.ToLower(outputFormat) {
 		case "json":
-			indented, err := json.MarshalIndent(report, "", "  ")
-			if err != nil {
-				fmt.Fprintf(os.Stderr, Red+"❌ Error formatting JSON output: %v\n"+Reset, err)
-				os.Exit(1)
-			}
+			indented, _ := json.MarshalIndent(report, "", "  ")
 			finalOutput = string(indented)
-
 		case "sarif":
 			sarifData := buildSarifReport(report)
-			indented, err := json.MarshalIndent(sarifData, "", "  ")
-			if err != nil {
-				fmt.Fprintf(os.Stderr, Red+"❌ Error formatting SARIF output: %v\n"+Reset, err)
-				os.Exit(1)
-			}
+			indented, _ := json.MarshalIndent(sarifData, "", "  ")
 			finalOutput = string(indented)
-
 		case "markdown", "md":
-			finalOutput = buildMarkdownReport(report, targetFiles)
-
-		default: // "console"
-			fmt.Println("\n" + Bold + Blue + "====================================================" + Reset)
-			fmt.Println("📊 " + Bold + "AUDIT RUN SUMMARY" + Reset)
-			fmt.Println(Bold + Blue + "====================================================" + Reset)
-			fmt.Printf("  🔍 Files Audited : %-10d   🔴 Critical Risks: %s%d%s\n", len(targetFiles), Red+Bold, criticalCount, Reset)
-			fmt.Printf("  🟠 High Risks    : %-10d   🟡 Medium Risks  : %s%d%s\n", highCount, Yellow+Bold, mediumCount, Reset)
-			fmt.Printf("  🔵 Low/Info Risks: %-10d\n", lowCount+infoCount)
-			fmt.Println(Bold + Blue + "====================================================" + Reset)
-
-			// --- EXECUTIVE SUMMARY ---
-			fmt.Println("\n📢 " + Bold + "EXECUTIVE SUMMARY:" + Reset)
-			fmt.Println()
-			fmt.Printf("%s\n\n", report.Summary)
-
-			// --- PILLAR SCORES WITH PROGRESS BARS ---
-			fmt.Println(Bold + "📊 ARCHITECTURE PILLAR SCORES (Google Cloud Framework):" + Reset)
-			fmt.Println()
-			for i, cat := range report.Categories {
-				statusIcon := Green + "✔" + Reset
-				if cat.Status == "Critical" {
-					statusIcon = Red + "✘" + Reset
-				} else if cat.Status == "Warning" {
-					statusIcon = Yellow + "!" + Reset
-				}
-
-				progressBar := drawProgressBar(cat.Score, cat.Status)
-				paddedName := fmt.Sprintf("%-22s", cat.Name)
-				fmt.Printf(" [%s] %s | %s %3d/100 | %s\n", statusIcon, Bold+paddedName+Reset, progressBar, cat.Score, cat.Explanation)
-				if i < len(report.Categories)-1 {
-					fmt.Println()
-				}
-			}
-
-			// --- DETAILED FINDINGS ---
-			fmt.Println(Bold + "\n🚨 DETAILED FINDINGS LOG:" + Reset)
-			fmt.Println()
-			if len(report.Findings) == 0 {
-				fmt.Println(Green + " 🎉 Congratulations! No architectural violations detected." + Reset)
-			} else {
-				for i, f := range report.Findings {
-					drawBoxedFinding(i+1, f)
-				}
-			}
-			fmt.Println(Bold + Blue + "\n====================================================" + Reset)
+			finalOutput = buildMarkdownReport(report, targetFiles, false)
+		case "github-pr":
+			finalOutput = buildMarkdownReport(report, targetFiles, true)
+		default:
+			renderConsoleReport(report, targetFiles, criticalCount, highCount, mediumCount, lowCount, infoCount)
 		}
 
 		if finalOutput != "" {
@@ -479,53 +595,27 @@ var scanCmd = &cobra.Command{
 
 		if outputFile != "" {
 			contentToWrite := finalOutput
-			if contentToWrite == "" && outputFormat == "console" {
-				contentToWrite = buildMarkdownReport(report, targetFiles)
+			if contentToWrite == "" {
+				contentToWrite = buildMarkdownReport(report, targetFiles, true)
 			}
-			err := os.WriteFile(outputFile, []byte(contentToWrite), 0644)
-			if err != nil {
+			if err := os.WriteFile(outputFile, []byte(contentToWrite), 0644); err != nil {
 				fmt.Fprintf(os.Stderr, Red+"❌ Error saving output to %s: %v\n"+Reset, outputFile, err)
 			} else if outputFormat == "console" {
-				fmt.Printf("💾 Report successfully written to: %s\n", outputFile)
+				fmt.Printf("💾 Report written to: %s\n", outputFile)
 			}
 		}
 
 		if fixPatchFile != "" {
-			patchContent := buildRemediationPatch(report)
-			err := os.WriteFile(fixPatchFile, []byte(patchContent), 0644)
-			if err != nil {
+			patchContent := BuildVerifiedGitPatch(report, scanPath)
+			if err := os.WriteFile(fixPatchFile, []byte(patchContent), 0644); err != nil {
 				fmt.Fprintf(os.Stderr, Red+"❌ Error saving remediation patch to %s: %v\n"+Reset, fixPatchFile, err)
 			} else if outputFormat == "console" {
-				fmt.Printf("🩹 Remediation patch written to: %s (Apply with: git apply %s)\n", fixPatchFile, fixPatchFile)
+				fmt.Printf("🩹 Verified Git patch written to: %s (Apply with: git apply %s)\n", fixPatchFile, fixPatchFile)
 			}
 		}
 
-		// --- QUALITY GATE EVALUATION ---
-		var gateFailures []string
-		if failOn != "" {
-			levels := strings.Split(strings.ToLower(failOn), ",")
-			for _, lvl := range levels {
-				lvl = strings.TrimSpace(lvl)
-				if lvl == "critical" && criticalCount > 0 {
-					gateFailures = append(gateFailures, fmt.Sprintf("%d Critical severity finding(s) detected", criticalCount))
-				} else if lvl == "high" && highCount > 0 {
-					gateFailures = append(gateFailures, fmt.Sprintf("%d High severity finding(s) detected", highCount))
-				} else if lvl == "medium" && mediumCount > 0 {
-					gateFailures = append(gateFailures, fmt.Sprintf("%d Medium severity finding(s) detected", mediumCount))
-				} else if lvl == "low" && lowCount > 0 {
-					gateFailures = append(gateFailures, fmt.Sprintf("%d Low severity finding(s) detected", lowCount))
-				}
-			}
-		}
-
-		if minScore > 0 {
-			for _, cat := range report.Categories {
-				if cat.Score < minScore {
-					gateFailures = append(gateFailures, fmt.Sprintf("Pillar '%s' score (%d/100) is below minimum threshold (%d/100)", cat.Name, cat.Score, minScore))
-				}
-			}
-		}
-
+		// --- CI/CD QUALITY GATE ---
+		gateFailures := evaluateQualityGate(report, failOn, minScore, criticalCount, highCount, mediumCount, lowCount)
 		if len(gateFailures) > 0 {
 			fmt.Fprintln(os.Stderr, "\n"+Bold+Red+"===================================================="+Reset)
 			fmt.Fprintln(os.Stderr, Bold+Red+"❌ DRA CI/CD QUALITY GATE: FAILED"+Reset)
@@ -539,15 +629,96 @@ var scanCmd = &cobra.Command{
 	},
 }
 
-// Helper: Build SARIF 2.1.0 Report
+func evaluateQualityGate(report AuditReport, failOnSpec string, minPillarScore, crit, high, med, low int) []string {
+	var failures []string
+	if failOnSpec != "" {
+		for _, lvl := range strings.Split(strings.ToLower(failOnSpec), ",") {
+			switch strings.TrimSpace(lvl) {
+			case "critical":
+				if crit > 0 {
+					failures = append(failures, fmt.Sprintf("%d Critical severity finding(s) detected", crit))
+				}
+			case "high":
+				if high > 0 {
+					failures = append(failures, fmt.Sprintf("%d High severity finding(s) detected", high))
+				}
+			case "medium":
+				if med > 0 {
+					failures = append(failures, fmt.Sprintf("%d Medium severity finding(s) detected", med))
+				}
+			case "low":
+				if low > 0 {
+					failures = append(failures, fmt.Sprintf("%d Low severity finding(s) detected", low))
+				}
+			}
+		}
+	}
+
+	if minPillarScore > 0 {
+		for _, cat := range report.Categories {
+			if cat.Score < minPillarScore {
+				failures = append(failures, fmt.Sprintf("Pillar '%s' score (%d/100) is below minimum threshold (%d/100)", cat.Name, cat.Score, minPillarScore))
+			}
+		}
+	}
+	return failures
+}
+
+func renderConsoleReport(report AuditReport, targetFiles []string, criticalCount, highCount, mediumCount, lowCount, infoCount int) {
+	fmt.Println("\n" + Bold + Blue + "====================================================" + Reset)
+	fmt.Println("📊 " + Bold + "AUDIT RUN SUMMARY" + Reset)
+	fmt.Println(Bold + Blue + "====================================================" + Reset)
+	fmt.Printf("  🔍 Files Audited : %-10d   🔴 Critical Risks: %s%d%s\n", len(targetFiles), Red+Bold, criticalCount, Reset)
+	fmt.Printf("  🟠 High Risks    : %-10d   🟡 Medium Risks  : %s%d%s\n", highCount, Yellow+Bold, mediumCount, Reset)
+	fmt.Printf("  🔵 Low/Info Risks: %-10d   ⚖️  Waived Risks  : %d\n", lowCount+infoCount, len(report.WaivedFindings))
+	if report.FinOps != nil && report.FinOps.PotentialMonthlySavingsUsd > 0 {
+		fmt.Printf("  💰 FinOps Waste  : %s$%.2f/mo ($%.2f/yr) in %s%s\n", Green+Bold, report.FinOps.PotentialMonthlySavingsUsd, report.FinOps.AnnualSavingsUsd, report.FinOps.Region, Reset)
+	}
+	fmt.Println(Bold + Blue + "====================================================" + Reset)
+
+	fmt.Println("\n📢 " + Bold + "EXECUTIVE SUMMARY:" + Reset)
+	fmt.Printf("\n%s\n\n", report.Summary)
+
+	fmt.Println(Bold + "📊 ARCHITECTURE PILLAR SCORES (Google Cloud Framework):" + Reset)
+	fmt.Println()
+	for i, cat := range report.Categories {
+		statusIcon := Green + "✔" + Reset
+		if cat.Status == "Critical" {
+			statusIcon = Red + "✘" + Reset
+		} else if cat.Status == "Warning" {
+			statusIcon = Yellow + "!" + Reset
+		}
+		progressBar := drawProgressBar(cat.Score, cat.Status)
+		paddedName := fmt.Sprintf("%-24s", cat.Name)
+		fmt.Printf(" [%s] %s | %s %3d/100 | %s\n", statusIcon, Bold+paddedName+Reset, progressBar, cat.Score, cat.Explanation)
+		if i < len(report.Categories)-1 {
+			fmt.Println()
+		}
+	}
+
+	fmt.Println(Bold + "\n🚨 DETAILED FINDINGS LOG:" + Reset)
+	fmt.Println()
+	if len(report.Findings) == 0 {
+		fmt.Println(Green + " 🎉 Congratulations! No active architectural violations detected." + Reset)
+	} else {
+		for i, f := range report.Findings {
+			drawBoxedFinding(i+1, f)
+		}
+	}
+	fmt.Println(Bold + Blue + "\n====================================================" + Reset)
+}
+
 func buildSarifReport(report AuditReport) SarifReport {
 	ruleMap := make(map[string]SarifRule)
-	var sarifResults []SarifResult
+	sarifResults := make([]SarifResult, 0, len(report.Findings))
 
 	for _, f := range report.Findings {
 		ruleID := f.Category
 		if len(f.Compliance) > 0 && f.Compliance[0].ControlID != "" {
 			ruleID = f.Compliance[0].ControlID
+		}
+		if ruleID == "" {
+			ruleID = f.ID
 		}
 
 		if _, exists := ruleMap[ruleID]; !exists {
@@ -577,27 +748,32 @@ func buildSarifReport(report AuditReport) SarifReport {
 		if line <= 0 {
 			line = 1
 		}
+		reg := SarifRegion{StartLine: line}
+		if f.EndLineNumber > line {
+			reg.EndLine = f.EndLineNumber
+		}
 
-		loc := SarifLocation{
-			PhysicalLocation: SarifPhysicalLocation{
-				ArtifactLocation: SarifArtifactLocation{
-					URI: f.FileName,
-				},
-				Region: SarifRegion{
-					StartLine: line,
-				},
-			},
+		fileURI := f.FileName
+		if fileURI == "" {
+			fileURI = "main.tf"
 		}
 
 		sarifResults = append(sarifResults, SarifResult{
-			RuleID:    ruleID,
-			Level:     level,
-			Message:   SarifMessage{Text: msgText},
-			Locations: []SarifLocation{loc},
+			RuleID:  ruleID,
+			Level:   level,
+			Message: SarifMessage{Text: msgText},
+			Locations: []SarifLocation{
+				{
+					PhysicalLocation: SarifPhysicalLocation{
+						ArtifactLocation: SarifArtifactLocation{URI: fileURI},
+						Region:           reg,
+					},
+				},
+			},
 		})
 	}
 
-	var rules []SarifRule
+	rules := make([]SarifRule, 0, len(ruleMap))
 	for _, r := range ruleMap {
 		rules = append(rules, r)
 	}
@@ -610,7 +786,8 @@ func buildSarifReport(report AuditReport) SarifReport {
 				Tool: SarifTool{
 					Driver: SarifDriver{
 						Name:           "Deployment Readiness Auditor",
-						InformationURI: "https://github.com/your-username/deployment-readiness-auditor",
+						Version:        CliVersion,
+						InformationURI: "https://github.com/damian-sztankowski/Deployment-Readiness-Auditor",
 						Rules:          rules,
 					},
 				},
@@ -620,18 +797,39 @@ func buildSarifReport(report AuditReport) SarifReport {
 	}
 }
 
-// Helper: Build GitHub Markdown Report
-func buildMarkdownReport(report AuditReport, files []string) string {
+func buildMarkdownReport(report AuditReport, files []string, githubPrMode bool) string {
 	var sb strings.Builder
-	sb.WriteString("# 🛡️ Deployment Readiness Auditor (DRA) Report\n\n")
-	sb.WriteString(fmt.Sprintf("- **Files Audited:** %d\n", len(files)))
+	if githubPrMode {
+		sb.WriteString("<!-- dra-sticky-pr-comment -->\n")
+	}
+
+	crit, high := 0, 0
+	for _, f := range report.Findings {
+		if f.Severity == "Critical" {
+			crit++
+		} else if f.Severity == "High" {
+			high++
+		}
+	}
+	verdict := "✅ PRODUCTION READY"
+	if crit > 0 {
+		verdict = "🚫 DEPLOYMENT BLOCKED"
+	} else if high > 0 {
+		verdict = "⚠️ CONDITIONAL READINESS"
+	}
+
+	sb.WriteString(fmt.Sprintf("# 🛡️ Deployment Readiness Auditor (v%s) — %s\n\n", CliVersion, verdict))
+	sb.WriteString(fmt.Sprintf("- **Files Audited:** %d | **Active Findings:** %d (%d Critical, %d High)\n", len(files), len(report.Findings), crit, high))
+	if report.FinOps != nil && report.FinOps.PotentialMonthlySavingsUsd > 0 {
+		sb.WriteString(fmt.Sprintf("- **FinOps Savings Opportunity:** `$%.2f/mo` (`$%.2f/yr` in `%s`)\n", report.FinOps.PotentialMonthlySavingsUsd, report.FinOps.AnnualSavingsUsd, report.FinOps.Region))
+	}
 	sb.WriteString(fmt.Sprintf("- **Timestamp:** %s\n\n", time.Now().UTC().Format(time.RFC1123)))
 
 	sb.WriteString("## 📢 Executive Summary\n\n")
 	sb.WriteString(report.Summary + "\n\n")
 
-	sb.WriteString("## 📊 Architecture Pillar Scores (Google Cloud Framework)\n\n")
-	sb.WriteString("| Status | Pillar | Score | Explanation |\n")
+	sb.WriteString("## 📊 Architecture Pillar Scores (Google Cloud Well-Architected)\n\n")
+	sb.WriteString("| Status | Pillar | Score | Strategic Evaluation |\n")
 	sb.WriteString("| :---: | :--- | :---: | :--- |\n")
 	for _, cat := range report.Categories {
 		statusIcon := "🟢 Safe"
@@ -644,9 +842,14 @@ func buildMarkdownReport(report AuditReport, files []string) string {
 	}
 	sb.WriteString("\n")
 
-	sb.WriteString("## 🚨 Findings & Recommendations\n\n")
+	if report.Diagram != "" && githubPrMode {
+		sb.WriteString("<details>\n<summary><strong>🗺️ View Generated Infrastructure Topology Map (Mermaid)</strong></summary>\n\n")
+		sb.WriteString("```mermaid\n" + strings.TrimSpace(report.Diagram) + "\n```\n\n</details>\n\n")
+	}
+
+	sb.WriteString("## 🚨 Actionable Findings & Remediations\n\n")
 	if len(report.Findings) == 0 {
-		sb.WriteString("🎉 **No architectural violations detected!**\n")
+		sb.WriteString("🎉 **Zero architectural violations detected!**\n")
 	} else {
 		for i, f := range report.Findings {
 			sevIcon := "ℹ️ INFO"
@@ -662,21 +865,29 @@ func buildMarkdownReport(report AuditReport, files []string) string {
 			}
 
 			sb.WriteString(fmt.Sprintf("### %d. [%s] %s\n\n", i+1, sevIcon, f.Title))
-			sb.WriteString(fmt.Sprintf("- **Category:** %s\n", f.Category))
-			sb.WriteString(fmt.Sprintf("- **Location:** `%s` (Line %d)\n", f.FileName, f.LineNumber))
+			sb.WriteString(fmt.Sprintf("- **Pillar:** %s | **Location:** `%s:%d`\n", f.Category, f.FileName, f.LineNumber))
 			sb.WriteString(fmt.Sprintf("- **Description:** %s\n", f.Description))
 			sb.WriteString(fmt.Sprintf("- **Remediation:** %s\n", f.Remediation))
 			if f.CostSavings != "" {
-				sb.WriteString(fmt.Sprintf("- **FinOps Potential:** `%s`\n", f.CostSavings))
+				sb.WriteString(fmt.Sprintf("- **FinOps Impact:** `%s`\n", f.CostSavings))
 			}
 			if len(f.Compliance) > 0 {
-				sb.WriteString("- **Compliance:**\n")
+				sb.WriteString("- **Compliance Controls:** ")
+				parts := make([]string, 0, len(f.Compliance))
 				for _, c := range f.Compliance {
-					sb.WriteString(fmt.Sprintf("  - **%s** (%s): %s\n", c.Standard, c.ControlID, c.Description))
+					parts = append(parts, fmt.Sprintf("`%s %s`", c.Standard, c.ControlID))
 				}
+				sb.WriteString(strings.Join(parts, ", ") + "\n")
 			}
-			if f.Fix != "" {
-				sb.WriteString("\n```hcl\n" + strings.TrimSpace(f.Fix) + "\n```\n")
+			if strings.TrimSpace(f.Fix) != "" {
+				codeFence := "hcl"
+				if githubPrMode {
+					sb.WriteString("\n<details><summary>💡 Suggested IaC Remediation</summary>\n\n")
+				}
+				sb.WriteString("\n```" + codeFence + "\n" + strings.TrimSpace(f.Fix) + "\n```\n")
+				if githubPrMode {
+					sb.WriteString("\n</details>\n")
+				}
 			}
 			sb.WriteString("\n---\n\n")
 		}
@@ -685,299 +896,114 @@ func buildMarkdownReport(report AuditReport, files []string) string {
 	return sb.String()
 }
 
-// Helper: Build Unified Git Remediation Patch
-func buildRemediationPatch(report AuditReport) string {
-	var sb strings.Builder
-	sb.WriteString("# ========================================================\n")
-	sb.WriteString("# DRA Automated Remediation Patch\n")
-	sb.WriteString(fmt.Sprintf("# Generated: %s\n", time.Now().UTC().Format(time.RFC3339)))
-	sb.WriteString("# To apply: git apply dra-remediation.patch\n")
-	sb.WriteString("# ========================================================\n\n")
-
-	byFile := make(map[string][]Finding)
-	for _, f := range report.Findings {
-		if strings.TrimSpace(f.Fix) != "" {
-			fn := f.FileName
-			if fn == "" {
-				fn = "main.tf"
-			}
-			byFile[fn] = append(byFile[fn], f)
-		}
-	}
-
-	for fileName, findings := range byFile {
-		sb.WriteString(fmt.Sprintf("diff --git a/%s b/%s\n", fileName, fileName))
-		sb.WriteString(fmt.Sprintf("--- a/%s\n", fileName))
-		sb.WriteString(fmt.Sprintf("+++ b/%s\n", fileName))
-
-		for idx, f := range findings {
-			line := f.LineNumber
-			if line <= 0 {
-				line = 1
-			}
-			fixLines := strings.Split(strings.TrimSpace(f.Fix), "\n")
-			sb.WriteString(fmt.Sprintf("@@ -%d,1 +%d,%d @@ [DRA Finding %d: %s]\n", line, line, len(fixLines)+2, idx+1, f.Title))
-			sb.WriteString(fmt.Sprintf("+ # DRA-FIX [%s]: %s\n", strings.ToUpper(f.Severity), f.Title))
-			for _, l := range fixLines {
-				sb.WriteString(fmt.Sprintf("+ %s\n", l))
-			}
-			sb.WriteString("\n")
-		}
-	}
-
-	return sb.String()
-}
-
-// Helper: Loading Spinner
 func startSpinner(msg string, done chan struct{}) {
-	frames := []string{
-		"🤖        ",
-		" 🤖       ",
-		"  🤖      ",
-		"   🤖     ",
-		"    🤖    ",
-		"     🤖   ",
-		"      🤖  ",
-		"       🤖 ",
-		"        🤖",
-		"       🤖 ",
-		"      🤖  ",
-		"     🤖   ",
-		"    🤖    ",
-		"   🤖     ",
-		"  🤖      ",
-		" 🤖       ",
-	}
+	frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 	i := 0
 	for {
 		select {
 		case <-done:
 			return
 		default:
-			fmt.Printf("\r\033[K%s %s", frames[i], msg)
+			fmt.Fprintf(os.Stderr, "\r\033[K %s %s", frames[i], msg)
 			i = (i + 1) % len(frames)
-			time.Sleep(85 * time.Millisecond)
+			time.Sleep(90 * time.Millisecond)
 		}
 	}
 }
 
-// Helper: Visual Progress Bar
 func drawProgressBar(score int, status string) string {
 	width := 20
-	filledLength := int(float64(score) / 100.0 * float64(width))
-	if filledLength < 0 {
-		filledLength = 0
+	filled := int(float64(score) / 100.0 * float64(width))
+	if filled < 0 {
+		filled = 0
 	}
-	if filledLength > width {
-		filledLength = width
+	if filled > width {
+		filled = width
 	}
-	
 	color := Green
 	if status == "Critical" {
 		color = Red
 	} else if status == "Warning" {
 		color = Yellow
 	}
-	
-	bar := ""
-	for i := 0; i < width; i++ {
-		if i < filledLength {
-			bar += "█"
-		} else {
-			bar += "░"
-		}
-	}
-	return color + bar + Reset
+	return color + strings.Repeat("█", filled) + strings.Repeat("░", width-filled) + Reset
 }
 
-// Helper: Boxed findings layout
 func drawBoxedFinding(index int, f Finding) {
 	sevIcon := "ℹ️ INFO"
 	color := Blue
-	if f.Severity == "Critical" {
+	switch f.Severity {
+	case "Critical":
 		sevIcon = "🔴 CRITICAL"
 		color = Red
-	} else if f.Severity == "High" {
+	case "High":
 		sevIcon = "🟠 HIGH"
 		color = Yellow
-	} else if f.Severity == "Medium" {
+	case "Medium":
 		sevIcon = "🟡 MEDIUM"
 		color = Yellow
-	} else if f.Severity == "Low" {
+	case "Low":
 		sevIcon = "🔵 LOW"
 	}
 
-	header := fmt.Sprintf(" %d. [%s] %s (Category: %s)", index, sevIcon, f.Title, f.Category)
 	borderWidth := 80
-	
 	fmt.Printf("\n%s%s%s\n", color+Bold, strings.Repeat("━", borderWidth), Reset)
-	fmt.Printf(" %s%s%s\n", Bold, header, Reset)
+	fmt.Printf(" %s%d. [%s] %s (Pillar: %s)%s\n", Bold, index, sevIcon, f.Title, f.Category, Reset)
 	fmt.Printf("%s%s%s\n", color, strings.Repeat("─", borderWidth), Reset)
-	paddedLoc := fmt.Sprintf("%-12s", "Location")
-	paddedDesc := fmt.Sprintf("%-12s", "Description")
-	paddedRem := fmt.Sprintf("%-12s", "Remediation")
-	fmt.Printf("  📍 %s: %s (Line %d)\n\n", Bold+paddedLoc+Reset, f.FileName, f.LineNumber)
-	fmt.Printf("  📝 %s: %s\n\n", Bold+paddedDesc+Reset, f.Description)
-	fmt.Printf("  🔧 %s: %s\n\n", Bold+paddedRem+Reset, f.Remediation)
+	fmt.Printf("  📍 %-12s: %s (Line %d)\n", "Location", f.FileName, f.LineNumber)
+	fmt.Printf("  📝 %-12s: %s\n", "Description", f.Description)
+	fmt.Printf("  🔧 %-12s: %s\n", "Remediation", f.Remediation)
 	if f.CostSavings != "" {
-		paddedFin := fmt.Sprintf("%-12s", "FinOps")
-		fmt.Printf("  💰 %s: %s%s%s\n\n", Bold+paddedFin+Reset, Green, f.CostSavings, Reset)
+		fmt.Printf("  💰 %-12s: %s%s%s\n", "FinOps", Green, f.CostSavings, Reset)
 	}
 	if len(f.Compliance) > 0 {
-		paddedComp := fmt.Sprintf("%-12s", "Compliance")
-		fmt.Printf("  📋 %s:\n", Bold+paddedComp+Reset)
+		fmt.Printf("  📋 %-12s:\n", "Compliance")
 		for _, comp := range f.Compliance {
 			fmt.Printf("      • %s (%s): %s\n", Bold+comp.Standard+Reset, comp.ControlID, comp.Description)
 		}
-		fmt.Println()
 	}
-	if f.Fix != "" {
+	if strings.TrimSpace(f.Fix) != "" {
 		fmt.Printf("  %s%s%s\n", color, strings.Repeat("┈", borderWidth), Reset)
-		fmt.Printf("  💡 %s:\n", Bold+"Suggested HCL Fix"+Reset)
-		lines := strings.Split(strings.TrimSpace(f.Fix), "\n")
-		for _, line := range lines {
+		fmt.Printf("  💡 %s:\n", Bold+"Suggested IaC Fix"+Reset)
+		for _, line := range strings.Split(strings.TrimSpace(f.Fix), "\n") {
 			fmt.Printf("      %s%s%s\n", Green, line, Reset)
 		}
 	}
 	fmt.Printf("%s%s%s\n", color+Bold, strings.Repeat("━", borderWidth), Reset)
 }
 
-// Colorize pflag output usages
-func colorizeFlagUsages(usages string) string {
-	lines := strings.Split(usages, "\n")
-	var result []string
-	for _, line := range lines {
-		if strings.TrimSpace(line) == "" {
-			result = append(result, line)
-			continue
-		}
-		
-		processedLine := line
-		
-		// 1. Colorize types (string, bool, int, etc)
-		processedLine = strings.ReplaceAll(processedLine, " string ", " "+Blue+"string"+Reset+" ")
-		processedLine = strings.ReplaceAll(processedLine, " bool ", " "+Blue+"bool"+Reset+" ")
-		processedLine = strings.ReplaceAll(processedLine, " int ", " "+Blue+"int"+Reset+" ")
-		
-		// 2. Colorize long flags (e.g. --path)
-		doubleDashIdx := strings.Index(processedLine, "--")
-		if doubleDashIdx != -1 {
-			rest := processedLine[doubleDashIdx:]
-			endIdx := strings.IndexAny(rest, " =")
-			if endIdx != -1 {
-				flagName := rest[:endIdx]
-				processedLine = processedLine[:doubleDashIdx] + Bold + Green + flagName + Reset + rest[endIdx:]
-			}
-		}
-		
-		// 3. Colorize short flags (e.g. -p)
-		singleDashIdx := strings.Index(processedLine, " -")
-		if singleDashIdx != -1 && singleDashIdx+3 < len(processedLine) && processedLine[singleDashIdx+2] != '-' {
-			flagName := processedLine[singleDashIdx+1 : singleDashIdx+3] // "-p"
-			processedLine = processedLine[:singleDashIdx+1] + Yellow + flagName + Reset + processedLine[singleDashIdx+3:]
-		}
-
-		// 4. Colorize default values, e.g. (default "...")
-		defaultIdx := strings.Index(processedLine, "(default ")
-		if defaultIdx != -1 {
-			rest := processedLine[defaultIdx:]
-			endIdx := strings.Index(rest, ")")
-			if endIdx != -1 {
-				defaultValue := rest[:endIdx+1]
-				processedLine = processedLine[:defaultIdx] + Yellow + defaultValue + Reset + rest[endIdx+1:]
-			}
-		}
-		
-		result = append(result, processedLine)
-	}
-	return strings.Join(result, "\n")
-}
-
-// Custom formatted colored help screen
-func customHelpFunc(c *cobra.Command, args []string) {
-	fmt.Println("\n" + Bold + Blue + "====================================================" + Reset)
-	fmt.Println("     " + Bold + "Deployment Readiness Auditor (DRA) CLI" + Reset)
-	fmt.Println(Bold + Blue + "====================================================" + Reset)
-	
-	if c.Long != "" {
-		fmt.Printf("\n%s\n", c.Long)
-	} else if c.Short != "" {
-		fmt.Printf("\n%s\n", c.Short)
-	}
-	
-	fmt.Printf("\n%sUSAGE:%s\n  %s\n", Bold+Yellow, Reset, c.UseLine())
-	
-	if len(c.Commands()) > 0 {
-		fmt.Printf("\n%sAVAILABLE COMMANDS:%s\n", Bold+Yellow, Reset)
-		for _, sub := range c.Commands() {
-			if !sub.Hidden {
-				fmt.Printf("  %s%-12s%s %s\n", Bold+Green, sub.Name(), Reset, sub.Short)
-			}
-		}
-	}
-	
-	localFlags := c.LocalFlags().FlagUsages()
-	if localFlags != "" {
-		fmt.Printf("\n%sFLAGS & OPTIONS:%s\n%s", Bold+Yellow, Reset, colorizeFlagUsages(localFlags))
-	}
-	
-	inheritedFlags := c.InheritedFlags().FlagUsages()
-	if inheritedFlags != "" {
-		fmt.Printf("\n%sGLOBAL FLAGS:%s\n%s", Bold+Yellow, Reset, colorizeFlagUsages(inheritedFlags))
-	}
-	
-	if len(c.Commands()) > 0 {
-		fmt.Printf("\nUse \"%s [command] --help\" for more information about a command.\n\n", c.CommandPath())
-	} else {
-		fmt.Println()
-	}
-}
-
-func init() {
-	rootCmd.SetHelpFunc(customHelpFunc)
-	scanCmd.SetHelpFunc(customHelpFunc)
-
-	rootCmd.AddCommand(scanCmd)
-	scanCmd.Flags().StringVarP(&scanPath, "path", "p", ".", "Path to the directory containing Terraform files")
-	scanCmd.Flags().StringVarP(&backendURL, "endpoint", "e", "http://localhost:8080/api/audit", "DRA Backend API URL")
-	scanCmd.Flags().BoolVarP(&deepScan, "deep-scan", "d", false, "Scan the directory and all subdirectories recursively")
-	scanCmd.Flags().BoolVarP(&autoApprove, "yes", "y", false, "Automatically approve confirmation prompts (e.g. for deep scan in CI/CD)")
-	scanCmd.Flags().StringVar(&failOn, "fail-on", "", "Fail with exit code 1 if severity threshold is reached (e.g. 'critical', 'high', 'critical,high')")
-	scanCmd.Flags().IntVar(&minScore, "min-score", 0, "Fail with exit code 1 if any architecture pillar score drops below this minimum (0-100)")
-	scanCmd.Flags().StringVarP(&outputFormat, "output", "o", "console", "Output format: console, json, sarif, markdown")
-	scanCmd.Flags().StringVar(&outputFile, "output-file", "", "Path to write the report output (optional)")
-	scanCmd.Flags().StringVar(&fixPatchFile, "fix-patch", "", "File path to generate and write a Git remediation patch (.patch)")
-	scanCmd.Flags().StringVar(&llmProvider, "llm-provider", "", "LLM Provider (e.g. gemini, ollama)")
-	scanCmd.Flags().StringVar(&llmModel, "llm-model", "", "LLM Model Name (e.g. gemini-3-pro-preview, gemma4:e2b)")
-	scanCmd.Flags().StringVar(&llmURL, "llm-url", "", "Self-hosted LLM Endpoint URL")
-	scanCmd.Flags().StringVarP(&authToken, "token", "t", "", "Authorization Bearer token or GCP IAM token")
-	scanCmd.Flags().StringVarP(&apiKey, "api-key", "k", "", "API key for authenticating with the DRA backend (or DRA_API_KEY)")
-	scanCmd.Flags().BoolVar(&demoMode, "demo", false, "Run in demo / showcase mode without calling remote backend")
-}
-
 func getMockAuditReport() AuditReport {
 	return AuditReport{
-		Summary: "Architecture contains high-risk firewall exposures and unattached storage disks violating CIS GCP Benchmark controls.",
+		Summary: "Architecture contains high-risk firewall exposures and unattached storage disks violating CIS GCP Benchmark v2.0 controls.",
+		Model:   "dra-hybrid-demo-v3",
 		Categories: []CategoryScore{
-			{Name: "Security & Compliance", Score: 45, Status: "Critical Attention", Explanation: "Ingress firewall open to 0.0.0.0/0 on port 22 and public Cloud Storage bucket without uniform access."},
-			{Name: "Cost Optimization", Score: 68, Status: "Needs Improvement", Explanation: "Unattached PD-SSD disk incurring reclaimable waste."},
-			{Name: "Reliability", Score: 78, Status: "Acceptable", Explanation: "Compute instance lacks multi-zone redundancy."},
-			{Name: "Operational Excellence", Score: 60, Status: "Needs Improvement", Explanation: "Missing resource labels for cost-center and environment."},
-			{Name: "Performance Efficiency", Score: 85, Status: "Good", Explanation: "Appropriate compute machine tier selected."},
+			{Name: "Security & Compliance", Score: 45, Status: "Critical", Explanation: "Ingress firewall open to 0.0.0.0/0 on port 22 and public Cloud Storage bucket without uniform access."},
+			{Name: "Cost Optimization", Score: 68, Status: "Warning", Explanation: "Unattached PD-SSD disk incurring reclaimable monthly waste."},
+			{Name: "Reliability", Score: 82, Status: "Safe", Explanation: "Compute tier resilient; add bucket versioning for object recovery."},
+			{Name: "Operational Excellence", Score: 65, Status: "Warning", Explanation: "Missing resource labels for cost_center and environment."},
+			{Name: "Performance Efficiency", Score: 90, Status: "Safe", Explanation: "Appropriate compute machine tier selected."},
+		},
+		FinOps: &FinOpsSummary{
+			Region:                       "us-central1",
+			EstimatedCurrentMonthlyUsd:   142.00,
+			EstimatedOptimizedMonthlyUsd: 67.00,
+			PotentialMonthlySavingsUsd:   75.00,
+			AnnualSavingsUsd:             900.00,
 		},
 		Findings: []Finding{
 			{
 				ID:          "f1",
 				Severity:    "Critical",
 				Category:    "Security",
-				Title:       "Public Cloud Storage Bucket",
-				Description: "Storage bucket has public read access enabled without Uniform Bucket-Level Access (UBLA).",
-				Remediation: "Enable uniform_bucket_level_access = true and remove public IAM bindings.",
-				Fix:         "uniform_bucket_level_access = true",
+				Title:       "Public Cloud Storage Bucket Without Uniform Access",
+				Description: "Storage bucket lacks Uniform Bucket-Level Access (UBLA) and public access prevention.",
+				Remediation: "Enable uniform_bucket_level_access = true and public_access_prevention = \"enforced\".",
+				Fix:         "uniform_bucket_level_access = true\npublic_access_prevention    = \"enforced\"",
 				FileName:    "main.tf",
 				LineNumber:  1,
+				Source:      "deterministic",
 				Compliance: []Compliance{
-					{Standard: "CIS GCP Benchmark", ControlID: "5.1", Description: "Ensure uniform bucket-level access is enabled", Impact: "Unrestricted public exposure of proprietary data"},
+					{Standard: "CIS GCP Benchmark", ControlID: "CIS 5.1", Description: "Ensure uniform bucket-level access is enabled", Impact: "Unrestricted public exposure of proprietary data"},
 					{Standard: "NIST 800-53", ControlID: "AC-3", Description: "Access Enforcement", Impact: "Unauthorized read access"},
 				},
 			},
@@ -985,47 +1011,64 @@ func getMockAuditReport() AuditReport {
 				ID:          "f2",
 				Severity:    "High",
 				Category:    "Security",
-				Title:       "Over-permissive Firewall Rules (SSH)",
+				Title:       "Over-Permissive Firewall Rules (SSH 0.0.0.0/0)",
 				Description: "Firewall rule allows TCP traffic on port 22 from all IP addresses (0.0.0.0/0).",
-				Remediation: "Restrict SSH access to administrative IP ranges or Google Identity-Aware Proxy (IAP).",
-				Fix:         "source_ranges = [\"35.235.240.0/20\"] # Google IAP Range",
+				Remediation: "Restrict SSH access to Google Identity-Aware Proxy (35.235.240.0/20).",
+				Fix:         "source_ranges = [\"35.235.240.0/20\"]",
 				FileName:    "main.tf",
 				LineNumber:  14,
+				Source:      "deterministic",
 				Compliance: []Compliance{
-					{Standard: "CIS GCP Benchmark", ControlID: "3.6", Description: "Ensure SSH access is restricted from the internet", Impact: "Brute-force attacks and network infiltration"},
-					{Standard: "NIST 800-53", ControlID: "AC-17", Description: "Remote Access", Impact: "Internet-wide attack surface"},
+					{Standard: "CIS GCP Benchmark", ControlID: "CIS 3.6", Description: "Ensure SSH access is restricted from the internet", Impact: "Brute-force attacks and network infiltration"},
 				},
 			},
 			{
 				ID:          "f3",
 				Severity:    "Medium",
 				Category:    "Cost Optimization",
-				Title:       "Zombie Disk Identified",
+				Title:       "Unattached PD-SSD Zombie Disk",
 				Description: "Disk is defined as PD-SSD but is not attached to any compute instance.",
-				Remediation: "Convert to standard HDD or delete if no longer required.",
-				CostSavings: "Save ~$50/mo",
+				Remediation: "Snapshot and delete unused block storage.",
+				CostSavings: "Save ~$75/mo",
 				Fix:         "type = \"pd-standard\"",
 				FileName:    "main.tf",
 				LineNumber:  41,
-			},
-			{
-				ID:          "f4",
-				Severity:    "Low",
-				Category:    "Operations",
-				Title:       "Missing Resource Labels",
-				Description: "Resources lack labels for environment, owner, and cost-center tracking.",
-				Remediation: "Apply standard labeling schema to all resources.",
-				Fix:         "labels = { environment = \"prod\", owner = \"platform-team\" }",
-				FileName:    "main.tf",
-				LineNumber:  26,
+				Source:      "deterministic",
 			},
 		},
 	}
 }
 
+func init() {
+	rootCmd.AddCommand(scanCmd)
+	rootCmd.AddCommand(versionCmd)
+
+	scanCmd.Flags().StringVarP(&scanPath, "path", "p", ".", "Path to file or directory containing IaC files")
+	scanCmd.Flags().StringVarP(&backendURL, "endpoint", "e", "http://localhost:8080/api/audit", "DRA Backend API URL")
+	scanCmd.Flags().BoolVarP(&deepScan, "deep-scan", "d", false, "Scan directory and subdirectories recursively")
+	scanCmd.Flags().BoolVarP(&autoApprove, "yes", "y", false, "Automatically approve interactive prompts in CI/CD")
+	scanCmd.Flags().StringVar(&failOn, "fail-on", "", "Fail with exit code 1 if severity threshold is reached (e.g. 'critical,high')")
+	scanCmd.Flags().IntVar(&minScore, "min-score", 0, "Fail with exit code 1 if any pillar score drops below threshold (0-100)")
+	scanCmd.Flags().StringVarP(&outputFormat, "output", "o", "console", "Output format: console, json, sarif, markdown, github-pr")
+	scanCmd.Flags().StringVar(&outputFile, "output-file", "", "Path to write formatted report output")
+	scanCmd.Flags().StringVar(&fixPatchFile, "fix-patch", "", "Path to write verified Git unified patch (.patch)")
+	scanCmd.Flags().StringVar(&llmProvider, "llm-provider", "", "Engine provider: gemini, static, ollama, lm-studio")
+	scanCmd.Flags().StringVar(&llmModel, "llm-model", "", "LLM Model Name (e.g. gemini-2.5-flash, gemini-2.5-pro, gemma4:e2b)")
+	scanCmd.Flags().StringVar(&llmURL, "llm-url", "", "Self-hosted LLM Endpoint URL")
+	scanCmd.Flags().StringVarP(&authToken, "token", "t", "", "Authorization OIDC Bearer token (or GCP_IAM_TOKEN)")
+	scanCmd.Flags().StringVarP(&apiKey, "api-key", "k", "", "DRA Backend API key (or DRA_API_KEY)")
+	scanCmd.Flags().BoolVar(&demoMode, "demo", false, "Run simulated offline showcase report")
+	scanCmd.Flags().BoolVar(&enableDlp, "dlp", true, "Run bidirectional client-side DLP before transmitting code")
+	scanCmd.Flags().BoolVar(&noColor, "no-color", false, "Disable ANSI terminal colors (also respects NO_COLOR)")
+	scanCmd.Flags().IntVar(&timeoutSec, "timeout", 120, "HTTP request timeout in seconds")
+	scanCmd.Flags().StringVar(&policyPath, "policy", "", "Path to .dra.yaml organization policy & waivers file")
+	scanCmd.Flags().BoolVar(&changedOnly, "changed-only", false, "Scan only Git-modified IaC files relative to --base")
+	scanCmd.Flags().StringVar(&gitBaseRef, "base", "HEAD~1", "Base Git ref used with --changed-only")
+}
+
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }

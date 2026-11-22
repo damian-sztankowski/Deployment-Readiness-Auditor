@@ -1,0 +1,147 @@
+name: DRA Deployment Readiness Audit
+
+on:
+  pull_request:
+    paths:
+      - '**.tf'
+      - '**.tofu'
+      - '**.tfvars'
+      - 'Dockerfile'
+      - '**/Dockerfile'
+  push:
+    branches: [ production, main ]
+    paths:
+      - '**.tf'
+      - '**.tofu'
+      - '**.tfvars'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Hybrid IaC Readiness Gate & PR Bot
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: dra-cli/go.sum
+
+      - name: Build DRA CLI v3.0
+        run: |
+          make -C dra-cli build
+          echo "$(pwd)/dra-cli/bin" >> $GITHUB_PATH
+
+      - name: Keyless GCP Workload Identity Auth (Optional)
+        if: ${{ vars.GCP_WIF_PROVIDER != '' && vars.GCP_SERVICE_ACCOUNT != '' }}
+        id: gcp_auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: id_token
+          id_token_audience: ${{ secrets.DRA_ENDPOINT || 'https://dra.damiansztankowski.cloud' }}
+
+      - name: Run DRA Hybrid Audit (SARIF & PR Summary)
+        id: dra_run
+        continue-on-error: true
+        env:
+          GCP_IAM_TOKEN: ${{ steps.gcp_auth.outputs.id_token || secrets.GCP_IAM_TOKEN }}
+          DRA_API_KEY: ${{ secrets.DRA_API_KEY || secrets.API_KEY || secrets.GEMINI_API_KEY }}
+          DRA_ENDPOINT: ${{ secrets.DRA_ENDPOINT || 'https://dra-app-pispjcfa4a-uc.a.run.app/api/audit' }}
+        run: |
+          SCAN_TARGET="infra/terraform"
+          if [ ! -d "$SCAN_TARGET" ]; then
+            SCAN_TARGET="."
+          fi
+
+          if [ -n "$GCP_IAM_TOKEN" ] || [ -n "$DRA_API_KEY" ]; then
+            dra-cli scan \
+              --path "$SCAN_TARGET" \
+              --deep-scan \
+              --yes \
+              --no-color \
+              --endpoint "$DRA_ENDPOINT" \
+              --output sarif \
+              --output-file dra-results.sarif
+
+            dra-cli scan \
+              --path "$SCAN_TARGET" \
+              --deep-scan \
+              --yes \
+              --no-color \
+              --endpoint "$DRA_ENDPOINT" \
+              --fail-on critical,high \
+              --min-score 70 \
+              --output github-pr \
+              --output-file dra-pr-comment.md
+          else
+            echo "::notice::No GCP_IAM_TOKEN or DRA_API_KEY configured. Running simulated CI showcase gate."
+            dra-cli scan \
+              --path "$SCAN_TARGET" \
+              --deep-scan \
+              --yes \
+              --demo \
+              --output sarif \
+              --output-file dra-results.sarif
+
+            dra-cli scan \
+              --path "$SCAN_TARGET" \
+              --deep-scan \
+              --yes \
+              --demo \
+              --output github-pr \
+              --output-file dra-pr-comment.md
+          fi
+
+      - name: Post Sticky DRA Summary Comment on Pull Request
+        if: always() && github.event_name == 'pull_request' && hashFiles('dra-pr-comment.md') != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('dra-pr-comment.md', 'utf8');
+            const marker = '<!-- dra-sticky-pr-comment -->';
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Upload SARIF to GitHub Security Tab
+        if: always() && hashFiles('dra-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: dra-results.sarif
+          category: dra-infrastructure-audit
+
+      - name: Enforce Gate Outcome
+        if: steps.dra_run.outcome == 'failure'
+        run: exit 1
