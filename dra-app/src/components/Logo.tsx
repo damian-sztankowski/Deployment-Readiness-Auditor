@@ -122,7 +122,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', animate
       {(size === 'lg' || size === 'xl') && (
           <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-2 group-hover:translate-y-0 whitespace-nowrap z-20">
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-700 dark:text-indigo-400 bg-white/90 dark:bg-slate-900/90 px-4 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-800 backdrop-blur-xl shadow-lg">
-                DRA CORE 2.5 ACTIVE
+                DRA CORE 3.0 HYBRID ACTIVE
             </span>
           </div>
       )}

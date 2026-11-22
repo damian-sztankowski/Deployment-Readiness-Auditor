@@ -10,6 +10,7 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ lastResult }) => {
   const rawModel = lastResult?.model || GEMINI_MODEL;
   const formattedModelName = rawModel
+    .replace('dra-deterministic-ast-v3', 'Deterministic AST v3')
     .replace('gemini-', 'Gemini ')
     .replace('-preview', ' Preview')
     .replace('flash', 'Flash')
@@ -134,7 +135,7 @@ export const Footer: React.FC<FooterProps> = ({ lastResult }) => {
 
         <div className="mt-20 pt-12 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">
-            © 2025 Deployment Readiness Auditor / MIT License
+            © 2026 Deployment Readiness Auditor v3.0 / MIT License
           </div>
           <div className="flex items-center gap-12">
               <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2.5">

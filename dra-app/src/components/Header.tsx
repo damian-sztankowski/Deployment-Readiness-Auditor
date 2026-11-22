@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
                 DRA<span className="text-indigo-600 dark:text-indigo-400">.</span>
                 </h1>
                 <div className="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border transition-colors bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-                    System Active
+                    v3.0 Hybrid Active
                 </div>
             </div>
             <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 transition-all duration-300">

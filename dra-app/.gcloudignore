@@ -4,5 +4,8 @@
 node_modules/
 dist/
 index.js
+index.js.map
+src/__tests__/
+*.test.ts
 .env*
 .DS_Store
